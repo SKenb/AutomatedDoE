@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import numpy as np
 
 def plot(*plotters, is3D=False, xLabel="x", yLabel="y", title="Plot", showLegend=False):
     
@@ -16,3 +17,11 @@ def plot(*plotters, is3D=False, xLabel="x", yLabel="y", title="Plot", showLegend
     plt.show()
 
     return figure
+
+
+def plotSurface(plt, z, rangeX, rangeY=None):
+    
+    XX, YY = np.meshgrid(rangeX, rangeX if rangeY is None else rangeY)
+    ZZ = z(XX.flatten(), YY.flatten()).reshape(XX.shape)
+
+    plt.plot_surface(XX, YY, ZZ, linewidth=0, antialiased=False, alpha=.3)
