@@ -48,8 +48,13 @@ class FactorSet:
     def __str__(self):
         return "Factor Set:\n\r\t" + "\n\r\t".join(map(str, self.factors))
 
-    def realizeExperiments(self, nomredExperiments):
-        return [self * experiment for experiment in nomredExperiments]
+    def realizeExperiments(self, nomredExperiments, sortColumn=None):
+        result = np.array([self * experiment for experiment in nomredExperiments])
+        
+        if sortColumn is not None and sortColumn < self.getFactorCount():
+            return result[result[:, sortColumn].argsort()]
+
+        return result
 
     def __mul__(self, other):
         return [

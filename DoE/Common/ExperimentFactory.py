@@ -17,7 +17,7 @@ class ExperimentFactory():
         if self.iterationIndex <= self.maxIterations:
             
             # Return a set of Experiments
-            return pyDOE.ff2n(self.factorCount)
+            return pyDOE.bbdesign(self.factorCount)
 
         else:
             raise StopIteration

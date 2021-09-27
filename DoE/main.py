@@ -14,10 +14,14 @@ def main():
     suggestedExperiments = ExperimentFactory.ExperimentFactory()
     factorSet = Factor.getDefaultFactorSet()
 
+    logging.info(str(factorSet))
+
     for index, experiments in enumerate(suggestedExperiments):
 
-        print(" A new set of experiments ({}) ".format(index).center(80, '-'))
-        print(factorSet.realizeExperiments(experiments))
+        print(" A new set of experiments ({}) ".format(index+1).center(80, '-'))
+
+        experimentValues = factorSet.realizeExperiments(experiments, sortColumn=0)
+        print(experimentValues)
 
 
 if __name__ == '__main__':
