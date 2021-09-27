@@ -1,3 +1,4 @@
+import numpy as np 
 
 class Factor:
 
@@ -25,6 +26,16 @@ class Factor:
 
     def setMax(self, maxValue): self.max = maxValue
 
+    def delta(self): return self.max - self.min
+
+    def center(self): return self.min + self.delta() / 2
+
+    def __mul__(self, other):
+        return round(self.center() + self.delta() / 2 * other, 10)
+
+    def __rmul__(self, other):
+        return self.__mul__(other)
+
 
 class FactorSet:
 
@@ -36,6 +47,22 @@ class FactorSet:
 
     def __str__(self):
         return "Factor Set:\n\r\t" + "\n\r\t".join(map(str, self.factors))
+
+    def realizeExperiments(self, nomredExperiments):
+        return [self * experiment for experiment in nomredExperiments]
+
+    def __mul__(self, other):
+        return [
+                factor * other[index] 
+                for index, factor in enumerate(self.factors)
+            ]
+
+    def __rmul__(self, other):
+        self.__mul__(other)
+
+    def getFactorCount(self):
+        return len(self.factors)
+
 
 
 def getDefaultFactorSet():
@@ -52,3 +79,11 @@ if __name__ == '__main__':
     print((" Test Factor class ".center(80, "-")))
 
     print(getDefaultFactorSet())
+
+    print(getDefaultFactorSet()*np.array([-1, -1, 0, 1]))
+
+    print(getDefaultFactorSet().realizeExperiments(np.array([
+            [-1, -1, 0, 0], 
+            [0, -1, 0, 1],
+            [0, -1, 1, 0]
+        ])))

@@ -1,5 +1,8 @@
 from Common import Common
 from Common import Factor
+from Common import ExperimentFactory
+
+import numpy as np
 
 import logging
 
@@ -7,15 +10,15 @@ import logging
 
 def main():
     
-    set1 = Factor.getDefaultFactorSet()
 
-    print(set1)
+    suggestedExperiments = ExperimentFactory.ExperimentFactory()
+    factorSet = Factor.getDefaultFactorSet()
 
-def initializeDoE():
-    pass
+    for index, experiments in enumerate(suggestedExperiments):
 
-def evaluation():
-    pass
+        print(" A new set of experiments ({}) ".format(index).center(80, '-'))
+        print(factorSet.realizeExperiments(experiments))
+
 
 if __name__ == '__main__':
 
