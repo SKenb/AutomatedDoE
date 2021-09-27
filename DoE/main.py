@@ -1,10 +1,15 @@
 from Common import Common
+from Common import Factor
+
 import logging
-import os
+
     
 
 def main():
-    pass
+    
+    set1 = Factor.getDefaultFactorSet()
+
+    print(set1)
 
 def initializeDoE():
     pass
