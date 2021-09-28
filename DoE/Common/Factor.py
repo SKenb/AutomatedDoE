@@ -1,3 +1,4 @@
+from typing import Iterable
 import numpy as np 
 
 class Factor:
@@ -39,16 +40,16 @@ class Factor:
 
 class FactorSet:
 
-    def __init__(self, factors=[]):
+    def __init__(self, factors : Iterable[Factor]=[]):
         self.factors = factors
 
-    def addFactor(self, factor):
+    def addFactor(self, factor : Iterable[Factor]):
         self.factors.append(factor)
 
     def __str__(self):
         return "Factor Set:\n\r\t" + "\n\r\t".join(map(str, self.factors))
 
-    def realizeExperiments(self, nomredExperiments, sortColumn=None):
+    def realizeExperiments(self, nomredExperiments : Iterable, sortColumn=None):
         result = np.array([self * experiment for experiment in nomredExperiments])
         
         if sortColumn is not None and sortColumn < self.getFactorCount():
