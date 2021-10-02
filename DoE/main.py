@@ -1,8 +1,11 @@
+from matplotlib.pyplot import ylabel
 from Common import Common
 from Common import Factor
 from Common import ExperimentFactory
 from Common import LinearRegression
+from Common import Statistics
 from XamControl import XamControl
+
 
 import numpy as np
 import logging
@@ -23,10 +26,14 @@ def main():
     print(model.predict([experimentValues[1, :]]))
     print(Y[1, 1])
 
-    extendExperimentValues = np.array([np.append(e, np.array([e[0]*e[2], e[0]*e[3]])) for e in experimentValues])
-    model = LinearRegression.fit(extendExperimentValues, Y[:, 1]) 
-    print(model.predict([extendExperimentValues[1, :]]))
-    print(Y[1, 1])
+    factorSet.setExperimentValueCombinations({"Temp*Res": lambda eV: eV[0] * eV[3], "Temp*Ratio": lambda eV: eV[0] * eV[2]})
+    model = LinearRegression.fit(factorSet.getExperimentValuesAndCombinations(), Y[:, 1]) 
+    predY = model.predict(factorSet.getExperimentValuesAndCombinations())
+
+    Statistics.plotObservedVsPredicted(predY, Y[:, 1], "Conversion")
+
+
+ 
 
 
 if __name__ == '__main__':

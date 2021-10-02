@@ -1,4 +1,4 @@
-from typing import Iterable
+from typing import Dict, Iterable
 import numpy as np 
 
 class Factor:
@@ -43,12 +43,17 @@ class FactorSet:
     def __init__(self, factors : Iterable[Factor]=[]):
         self.factors = factors
         self.realizedExperiments = None
+        self.experimentValueCombinations = None
 
     def addFactor(self, factor : Iterable[Factor]):
         self.factors.append(factor)
 
     def __str__(self):
-        return "Factor Set:\n\r\t" + "\n\r\t".join(map(str, self.factors))
+        resultStr = "Factor Set:\n\r\t" + "\n\r\t".join(map(str, self.factors))
+        if self.experimentValueCombinations is None: return resultStr
+
+        return resultStr + "\n\r\t+ Combis:\n\r\t\t" + "\n\r\t\t".join(map(str, self.experimentValueCombinations.keys()))
+
 
     def realizeExperiments(self, nomredExperiments : Iterable, sortColumn=None):
         self.realizedExperiments = nomredExperiments
@@ -68,6 +73,15 @@ class FactorSet:
 
     def getExperimentValues(self):
         return self.experimentValues
+
+    def getExperimentValuesAndCombinations(self):
+        return np.array([np.append(e, np.array([e[0]*e[2], e[0]*e[3]])) for e in self.getExperimentValues()])
+
+    def setExperimentValueCombinations(self, newCombinations : Dict):
+        self.experimentValueCombinations = newCombinations
+    
+    def resetExperimentValueCombinations(self):
+        self.setExperimentValueCombinations(None)
 
     def __mul__(self, other):
         return [
@@ -96,12 +110,17 @@ if __name__ == '__main__':
     
     print((" Test Factor class ".center(80, "-")))
 
-    print(getDefaultFactorSet())
+    fSet = getDefaultFactorSet()
 
-    print(getDefaultFactorSet()*np.array([-1, -1, 0, 1]))
+    print(fSet)
 
-    print(getDefaultFactorSet().realizeExperiments(np.array([
+    print(fSet*np.array([-1, -1, 0, 1]))
+
+    print(fSet.realizeExperiments(np.array([
             [-1, -1, 0, 0], 
             [0, -1, 0, 1],
             [0, -1, 1, 0]
         ])))
+
+    fSet.setExperimentValueCombinations({"Temp*A": lambda a: a[0]*a[1]})
+    print(fSet)
