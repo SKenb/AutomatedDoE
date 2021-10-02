@@ -1,6 +1,7 @@
 from Common import Common
 from Common import Factor
 from Common import ExperimentFactory
+from Common import LinearRegression
 from XamControl import XamControl
 
 import numpy as np
@@ -16,8 +17,16 @@ def main():
     experiments = experimentFactory.getNewExperimentSuggestion()
     experimentValues = factorSet.realizeExperiments(experiments, sortColumn=0)
 
-    X = np.array([x.getFactorResponseArray() for x in xamControl.workOffExperiments(experimentValues)])
-    print(X)
+    Y = np.array([x.getValueArray() for x in xamControl.workOffExperiments(experimentValues)])
+    
+    model = LinearRegression.fit(experimentValues, Y[:, 1]) 
+    print(model.predict([experimentValues[1, :]]))
+    print(Y[1, 1])
+
+    extendExperimentValues = np.array([np.append(e, np.array([e[0]*e[2], e[0]*e[3]])) for e in experimentValues])
+    model = LinearRegression.fit(extendExperimentValues, Y[:, 1]) 
+    print(model.predict([extendExperimentValues[1, :]]))
+    print(Y[1, 1])
 
 
 if __name__ == '__main__':

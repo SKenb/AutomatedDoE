@@ -115,23 +115,23 @@ class XamControlSimpleMock(XamControl):
         self._receivedExperimentResult(experimentResult)
         return experimentResult
 
-    def _genericConversionModel(self, exp : XamControlExperimentRequest, const, ratio, conc, ResT, Temp, Ra2Temp, ResTemp):
+    def _genericConversionModel(self, exp : XamControlExperimentRequest, const, ratio, conc, ResT, Temp, RaTemp, ResTemp):
 
         return const \
             + ratio * exp[XamControlExperimentRequest.REAGENTRATIO] \
             + conc * exp[XamControlExperimentRequest.CONCENTRATION] \
             + ResT * exp[XamControlExperimentRequest.RESIDENCETIME] \
             + Temp * exp[XamControlExperimentRequest.TEMPERATURE] \
-            + Ra2Temp * exp[XamControlExperimentRequest.REAGENTRATIO]**2 * exp[XamControlExperimentRequest.TEMPERATURE] \
+            + RaTemp * exp[XamControlExperimentRequest.REAGENTRATIO] * exp[XamControlExperimentRequest.TEMPERATURE] \
             + ResTemp * exp[XamControlExperimentRequest.RESIDENCETIME] * exp[XamControlExperimentRequest.TEMPERATURE]  \
 
-    def _genericStyModel(self, exp : XamControlExperimentRequest, const, ratio, conc, Temp, Ra2Temp, ConTemp):
+    def _genericStyModel(self, exp : XamControlExperimentRequest, const, ratio, conc, Temp, RaTemp, ConTemp):
 
         return const \
             + ratio * exp[XamControlExperimentRequest.REAGENTRATIO] \
             + conc * exp[XamControlExperimentRequest.CONCENTRATION] \
             + Temp * exp[XamControlExperimentRequest.TEMPERATURE] \
-            + Ra2Temp * exp[XamControlExperimentRequest.REAGENTRATIO]**2 * exp[XamControlExperimentRequest.TEMPERATURE] \
+            + RaTemp * exp[XamControlExperimentRequest.REAGENTRATIO] * exp[XamControlExperimentRequest.TEMPERATURE] \
             + ConTemp * exp[XamControlExperimentRequest.CONCENTRATION] * exp[XamControlExperimentRequest.TEMPERATURE]  \
 
 
@@ -139,8 +139,19 @@ if __name__ == "__main__":
 
     print(" Test XamControlMock ".center(80, "-"))
 
-    XamControl = XamControlMock()
+    XamControl = XamControlSimpleMock()
 
-    exp = XamControlExperimentRequest(60, .2, .8, 10)
+    ## Test from Moode    
+    def testExp(number, ratio, conc, resT, temp, expectedConv, expectedSty): 
+        result = XamControl.startExperiment(XamControlExperimentRequest(temp, conc, ratio, resT))
 
-    print(XamControl.startExperiment(exp))
+        print(">> Test {}:\n\r\tConv-Delta: {}".format(number, round(expectedConv - result[XamControlExperimentResult.CONVERSION], 5)))
+        print("\tSty-Delta: {}".format(round(expectedSty - result[XamControlExperimentResult.STY], 5)))
+
+    testExp(2, 0.9, 0.2, 6, 60, 0.00912016, -0.0377515)
+    testExp(3, 0.9, 0.4, 2.5, 60, 0.13012, 0.0433987)
+    testExp(5, 3, 0.2, 2.5, 60, -0.0236858, 0.0498486)
+    testExp(6, 3, 0.2, 6, 60, 0.0418101, 0.0498486)
+    testExp(7, 3, 0.4, 2.5, 60, 0.16281, 0.130999)
+    testExp(15, 0.9, 0.4, 6, 160, 0.56931, 0.563074)
+    testExp(16, 3, 0.2, 2.5, 160, 0.66281, 0.525174)

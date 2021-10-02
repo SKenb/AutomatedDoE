@@ -42,6 +42,7 @@ class FactorSet:
 
     def __init__(self, factors : Iterable[Factor]=[]):
         self.factors = factors
+        self.realizedExperiments = None
 
     def addFactor(self, factor : Iterable[Factor]):
         self.factors.append(factor)
@@ -50,12 +51,23 @@ class FactorSet:
         return "Factor Set:\n\r\t" + "\n\r\t".join(map(str, self.factors))
 
     def realizeExperiments(self, nomredExperiments : Iterable, sortColumn=None):
-        result = np.array([self * experiment for experiment in nomredExperiments])
-        
-        if sortColumn is not None and sortColumn < self.getFactorCount():
-            return result[result[:, sortColumn].argsort()]
+        self.realizedExperiments = nomredExperiments
+        self._setExperimentValues(np.array([self * experiment for experiment in nomredExperiments]))
+        self.sortExperimentValues(sortColumn)
+        return self.getExperimentValues()
 
-        return result
+    def getRealizedExperiments(self):
+        return self.realizedExperiments
+
+    def _setExperimentValues(self, valueArray):
+        self.experimentValues = valueArray
+
+    def sortExperimentValues(self, sortColumn):
+        if sortColumn is not None and sortColumn < self.getFactorCount():
+            self._setExperimentValues(self.experimentValues[self.experimentValues[:, sortColumn].argsort()])
+
+    def getExperimentValues(self):
+        return self.experimentValues
 
     def __mul__(self, other):
         return [
