@@ -22,18 +22,17 @@ def main():
 
     Y = np.array([x.getValueArray() for x in xamControl.workOffExperiments(experimentValues)])
     
-    model = LinearRegression.fit(experimentValues, Y[:, 1]) 
-    print(model.predict([experimentValues[1, :]]))
-    print(Y[1, 1])
+    for combinations in [
+        None, 
+        {"Temp*Conc": lambda eV: eV[0] * eV[1], "Temp*Ratio": lambda eV: eV[0] * eV[3]},
+        {"Temp*Ratio": lambda eV: eV[0] * eV[2], "Temp*Ratio": lambda eV: eV[0] * eV[3]},
+        {"Temp*Conc": lambda eV: eV[0] * eV[1], "Temp*Conc": lambda eV: eV[0] * eV[2]},
+    ]:
 
-    factorSet.setExperimentValueCombinations({"Temp*Res": lambda eV: eV[0] * eV[3], "Temp*Ratio": lambda eV: eV[0] * eV[2]})
-    model = LinearRegression.fit(factorSet.getExperimentValuesAndCombinations(), Y[:, 1]) 
-    predY = model.predict(factorSet.getExperimentValuesAndCombinations())
+        factorSet.setExperimentValueCombinations(combinations)
 
-    Statistics.plotObservedVsPredicted(predY, Y[:, 1], "Conversion")
-
-
- 
+        model = LinearRegression.fit(factorSet.getExperimentValuesAndCombinations(), Y[:, 1]) 
+        Statistics.plotObservedVsPredicted(model.predict(factorSet.getExperimentValuesAndCombinations()), Y[:, 1], "Conversion")
 
 
 if __name__ == '__main__':
