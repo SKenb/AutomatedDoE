@@ -75,7 +75,13 @@ class FactorSet:
         return self.experimentValues
 
     def getExperimentValuesAndCombinations(self):
-        return np.array([np.append(e, np.array([e[0]*e[2], e[0]*e[3]])) for e in self.getExperimentValues()])
+        if self.experimentValueCombinations is None: return self.getExperimentValues()
+
+        return np.array([
+                np.append(e, np.array([
+                        func(e) for func in self.experimentValueCombinations.values()
+                    ])) for e in self.getExperimentValues()
+                ])
 
     def setExperimentValueCombinations(self, newCombinations : Dict):
         self.experimentValueCombinations = newCombinations

@@ -1,4 +1,5 @@
 from Common import Common
+from sklearn.metrics import r2_score
 
 def plotObservedVsPredicted(prediction, observation, titleSuffix=None):
 

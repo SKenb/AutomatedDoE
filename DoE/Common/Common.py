@@ -6,7 +6,7 @@ from datetime import datetime
 from pathlib import Path
 
 
-def plot(*plotters, is3D=False, xLabel="x", yLabel="y", title="Plot", showLegend=False, blocking=False):
+def plot(*plotters, is3D=False, xLabel="x", yLabel="y", title="Plot", showLegend=False):
     
     figure = plt.figure()
 
@@ -18,10 +18,7 @@ def plot(*plotters, is3D=False, xLabel="x", yLabel="y", title="Plot", showLegend
     plt.title(title)
 
     if showLegend: plt.legend()
-
-    if not blocking: 
-        plt.ion()
-        plt.pause(.01)
+    
     plt.show()
 
     return figure
