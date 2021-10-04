@@ -16,5 +16,6 @@ def plotObservedVsPredicted(prediction, observation, titleSuffix=None):
         lambda plt: plt.plot([0, 0], [minVal, maxVal], 'k', linewidth=1),
         lambda plt: plt.plot([minVal, maxVal], [minVal, maxVal], 'k--', linewidth=2),
         lambda plt: plt.grid(), 
+        lambda plt: plt.text(.5*(minVal + maxVal), 0.1, "R2: {}".format(round(r2_score(observation, prediction), 5))),
         xLabel="Predicted", yLabel="Observed", title=titleStr
     )
