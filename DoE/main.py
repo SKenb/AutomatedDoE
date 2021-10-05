@@ -1,7 +1,7 @@
-from matplotlib.pyplot import ylabel
 from Common import Common
 from Common import Factor
 from Common import ExperimentFactory
+from Common import CombinationFactory
 from Common import LinearRegression
 from Common import Statistics
 from XamControl import XamControl
@@ -24,16 +24,20 @@ def main():
     
     for combinations in [
                             None, 
-                            {"Temp*Conc": lambda eV: eV[0] * eV[1], "Temp*ResT": lambda eV: eV[0] * eV[3]},
-                            {"Temp*Ratio": lambda eV: eV[0] * eV[2], "Temp*ResT": lambda eV: eV[0] * eV[3]},
-                            {"Temp*Conc": lambda eV: eV[0] * eV[1], "Temp*Ratio": lambda eV: eV[0] * eV[2]},
+                            CombinationFactory.allCombinations()
                         ]:
+        print(combinations)
 
         factorSet.setExperimentValueCombinations(combinations)
         print(factorSet)
 
         model = LinearRegression.fit(factorSet.getExperimentValuesAndCombinations(), Y[:, 1]) 
+
         Statistics.plotObservedVsPredicted(model.predict(factorSet.getExperimentValuesAndCombinations()), Y[:, 1], "Conversion")
+
+        Common.plot(
+            lambda plt: plt.errorbar(range(len(model.coef_)), model.coef_,)
+        )
 
 
 if __name__ == '__main__':

@@ -6,7 +6,7 @@ import numpy as np
 
 import Common
 
-def fit(X, y, kernel=None):
+def fit(X, y, kernel=None) -> linear_model.LinearRegression:
     if kernel is None: return linear_model.LinearRegression().fit(X, y)
     return make_pipeline(kernel, linear_model.LinearRegression()).fit(x, y)
 
