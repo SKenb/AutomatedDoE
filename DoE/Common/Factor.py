@@ -1,4 +1,4 @@
-from typing import Dict, Iterable
+from typing import Callable, Dict, Iterable
 import numpy as np 
 
 class Factor:
@@ -74,14 +74,20 @@ class FactorSet:
     def getExperimentValues(self):
         return self.experimentValues
 
-    def getExperimentValuesAndCombinations(self):
-        if self.experimentValueCombinations is None: return self.getExperimentValues()
+    def getExperimentValuesAndCombinations(self, scalingFunction : Callable = None):
+        if scalingFunction is None: scalingFunction = lambda x: x
+        if self.experimentValueCombinations is None: return scalingFunction(self.getExperimentValues())
 
-        return np.array([
-                np.append(e, np.array([
-                        func(e) for func in self.experimentValueCombinations.values()
-                    ])) for e in self.getExperimentValues()
-                ])
+        # Non scaled combinations
+        combinations = \
+            np.array([
+                np.array([
+                            func(e) for func in self.experimentValueCombinations.values()
+                        ]) for e in self.getExperimentValues()
+                    ])
+
+        # Combination of scaled combinations and factors
+        return np.append(scalingFunction(self.getExperimentValues()), combinations, axis=1)
 
     def setExperimentValueCombinations(self, newCombinations : Dict):
         self.experimentValueCombinations = newCombinations
@@ -101,6 +107,14 @@ class FactorSet:
     def getFactorCount(self):
         return len(self.factors)
 
+    def getCoefficientLabels(self):
+        labels = ["Intercept"]
+        labels.extend([factor.name for factor in self.factors])
+
+        if self.experimentValueCombinations is not None: 
+            labels.extend(self.experimentValueCombinations.keys())
+
+        return labels
 
 
 def getDefaultFactorSet():
@@ -108,8 +122,8 @@ def getDefaultFactorSet():
     return FactorSet([
         Factor("Temperature", 60, 160, "°C", "T_1"),
         Factor("Concentration", .2, .4, "M", "C_SM_1"),
-        Factor("Reagent ratio‘s ", .8, 3, "", "R"),
-        Factor("Residence time", 0, 100, "min", "RT_1"),
+        Factor("Reagent ratio‘s", .9, 3, "", "R"),
+        Factor("Residence time", 2.5, 6, "min", "RT_1"),
     ])
 
 if __name__ == '__main__':

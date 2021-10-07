@@ -10,7 +10,7 @@ class ExperimentFactory:
 
         #return pyDOE.ff2n(factorCount)
         b = pyDOE.ff2n(factorCount)
-        c = np.array([[0, 0, 0, 0]])
+        c = np.array([[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]])
 
         return np.vstack((b, c))
 

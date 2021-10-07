@@ -2,14 +2,18 @@ from scipy.optimize.optimize import main
 from sklearn import linear_model
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.pipeline import make_pipeline
+import statsmodels.api as sm
 import numpy as np
 
 import Common
 
-def fit(X, y, kernel=None) -> linear_model.LinearRegression:
+def sklearnFit(X, y, kernel=None) -> linear_model.LinearRegression:
     if kernel is None: return linear_model.LinearRegression().fit(X, y)
     return make_pipeline(kernel, linear_model.LinearRegression()).fit(x, y)
 
+
+def fit(X, y):
+    return sm.OLS(y, X).fit()
 
 if __name__ == '__main__':
     
@@ -19,7 +23,7 @@ if __name__ == '__main__':
     x = np.arange(-1, 5, .25)
     y = 3*(x-2) + 5*(np.random.rand(len(x)) -.5)
 
-    regr = fit(x.reshape(-1, 1), y)
+    regr = sklearnFit(x.reshape(-1, 1), y)
 
     Common.plot(
         lambda plt: plt.plot(x, y, 'r.'),
@@ -31,7 +35,7 @@ if __name__ == '__main__':
     y = np.random.random(100)*5+7
     z = 5*x+3*y + 20*(np.random.rand(len(x)) -.5)
 
-    regr = fit(np.transpose([x, y]), z)
+    regr = sklearnFit(np.transpose([x, y]), z)
 
     Common.plot(
         lambda plt: plt.plot(x, y, z, 'r.'),
@@ -48,7 +52,7 @@ if __name__ == '__main__':
     x = np.arange(-1, 5, .25)[:, None]
     y = np.ravel(x) ** 2 + 10*(np.random.rand(len(x)) -.5)
 
-    regr = fit(x, y, PolynomialFeatures(2))
+    regr = sklearnFit(x, y, PolynomialFeatures(2))
 
     Common.plot(
         lambda plt: plt.plot(x, y, 'r.'),
@@ -60,7 +64,7 @@ if __name__ == '__main__':
     y = np.random.random(300)*20-10
     z = .5*x**2 + 2*y**2 + 10*x + 4*y + x*y + 100*(np.random.rand(len(x)) -.5)
 
-    regr = fit(np.transpose([x, x**2, y, y**2, x*y]), z)
+    regr = sklearnFit(np.transpose([x, x**2, y, y**2, x*y]), z)
     
     Common.plot(
         lambda plt: plt.plot(x, y, z,  'r.'),

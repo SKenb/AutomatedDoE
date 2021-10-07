@@ -50,3 +50,10 @@ def initLogging():
         datefmt='%d.%m.%Y %I:%M:%S %p',
         level=logging.DEBUG
     )
+
+def getModdeTestResponse():
+    # Used in Modde
+
+    cf = np.array([.28, .14, .25, 0, .03, .13, .05, 0, .35, .35, .35, .86, .57, .63, 1, .84, .41, .26, .36])
+    sf = np.array([.0005, .0005, 0.1988, .0005, .0356, .1394, .0227, .0002, .2771, .2773, .2813, 1.5726, .4377, .4241, .8503, .3616, .4238, .1189, .1892])
+    return np.array([cf, sf]).T

@@ -106,14 +106,17 @@ class XamControlSimpleMock(XamControl):
         
         if simulateExperimentTime > 0: time.sleep(simulateExperimentTime)
 
-        experimentResult = XamControlExperimentResult(
+        experimentResult = self._wrapXamControlExperimentResult(experiment)
+
+        self._receivedExperimentResult(experimentResult)
+        return experimentResult
+
+    def _wrapXamControlExperimentResult(self, experiment) -> XamControlExperimentResult:
+        return XamControlExperimentResult(
             self._genericConversionModel(experiment, -0.335595, -0.098665, 0.9325, 0.00379995, 0.000531994, 0.00190386, 0.000248572),
             self._genericStyModel(experiment, 0.200104, -0.0789001, -0.99375, -0.00594246, 0.00201024, 0.023325),
             request=experiment
         )
-
-        self._receivedExperimentResult(experimentResult)
-        return experimentResult
 
     def _genericConversionModel(self, exp : XamControlExperimentRequest, const, ratio, conc, ResT, Temp, RaTemp, ResTemp):
 
@@ -134,6 +137,15 @@ class XamControlSimpleMock(XamControl):
             + RaTemp * exp[XamControlExperimentRequest.REAGENTRATIO] * exp[XamControlExperimentRequest.TEMPERATURE] \
             + ConTemp * exp[XamControlExperimentRequest.CONCENTRATION] * exp[XamControlExperimentRequest.TEMPERATURE]  \
 
+
+class XamControlNoMixtureTermsMock(XamControlSimpleMock):
+
+    def _wrapXamControlExperimentResult(self, experiment) -> XamControlExperimentResult:
+        return XamControlExperimentResult(
+            self._genericConversionModel(experiment, -0.974799, 0.129215, 0.96875, 0.0332143, 0.00568852, 0, 0),
+            self._genericStyModel(experiment, 0.200104, -0.0789001, -0.99375, -0.00594246, 0, 0),
+            request=experiment
+        )
 
 if __name__ == "__main__":
 
