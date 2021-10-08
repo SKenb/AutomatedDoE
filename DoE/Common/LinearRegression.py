@@ -12,8 +12,13 @@ def sklearnFit(X, y, kernel=None) -> linear_model.LinearRegression:
     return make_pipeline(kernel, linear_model.LinearRegression()).fit(x, y)
 
 
-def fit(X, y):
+def fit(X, y, addConstant=True):
+    if addConstant: X=sm.add_constant(X)
     return sm.OLS(y, X).fit()
+
+def predict(model, X, addConstant=True):
+    if addConstant: X=sm.add_constant(X)
+    return model.predict(X)
 
 if __name__ == '__main__':
     

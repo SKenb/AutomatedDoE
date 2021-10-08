@@ -2,7 +2,7 @@ from Common import Common
 from Common import Factor
 from Common import ExperimentFactory
 from Common import CombinationFactory
-from Common import LinearRegression
+from Common import LinearRegression as LR
 from Common import Statistics
 from XamControl import XamControl
 
@@ -22,7 +22,7 @@ def main():
 
     mockY = np.array([x.getValueArray() for x in xamControl.workOffExperiments(experimentValues)])
     moddeY = Common.getModdeTestResponse()
-    Y = mockY
+    Y = moddeY
     
     #Statistics.plotResponseHistogram(Y[:, 0], "Y")
 
@@ -31,8 +31,7 @@ def main():
     
     for combinations in [
                             None,
-                            CombinationFactory.allCombinations(),
-                            #{"T*R": lambda eV: eV[0]*eV[2], "T*Rt": lambda eV: eV[0]*eV[3]}
+                            {"T*R": lambda eV: eV[0]*eV[2], "T*Rt": lambda eV: eV[0]*eV[3]},
                         ]:
         print(combinations)
 
@@ -40,21 +39,16 @@ def main():
         print(factorSet)
 
         X = factorSet.getExperimentValuesAndCombinations()
+        scaledX = factorSet.getExperimentValuesAndCombinations(Statistics.orthogonalScaling)
 
-        #scaledX = factorSet.getExperimentValuesAndCombinations(Statistics.orthogonalScaling)
-        #scaledX = Statistics.orthogonalScaling(X)
-        #scaledY = Statistics.orthogonalScaling(Y)
+        model = LR.fit(X, Y[:, responseIndexMap[response]])
+        sModel = LR.fit(scaledX, Y[:, responseIndexMap[response]])
+        print(sModel.summary())
 
+        #Statistics.plotObservedVsPredicted(LR.predict(model, X), Y[:, responseIndexMap[response]], response)
+        Statistics.plotObservedVsPredicted(LR.predict(sModel, scaledX), Y[:, responseIndexMap[response]], response)
 
-        X=sm.add_constant(X)
-        model = LinearRegression.fit(X, Y[:, responseIndexMap[response]])
-        #sModel = LinearRegression.fit(scaledX, Y[:, responseIndexMap[response]])
-        print(model.summary())
-
-        Statistics.plotObservedVsPredicted(model.predict(X), Y[:, responseIndexMap[response]], response)
-        #Statistics.plotObservedVsPredicted(sModel.predict(scaledX), scaledY[:, responseIndexMap[response]], response)
-
-        Statistics.plotCoefficients(model.params, factorSet, model.conf_int(alpha=0.05))
+        Statistics.plotCoefficients(sModel.params, factorSet, sModel.conf_int())
         Statistics.test(X, Y[:, responseIndexMap[response]])
         
 

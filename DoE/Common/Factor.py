@@ -74,20 +74,20 @@ class FactorSet:
     def getExperimentValues(self):
         return self.experimentValues
 
-    def getExperimentValuesAndCombinations(self, scalingFunction : Callable = None):
+    def getExperimentValuesAndCombinations(self, scalingFunction : Callable = None) -> np.array:
         if scalingFunction is None: scalingFunction = lambda x: x
         if self.experimentValueCombinations is None: return scalingFunction(self.getExperimentValues())
 
+        scaledExperimentValues = scalingFunction(self.getExperimentValues())
         # Non scaled combinations
-        combinations = \
+        combinations = np.array([
             np.array([
-                np.array([
-                            func(e) for func in self.experimentValueCombinations.values()
-                        ]) for e in self.getExperimentValues()
-                    ])
+                    func(e) for func in self.experimentValueCombinations.values()
+                ]) for e in scaledExperimentValues
+        ])
 
         # Combination of scaled combinations and factors
-        return np.append(scalingFunction(self.getExperimentValues()), combinations, axis=1)
+        return np.append(scaledExperimentValues, combinations, axis=1)
 
     def setExperimentValueCombinations(self, newCombinations : Dict):
         self.experimentValueCombinations = newCombinations
