@@ -6,6 +6,7 @@ import numpy as np
 import statsmodels.api as sm
 
 from Common.Factor import FactorSet
+import logging
 
 def plotObservedVsPredicted(prediction, observation, titleSuffix=None, X=None):
 
@@ -24,20 +25,23 @@ def plotObservedVsPredicted(prediction, observation, titleSuffix=None, X=None):
         lambda plt: plt.plot([minVal, maxVal], [minVal, maxVal], 'k--', linewidth=2),
         lambda plt: plt.grid(), 
         lambda plt: plt.text(.5*(minVal + maxVal), 0.2, "R2: {}".format(R2(observation, prediction))),
-        lambda plt: plt.text(.5*(minVal + maxVal), 0.1, "Q2: {}".format(Q2(X, observation, prediction))),
+        lambda plt: X is not None and plt.text(.5*(minVal + maxVal), 0.1, "Q2: {}".format(Q2(X, observation, prediction))),
         xLabel="Predicted", yLabel="Observed", title=titleStr
     )
 
 
-def plotCoefficients(coefficentValues, factorSet:FactorSet=None, confidenceInterval=None, titleSuffix=None):
+def plotCoefficients(coefficientValues, factorSet:FactorSet=None, confidenceInterval=None, titleSuffix=None):
     titleStr = "Coefficients plot"
     if titleSuffix is not None: titleStr += " - " + titleSuffix
-    l = len(coefficentValues)
+    l = len(coefficientValues)
     
     if confidenceInterval is None: 
         confidenceInterval = np.zeros(l)
-    else:
+        isSignificant = np.ones((1, len(l)), dtype=bool)
+    else:        
+        isSignificant = getModelTermSignificance(confidenceInterval)[0]
         confidenceInterval = abs(confidenceInterval[:, 0] - confidenceInterval[:, 1]) / 2
+
 
     labels = None 
     if factorSet is not None or l != len(factorSet.getCoefficientLabels()):
@@ -46,9 +50,14 @@ def plotCoefficients(coefficentValues, factorSet:FactorSet=None, confidenceInter
     print(range(l))
     print(labels)
 
+    def _plotBars(plt):
+        bars = plt.bar(range(l), coefficientValues)
+        for index, isSig in enumerate(isSignificant):
+            if not isSig: bars[index].set_color('r')
+
     Common.plot(
-        lambda plt: plt.bar(range(l), coefficentValues),
-        lambda plt: plt.errorbar(range(l), coefficentValues, confidenceInterval, fmt=' ', color='b'),
+        lambda plt: _plotBars(plt),
+        lambda plt: plt.errorbar(range(l), coefficientValues, confidenceInterval, fmt=' ', color='b'),
         lambda plt: plt.xticks(range(l), labels, rotation=90),
         xLabel="Coefficient", yLabel="Value", title=titleStr
     )
@@ -104,9 +113,20 @@ def combineCoefficients(model) -> np.array:
 def Q2(X, trainingY, predictionY):
     if X is None or trainingY is None or predictionY is None: return -1
 
-    r = trainingY - predictionY
+    try:
+        r = trainingY - predictionY
 
-    PRESS = np.array([(r[i] / (1 - (X[i, :] @ np.linalg.inv(X.T @ X) @ X[i, :])))**2 for i in range(len(X))]).sum()
-    SStot = np.array((trainingY - trainingY.mean())**2).sum()
+        PRESS = np.array([(r[i] / (1 - (X[i, :] @ np.linalg.inv(X.T @ X) @ X[i, :])))**2 for i in range(len(X))]).sum()
+        SStot = np.array((trainingY - trainingY.mean())**2).sum()
 
-    return (1 - (PRESS / SStot))
+        return (1 - (PRESS / SStot))
+    
+    except Exception as e:
+        logging.error("Error in Q2 - " + str(e))
+        return -1
+
+def getModelTermSignificance(confidenceInterval):
+    isSignificant = np.sign(confidenceInterval[:, 1] * confidenceInterval[:, 0]) >= 0
+    significanceInterval = np.abs(confidenceInterval[:, 1] - confidenceInterval[:, 0])
+
+    return isSignificant, significanceInterval

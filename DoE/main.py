@@ -32,6 +32,7 @@ def main():
     for combinations in [
                             None,
                             {"T*R": lambda eV: eV[0]*eV[2], "T*Rt": lambda eV: eV[0]*eV[3]},
+                            CombinationFactory.allLinearCombinations()
                         ]:
         print(combinations)
 
@@ -46,10 +47,11 @@ def main():
         print(sModel.summary())
 
         #Statistics.plotObservedVsPredicted(LR.predict(model, X), Y[:, responseIndexMap[response]], response)
-        Statistics.plotObservedVsPredicted(LR.predict(sModel, scaledX), Y[:, responseIndexMap[response]], response, X=scaledX)
+        Statistics.plotObservedVsPredicted(LR.predict(sModel, scaledX), Y[:, responseIndexMap[response]], response, X=X)
 
         Statistics.plotCoefficients(sModel.params, factorSet, sModel.conf_int())
         print(Statistics.Q2(scaledX, Y[:, responseIndexMap[response]], LR.predict(sModel, scaledX)))
+        print(Statistics.getModelTermSignificance(sModel.conf_int()))
         
 
 if __name__ == '__main__':
