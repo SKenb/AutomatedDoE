@@ -7,7 +7,7 @@ import statsmodels.api as sm
 
 from Common.Factor import FactorSet
 
-def plotObservedVsPredicted(prediction, observation, titleSuffix=None):
+def plotObservedVsPredicted(prediction, observation, titleSuffix=None, X=None):
 
     titleStr = "Observed vs. Predicted"
     if titleSuffix is not None: titleStr += " - " + titleSuffix
@@ -23,7 +23,8 @@ def plotObservedVsPredicted(prediction, observation, titleSuffix=None):
         lambda plt: plt.plot([0, 0], [minVal, maxVal], 'k', linewidth=1),
         lambda plt: plt.plot([minVal, maxVal], [minVal, maxVal], 'k--', linewidth=2),
         lambda plt: plt.grid(), 
-        lambda plt: plt.text(.5*(minVal + maxVal), 0.1, "R2: {}".format(R2(observation, prediction))),
+        lambda plt: plt.text(.5*(minVal + maxVal), 0.2, "R2: {}".format(R2(observation, prediction))),
+        lambda plt: plt.text(.5*(minVal + maxVal), 0.1, "Q2: {}".format(Q2(X, observation, prediction))),
         xLabel="Predicted", yLabel="Observed", title=titleStr
     )
 
@@ -100,8 +101,12 @@ def combineCoefficients(model) -> np.array:
     return np.array(c)
 
 
-def test(X, yObserved):
-    X=sm.add_constant(X)
-    model= sm.OLS(yObserved, X).fit()
-    predictions= model.summary()
-    predictions
+def Q2(X, trainingY, predictionY):
+    if X is None or trainingY is None or predictionY is None: return -1
+
+    r = trainingY - predictionY
+
+    PRESS = np.array([(r[i] / (1 - (X[i, :] @ np.linalg.inv(X.T @ X) @ X[i, :])))**2 for i in range(len(X))]).sum()
+    SStot = np.array((trainingY - trainingY.mean())**2).sum()
+
+    return (1 - (PRESS / SStot))

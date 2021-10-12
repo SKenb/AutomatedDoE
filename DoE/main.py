@@ -22,7 +22,7 @@ def main():
 
     mockY = np.array([x.getValueArray() for x in xamControl.workOffExperiments(experimentValues)])
     moddeY = Common.getModdeTestResponse()
-    Y = moddeY
+    Y = mockY
     
     #Statistics.plotResponseHistogram(Y[:, 0], "Y")
 
@@ -46,10 +46,10 @@ def main():
         print(sModel.summary())
 
         #Statistics.plotObservedVsPredicted(LR.predict(model, X), Y[:, responseIndexMap[response]], response)
-        Statistics.plotObservedVsPredicted(LR.predict(sModel, scaledX), Y[:, responseIndexMap[response]], response)
+        Statistics.plotObservedVsPredicted(LR.predict(sModel, scaledX), Y[:, responseIndexMap[response]], response, X=scaledX)
 
         Statistics.plotCoefficients(sModel.params, factorSet, sModel.conf_int())
-        Statistics.test(X, Y[:, responseIndexMap[response]])
+        print(Statistics.Q2(scaledX, Y[:, responseIndexMap[response]], LR.predict(sModel, scaledX)))
         
 
 if __name__ == '__main__':
