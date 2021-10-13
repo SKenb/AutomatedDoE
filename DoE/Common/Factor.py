@@ -95,6 +95,16 @@ class FactorSet:
     def resetExperimentValueCombinations(self):
         self.setExperimentValueCombinations(None)
 
+    def removeExperimentValueCombinations(self, removePredicate : Callable):
+        # Remove combinations
+        reduced = { key:value for index, (key,value) in  
+            enumerate(self.experimentValueCombinations.items()) 
+            if not removePredicate(index + len(self.factors) + 1, key, value)
+        }
+        
+        self.setExperimentValueCombinations(reduced)
+        return reduced
+
     def __mul__(self, other):
         return [
                 factor * other[index] 

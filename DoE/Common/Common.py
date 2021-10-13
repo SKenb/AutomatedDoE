@@ -1,9 +1,14 @@
+from typing import Iterable
 import matplotlib.pyplot as plt
+import Common.LinearRegression as LR
 import numpy as np
+import Common.Statistics as Statistics
 import logging
 
 from datetime import datetime
 from pathlib import Path
+
+from Common.Factor import FactorSet
 
 
 def plot(*plotters, is3D=False, xLabel="x", yLabel="y", title="Plot", showLegend=False):
@@ -54,6 +59,38 @@ def initLogging():
 def getModdeTestResponse():
     # Used in Modde
 
-    cf = np.array([.28, .14, .25, 0, .03, .13, .05, 0, .35, .35, .35, .86, .57, .63, 1, .84, .41, .26, .36])
-    sf = np.array([.0005, .0005, 0.1988, .0005, .0356, .1394, .0227, .0002, .2771, .2773, .2813, 1.5726, .4377, .4241, .8503, .3616, .4238, .1189, .1892])
+    cf = np.array([.28, .14, .25, 0, .03, .13, .05, 0, .35, .35, .35, .86, .57, .63, 0.84, .41, 1, .26, .36])
+    sf = np.array([.0005, .0005, 0.1988, .0005, .0356, .1394, .0227, .0002, .2771, .2773, .2813, 1.5726, .4377, .4241, .3616, .4238, .8503, .1189, .1892])
     return np.array([cf, sf]).T
+
+
+def fitFactorSet(factorSet : FactorSet, Y : Iterable, verbose=True):
+
+    X = factorSet.getExperimentValuesAndCombinations()
+    scaledX = factorSet.getExperimentValuesAndCombinations(Statistics.orthogonalScaling)
+    print(scaledX)
+
+
+    model = LR.fit(X, Y)
+    sModel = LR.fit(scaledX, Y)
+
+    if verbose: 
+        print(sModel.summary())
+        print(Statistics.Q2(scaledX, Y, LR.predict(sModel, scaledX)))
+        print(Statistics.getModelTermSignificance(sModel.conf_int()))
+        
+        Statistics.plotCoefficients(sModel.params, factorSet, sModel.conf_int())
+        Statistics.plotObservedVsPredicted(LR.predict(sModel, scaledX), Y, X=scaledX)
+
+        residuals = Statistics.residualsDeletedStudentized(Y, LR.predict(sModel, scaledX))
+
+        rng = range(len(residuals))
+        plot(
+            lambda plt: plt.scatter(rng, residuals),
+            lambda plt: plt.plot([0, len(residuals)], residuals.mean()*np.array([1, 1]), 'r--'),
+            lambda plt: plt.plot([0, len(residuals)], 4*residuals.std()*np.array([1, 1]), 'k--'),
+            lambda plt: plt.plot([0, len(residuals)], -4*residuals.std()*np.array([1, 1]), 'k--'),
+            lambda plt: plt.xticks(rng, rng),
+        )
+
+    return sModel, model

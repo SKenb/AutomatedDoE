@@ -1,4 +1,4 @@
-from typing import Callable
+from typing import Callable, Iterable
 from Common import Common
 from sklearn.metrics import r2_score
 from sklearn import preprocessing
@@ -130,3 +130,26 @@ def getModelTermSignificance(confidenceInterval):
     significanceInterval = np.abs(confidenceInterval[:, 1] - confidenceInterval[:, 0])
 
     return isSignificant, significanceInterval
+
+def addNoise(X : np.array, sigma = None, mu = 0):
+    if sigma is None: sigma = X.std()
+    return X + np.random.normal(mu, sigma, X.shape)
+
+def addOutlier(y : np.array, forceIndex=None):
+    if forceIndex is None: forceIndex = np.random.randint(0, len(y))
+    y[forceIndex] *= 2
+
+    return y
+
+def residualsRaw(observedValues : np.array, predictedValues : np.array) -> np.array:
+    return observedValues - predictedValues #model.resid
+
+def residualsStandardized(observedValues : np.array, predictedValues : np.array) -> np.array:
+    r = residualsRaw(observedValues, predictedValues)
+    return r / r.std()
+
+def residualsDeletedStudentized(observedValues : np.array, predictedValues : np.array) -> np.array:
+    r = residualsRaw(observedValues, predictedValues)
+    si = [np.append(r[0:index], r[index+1:]).std() for index in range(len(r))]
+
+    return r / si
