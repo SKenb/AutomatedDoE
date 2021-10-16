@@ -113,7 +113,7 @@ class XamControlSimpleMock(XamControl):
 
     def _wrapXamControlExperimentResult(self, experiment) -> XamControlExperimentResult:
         return XamControlExperimentResult(
-            self._genericConversionModel(experiment, 0.0960168, -0.135, 0.63125, -0.0512857, -0.0016125, 0.00213095, 0.000592857),
+            self._genericConversionModel(experiment, 0.0960168, -0.135, 0.63125, -0.0512857, -0.0016125, 0.00213095, 0.000248572),
             self._genericStyModel(experiment, 0.200104, -0.0789001, -0.99375, -0.00594246, 0.00201024, 0.023325),
             request=experiment
         )
