@@ -30,6 +30,19 @@ def plotObservedVsPredicted(prediction, observation, titleSuffix=None, X=None):
     )
 
 
+def plotResiduals(residuals, bound=2):
+    rng = range(len(residuals))
+    outlierIdx = abs(residuals) > bound
+
+    Common.plot(
+        lambda plt: plt.scatter(rng, residuals),
+        lambda plt: plt.scatter(np.array(list(rng))[outlierIdx], residuals[outlierIdx], color='red'),
+        lambda plt: plt.plot([0, len(residuals)], residuals.mean()*np.array([1, 1]), 'r--'),
+        lambda plt: plt.plot([0, len(residuals)], residuals.mean()+bound*np.array([1, 1]), 'k--'),
+        lambda plt: plt.plot([0, len(residuals)], residuals.mean()-1*bound*np.array([1, 1]), 'k--'),
+        lambda plt: plt.xticks(rng, rng),
+    )
+
 def plotCoefficients(coefficientValues, factorSet:FactorSet=None, confidenceInterval=None, titleSuffix=None):
     titleStr = "Coefficients plot"
     if titleSuffix is not None: titleStr += " - " + titleSuffix
@@ -110,7 +123,8 @@ def combineCoefficients(model) -> np.array:
     return np.array(c)
 
 
-def Q2(X, trainingY, predictionY):
+def Q2(X, trainingY, predictionY, roundF : Callable = lambda x: round(x, 5)):
+    if roundF is None: roundF = lambda x: x
     if X is None or trainingY is None or predictionY is None: return -1
 
     try:
@@ -119,7 +133,7 @@ def Q2(X, trainingY, predictionY):
         PRESS = np.array([(r[i] / (1 - (X[i, :] @ np.linalg.inv(X.T @ X) @ X[i, :])))**2 for i in range(len(X))]).sum()
         SStot = np.array((trainingY - trainingY.mean())**2).sum()
 
-        return (1 - (PRESS / SStot))
+        return roundF((1 - (PRESS / SStot)))
     
     except Exception as e:
         logging.error("Error in Q2 - " + str(e))
@@ -144,12 +158,13 @@ def addOutlier(y : np.array, forceIndex=None):
 def residualsRaw(observedValues : np.array, predictedValues : np.array) -> np.array:
     return observedValues - predictedValues #model.resid
 
-def residualsStandardized(observedValues : np.array, predictedValues : np.array) -> np.array:
-    r = residualsRaw(observedValues, predictedValues)
-    return r / r.std()
+def residualsStandardized(observedValues : np.array, predictedValues : np.array, residualDegreesOfFreedom) -> np.array:
+    residuals = residualsRaw(observedValues, predictedValues)
+    return residuals / RSD(residuals, residualDegreesOfFreedom) #r.std()
 
-def residualsDeletedStudentized(observedValues : np.array, predictedValues : np.array) -> np.array:
-    r = residualsRaw(observedValues, predictedValues)
-    si = [np.append(r[0:index], r[index+1:]).std() for index in range(len(r))]
+def residualsDeletedStudentized(model) -> np.array:
+    return model.outlier_test()[:, 0]
 
-    return r / si
+def RSD(residuals : np.array, residualDegreesOfFreedom):
+    return np.sqrt((residuals**2).sum() / (residualDegreesOfFreedom - 2))
+    #return r.std()

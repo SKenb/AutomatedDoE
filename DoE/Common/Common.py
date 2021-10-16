@@ -75,22 +75,13 @@ def fitFactorSet(factorSet : FactorSet, Y : Iterable, verbose=True):
     sModel = LR.fit(scaledX, Y)
 
     if verbose: 
+        scaledYPrediction = LR.predict(sModel, scaledX)
         print(sModel.summary())
-        print(Statistics.Q2(scaledX, Y, LR.predict(sModel, scaledX)))
+        print(Statistics.Q2(scaledX, Y, scaledYPrediction))
         print(Statistics.getModelTermSignificance(sModel.conf_int()))
         
         Statistics.plotCoefficients(sModel.params, factorSet, sModel.conf_int())
-        Statistics.plotObservedVsPredicted(LR.predict(sModel, scaledX), Y, X=scaledX)
-
-        residuals = Statistics.residualsDeletedStudentized(Y, LR.predict(sModel, scaledX))
-
-        rng = range(len(residuals))
-        plot(
-            lambda plt: plt.scatter(rng, residuals),
-            lambda plt: plt.plot([0, len(residuals)], residuals.mean()*np.array([1, 1]), 'r--'),
-            lambda plt: plt.plot([0, len(residuals)], 4*residuals.std()*np.array([1, 1]), 'k--'),
-            lambda plt: plt.plot([0, len(residuals)], -4*residuals.std()*np.array([1, 1]), 'k--'),
-            lambda plt: plt.xticks(rng, rng),
-        )
-
+        Statistics.plotObservedVsPredicted(scaledYPrediction, Y, X=scaledX)
+        Statistics.plotResiduals(Statistics.residualsDeletedStudentized(sModel))
+  
     return sModel, model

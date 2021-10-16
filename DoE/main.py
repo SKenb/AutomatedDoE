@@ -11,7 +11,7 @@ import logging
 
 def main():
     
-    xamControl = XamControl.XamControlSimpleMock() #XamControl.XamControlNoMixtureTermsMock()
+    xamControl = XamControl.XamControlModdeYMock() #XamControl.XamControlSimpleMock() #XamControl.XamControlNoMixtureTermsMock()
     experimentFactory = ExperimentFactory.ExperimentFactory()
     factorSet = Factor.getDefaultFactorSet()
     logging.info(str(factorSet))
@@ -20,11 +20,10 @@ def main():
     experimentValues = factorSet.realizeExperiments(experiments, sortColumn=0)
 
     mockY = np.array([x.getValueArray() for x in xamControl.workOffExperiments(experimentValues)])
-    mockY = Statistics.addNoise(mockY, .05)
+    #mockY = Statistics.addNoise(mockY, .05)
 
-    moddeY = Common.getModdeTestResponse()
-    
-    Y = moddeY
+    Y = mockY
+    print(Y)
     
     #Statistics.plotResponseHistogram(Y[:, 0], "Y")
 
@@ -32,51 +31,24 @@ def main():
     response = "Conversion"
     
     for combinations in [
-                            None,
-                            #{"T*R": lambda eV: eV[0]*eV[2]},
-                            #CombinationFactory.allLinearCombinations()
+                            #None,
+                            #{"T*R": lambda eV: eV[0]*eV[2], "T*Rt": lambda eV: eV[0]*eV[3]},
+                            CombinationFactory.allLinearCombinations()
                         ]:
 
         factorSet.setExperimentValueCombinations(combinations)
-        sModel, _ = Common.fitFactorSet(factorSet, Y[:, responseIndexMap[response]])
-
-        exit()
-        X = factorSet.getExperimentValuesAndCombinations()
-        tmp(X, 0.9, 0.2, 2.5, 60)
-        tmp(X, 0.9, 0.2, 6, 60)
-        tmp(X, 0.9, 0.4, 2.5, 60)
-        tmp(X, 0.9, 0.4, 6, 60)
-        tmp(X, 3, 0.2, 2.5, 60)
-        tmp(X, 3, 0.2, 6, 60)
-        tmp(X, 3, 0.4, 2.5, 60)
-        tmp(X, 3, 0.4, 6, 60)
-        tmp(X, 1.95, 0.3, 4.25, 110)
-        tmp(X, 1.95, 0.3, 4.25, 110)
-        tmp(X, 1.95, 0.3, 4.25, 110)
-        tmp(X, 0.9, 0.2, 2.5, 160)
-        tmp(X, 0.9, 0.2, 6, 160)
-        tmp(X, 0.9, 0.4, 2.5, 160)
-        tmp(X, 0.9, 0.4, 6, 160)
-        tmp(X, 3, 0.2, 2.5, 160)
-        tmp(X, 3, 0.2, 6, 160)
-        tmp(X, 3, 0.4, 2.5, 160)
-        tmp(X, 3, 0.4, 6, 160)
+        sModel, _ = Common.fitFactorSet(factorSet, Y[:, responseIndexMap[response]], verbose=False)
+        #Statistics.plotCoefficients(sModel.params, factorSet, sModel.conf_int())
 
         ## Remove not significant terms
-        #factorSet.removeExperimentValueCombinations(lambda index, key, value: not Statistics.getModelTermSignificance(sModel.conf_int())[0][index])
-        #sModel, _ = Common.fitFactorSet(factorSet, Y[:, responseIndexMap[response]])
-    
+        factorSet.removeExperimentValueCombinations(lambda index, key, value: not Statistics.getModelTermSignificance(sModel.conf_int())[0][index])
+        sModel, _ = Common.fitFactorSet(factorSet, Y[:, responseIndexMap[response]])
+        pass
+
+
 def tmp(X, ratio, conc, resT, temp):
     ws = np.append(X, Common.getModdeTestResponse(), axis=1)
-    a = ws[ws[:, 0] == temp]
-    a = a[a[:, 1] == conc]
-    a = a[a[:, 2] == ratio]
-    a = a[a[:, 3] == resT][0, :]
-    print(">> {}\t{}\t{}\t{}\t>> {}\t{}".format(
-        a[2], a[1], a[3], a[0], 
-        a[4], a[5]
-    ))
-    return a[4:6]
+    print(ws)
 
 if __name__ == '__main__':
 
