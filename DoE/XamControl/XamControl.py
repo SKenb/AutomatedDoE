@@ -113,7 +113,7 @@ class XamControlSimpleMock(XamControl):
 
     def _wrapXamControlExperimentResult(self, experiment) -> XamControlExperimentResult:
         return XamControlExperimentResult(
-            self._genericConversionModel(experiment, -0.335595, -0.098665, 0.9325, 0.00379995, 0.000531994, 0.00190386, 0.000248572),
+            self._genericConversionModel(experiment, 0.0960168, -0.135, 0.63125, -0.0512857, -0.0016125, 0.00213095, 0.000592857),
             self._genericStyModel(experiment, 0.200104, -0.0789001, -0.99375, -0.00594246, 0.00201024, 0.023325),
             request=experiment
         )
@@ -147,15 +147,52 @@ class XamControlNoMixtureTermsMock(XamControlSimpleMock):
             request=experiment
         )
 
+
+class XamControlModdeYMock(XamControlSimpleMock):
+
+    def _wrapXamControlExperimentResult(self, experiment) -> XamControlExperimentResult:
+
+        dataSet = np.array([
+            [ 60, 0.2, 0.9, 2.5, 0.28, 0.0005],
+            [ 60, 0.4, 0.9, 2.5, 0.14, 0.0005],
+            [ 60, 0.4, 3, 6, 0.25, 0.1988],
+            [ 60, 0.2, 3, 2.5, 0, 0.0005],
+            [ 60, 0.2, 3, 6, 0.03, 0.0356],
+            [ 60, 0.4, 3, 2.5, 0.13, 0.1394],
+            [ 60, 0.4, 0.9, 6, 0.05, 0.0227],
+            [ 60, 0.2, 0.9, 6, 0, 0.0002],
+            [110, 0.3, 1.95, 4.25, 0.35, np.array([0.2771, 0.2773, 0.2813]).mean()],
+            [160, 0.4, 3, 2.5, 0.86, 1.5726],
+            [160, 0.4, 0.9, 6, 0.57, 0.4377],
+            [160, 0.2, 3, 2.5, 0.63, 0.4241],
+            [160, 0.2, 3, 6, 0.84, 0.3616],
+            [160, 0.4, 0.9, 2.5, 0.41, 0.4238],
+            [160, 0.4, 3, 6, 1, 0.8503],
+            [160, 0.2, 0.9, 2.5, 0.26, 0.1189],
+            [160, 0.2, 0.9, 6, 0.36, 0.1892],
+        ])
+
+        for (index, value) in {
+                    0: experiment[XamControlExperimentRequest.TEMPERATURE],
+                    1: experiment[XamControlExperimentRequest.CONCENTRATION],
+                    2: experiment[XamControlExperimentRequest.REAGENTRATIO], 
+                    3: experiment[XamControlExperimentRequest.RESIDENCETIME]
+                }.items():
+            dataSet = dataSet[dataSet[:, index] == value]
+            if dataSet.size == 0: raise Exception("Data not found in dataset :/ - Note: only defined exp. r allowed")
+
+        return XamControlExperimentResult(dataSet[0, 4], dataSet[0, 5], request=experiment)
+
+
 if __name__ == "__main__":
 
     print(" Test XamControlMock ".center(80, "-"))
 
-    XamControl = XamControlSimpleMock()
+    xamControl = XamControlSimpleMock()
 
     ## Test from Moode    
     def testExp(number, ratio, conc, resT, temp, expectedConv, expectedSty): 
-        result = XamControl.startExperiment(XamControlExperimentRequest(temp, conc, ratio, resT))
+        result = xamControl.startExperiment(XamControlExperimentRequest(temp, conc, ratio, resT))
 
         print(">> Test {}:\n\r\tConv-Delta: {}".format(number, round(expectedConv - result[XamControlExperimentResult.CONVERSION], 5)))
         print("\tSty-Delta: {}".format(round(expectedSty - result[XamControlExperimentResult.STY], 5)))
@@ -167,3 +204,6 @@ if __name__ == "__main__":
     testExp(7, 3, 0.4, 2.5, 60, 0.16281, 0.130999)
     testExp(15, 0.9, 0.4, 6, 160, 0.56931, 0.563074)
     testExp(16, 3, 0.2, 2.5, 160, 0.66281, 0.525174)
+
+    xamControl = XamControlModdeYMock()
+    print(xamControl.startExperiment(XamControlExperimentRequest(60, .2, .9, 2.5)))
