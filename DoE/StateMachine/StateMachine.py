@@ -1,5 +1,7 @@
 from typing import Callable
+
 import time
+import traceback
 
 class State():
     def __init__(self, name : str):
@@ -18,7 +20,7 @@ class State():
         return None
 
     def onException(self, excpetion):
-        print("EXCEPTION: in {}: {}".format(str(self), str(excpetion)))
+        print("EXCEPTION: in {}: {}\n{}".format(str(self), str(excpetion), traceback.format_exc()))
         return None
 
 
