@@ -1,4 +1,4 @@
-from typing import Iterable
+from typing import Callable, Iterable
 import matplotlib.pyplot as plt
 import Common.LinearRegression as LR
 import numpy as np
@@ -68,8 +68,6 @@ def fitFactorSet(factorSet : FactorSet, Y : Iterable, verbose=True):
 
     X = factorSet.getExperimentValuesAndCombinations()
     scaledX = factorSet.getExperimentValuesAndCombinations(Statistics.orthogonalScaling)
-    print(scaledX)
-
 
     model = LR.fit(X, Y)
     sModel = LR.fit(scaledX, Y)
@@ -85,3 +83,29 @@ def fitFactorSet(factorSet : FactorSet, Y : Iterable, verbose=True):
         Statistics.plotResiduals(Statistics.residualsDeletedStudentized(sModel))
   
     return sModel, model
+
+def getXWithCombinations(experimentValues : np.array, experimentValueCombinations : dict, scalingFunction : Callable = lambda x: x) -> np.array:
+    scaledExperimentValues = scalingFunction(experimentValues)
+    # Non scaled combinations
+    combinations = np.array([
+        np.array([
+                func(e) for func in experimentValueCombinations.values()
+            ]) for e in scaledExperimentValues
+    ])
+
+    # Combination of scaled combinations and factors
+    return np.append(scaledExperimentValues, combinations, axis=1)
+
+def removeCombinations(combinations : dict, removePredicate : Callable):
+        # Remove combinations TODO Remove 4
+        reduced = { key:value for index, (key,value) in  
+            enumerate(combinations.items()) 
+            if not removePredicate(index + 4 + 1, key, value)
+        }
+        
+        return reduced
+
+
+def getModel(experimentValues : np.array, combinations : dict, Y : np.array, scalingFunction : Callable = lambda x: x):
+    X = getXWithCombinations(experimentValues, combinations, scalingFunction)
+    return LR.fit(X, Y)
