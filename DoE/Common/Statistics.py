@@ -30,7 +30,7 @@ def plotObservedVsPredicted(prediction, observation, titleSuffix=None, X=None):
     )
 
 
-def plotResiduals(residuals, bound=2):
+def plotResiduals(residuals, bound=4):
     rng = range(len(residuals))
     outlierIdx = abs(residuals) > bound
 
