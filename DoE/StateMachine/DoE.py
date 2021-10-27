@@ -17,7 +17,6 @@ class InitDoE(State):
         super().__init__("Initialize DoE")
         
     def onCall(self):
-        print(self.name)
 
         global context
 
@@ -32,7 +31,6 @@ class FindNewExperiments(State):
         super().__init__("Find new experiments")
 
     def onCall(self):
-        print(self.name)
 
         experiments = context.experimentFactory.getNewExperimentSuggestion()
         context.newExperimentValues = context.factorSet.realizeExperiments(experiments, sortColumn=0)
@@ -44,7 +42,6 @@ class ExecuteExperiments(State):
         super().__init__("Execute experiments")
 
     def onCall(self):
-        print(self.name)
 
         Y = np.array([x.getValueArray() for x in context.xamControl.workOffExperiments(context.newExperimentValues)])
         context.addNewExperiment(context.newExperimentValues, Y)
@@ -56,28 +53,43 @@ class EvaluateExperiments(State):
     def __init__(self):
         super().__init__("Evaluate experiments")
 
+    def getInitCombinations(self):
+        return CombinationFactory.allCombinations() # CombinationFactory.allLinearCombinations()
+
+    def createModels(self, combinations):
+
+        context.scaledModel = Common.getModel(context.experimentValues, combinations, context.Y[:, 0], Statistics.orthogonalScaling)
+        context.model = Common.getModel(context.experimentValues, combinations, context.Y[:, 0])
+
+        return context.scaledModel, context.model
+
+    def reduceLeastSignificantCombination(self, combinations, conf_int):
+        _, significanceInterval = Statistics.getModelTermSignificance(conf_int)
+        significanceInterval[0:5] = 100
+        return Common.removeCombinations(combinations, lambda index, k, v: index == np.argmin(significanceInterval)) 
+
     def onCall(self):
-        print(self.name)
 
-        for combinations in [
-                            #None,
-                            #{"T*R": lambda eV: eV[0]*eV[2], "T*Rt": lambda eV: eV[0]*eV[3]},
-                            CombinationFactory.allLinearCombinations()
-                        ]:
+        combinations = self.getInitCombinations()
 
-            X = Common.getXWithCombinations(context.experimentValues, combinations)
-            scaledX = Common.getXWithCombinations(context.experimentValues, combinations, Statistics.orthogonalScaling)
-            context.model = LR.fit(X, context.Y[:, 0])
-            context.scaledModel = LR.fit(scaledX, context.Y[:, 0])
+        iterationIndex, iterationHistory = 1, {}
+        while len(combinations) > 0:
+            scaledModel, _ = self.createModels(combinations)
 
-            # Remove non significant
-            combinations = Common.removeCombinations(combinations, lambda index, key, value: not Statistics.getModelTermSignificance(context.scaledModel.conf_int())[0][index])
-            
-            context.model = Common.getModel(context.experimentValues, combinations, context.Y[:, 0])
-            context.scaledModel = Common.getModel(context.experimentValues, combinations, context.Y[:, 0], Statistics.orthogonalScaling)
-    
-            Statistics.plotObservedVsPredicted(LR.predict(context.scaledModel, Common.getXWithCombinations(context.experimentValues, combinations, Statistics.orthogonalScaling)), context.Y[:, 0], X=scaledX)
-            Statistics.plotResiduals(Statistics.residualsDeletedStudentized(context.scaledModel))
+            r2Score = Statistics.R2(LR.predict(scaledModel, Common.getXWithCombinations(context.experimentValues, combinations, Statistics.orthogonalScaling)), context.Y[:, 0])
+            iterationHistory[iterationIndex] = (combinations, r2Score)
+            iterationIndex+=1
+
+            combinations = self.reduceLeastSignificantCombination(combinations, scaledModel.conf_int())
+
+        Common.plot(
+            lambda p: p.plot([a[1] for a in iterationHistory.values()]),
+            xLabel="Iteration", yLabel="R2 score", title="R2 score over removed combinations"
+        )
+
+        scaledModel, _ = self.createModels(combinations)
+        Statistics.plotObservedVsPredicted(LR.predict(scaledModel, Common.getXWithCombinations(context.experimentValues, combinations, Statistics.orthogonalScaling)), context.Y[:, 0])
+        Statistics.plotResiduals(Statistics.residualsDeletedStudentized(scaledModel))
 
         return HandleOutliers()
 
@@ -87,7 +99,6 @@ class StopDoE(State):
         super().__init__("Stop DoE")
 
     def onCall(self):
-        print(self.name)
         return None
 
 
@@ -114,7 +125,6 @@ class HandleOutliers(State):
   
 
     def onCall(self):
-        print(self.name)
 
         if not any(self.detectOutliers()): 
             print("No outliers detected")

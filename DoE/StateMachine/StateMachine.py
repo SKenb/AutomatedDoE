@@ -12,6 +12,7 @@ class State():
 
     def __call__(self):
         try:
+            print(str(self))
             return self.onCall()
         except Exception as e:
             return self.onException(e)
