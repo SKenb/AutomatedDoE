@@ -54,7 +54,7 @@ class EvaluateExperiments(State):
         super().__init__("Evaluate experiments")
 
     def getInitCombinations(self):
-        return CombinationFactory.allCombinations() # CombinationFactory.allLinearCombinations()
+        return CombinationFactory.allLinearCombinations() # CombinationFactory.allCombinations() # 
 
     def createModels(self, combinations):
 
@@ -63,35 +63,59 @@ class EvaluateExperiments(State):
 
         return context.scaledModel, context.model
 
-    def reduceLeastSignificantCombination(self, combinations, conf_int):
+    def removeLeastSignificantCombination(self, combinations, conf_int):
         _, significanceInterval = Statistics.getModelTermSignificance(conf_int)
         significanceInterval[0:5] = 100
         return Common.removeCombinations(combinations, lambda index, k, v: index == np.argmin(significanceInterval)) 
 
+    def getCombinationsForBinPattern(self, combinationSet, number):
+        removeList = list(range(5))
+        removeList.extend([int(d) for d in str(bin(number))[2:]])
+        removeList.extend(np.zeros(len(combinationSet)))
+
+        return Common.removeCombinations(combinationSet, lambda index, k, v: removeList[index] > 0) 
+
     def onCall(self):
 
-        combinations = self.getInitCombinations()
+        combinationSet = self.getInitCombinations()
 
-        iterationIndex, iterationHistory = 1, {}
-        while len(combinations) > 0:
+        iterationHistory = {}
+        for iterationIndex in range(2**len(combinationSet)):
+            print("{} / {}".format(iterationIndex+1, 2**len(combinationSet)))
+            combinations = self.getCombinationsForBinPattern(combinationSet, iterationIndex)
+
             scaledModel, _ = self.createModels(combinations)
 
             r2Score = Statistics.R2(LR.predict(scaledModel, Common.getXWithCombinations(context.experimentValues, combinations, Statistics.orthogonalScaling)), context.Y[:, 0])
             iterationHistory[iterationIndex] = (combinations, r2Score)
             iterationIndex+=1
 
-            combinations = self.reduceLeastSignificantCombination(combinations, scaledModel.conf_int())
+        iterationR2Values = [a[1] for a in iterationHistory.values()]
 
         Common.plot(
-            lambda p: p.plot([a[1] for a in iterationHistory.values()]),
+            lambda p: p.plot(iterationR2Values),
+            lambda p: p.plot(sorted(iterationR2Values, reverse=True), linewidth=2.0),
             xLabel="Iteration", yLabel="R2 score", title="R2 score over removed combinations"
         )
 
         scaledModel, _ = self.createModels(combinations)
+
+        hist = list(iterationHistory.values())
+        hist.sort(key=lambda t: t[1], reverse=True)
+        combis = {}
+        for tpl in hist:
+            for cbi in tpl[0]:
+                if cbi in combis:
+                    combis[cbi] += tpl[1]**2
+                else:
+                    combis[cbi] = tpl[1]**2
+
+        Common.plot(lambda p: p.bar(range(len(combis)), list(combis.values())))
+
         Statistics.plotObservedVsPredicted(LR.predict(scaledModel, Common.getXWithCombinations(context.experimentValues, combinations, Statistics.orthogonalScaling)), context.Y[:, 0])
         Statistics.plotResiduals(Statistics.residualsDeletedStudentized(scaledModel))
 
-        return HandleOutliers()
+        return StopDoE() #return HandleOutliers()
 
 
 class StopDoE(State):
