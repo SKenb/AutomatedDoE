@@ -10,7 +10,7 @@ import statsmodels.api as sm
 from Common.Factor import FactorSet
 import logging
 
-def plotObservedVsPredicted(prediction, observation, titleSuffix=None, X=None):
+def plotObservedVsPredicted(prediction, observation, titleSuffix=None, X=None, figure=None):
 
     titleStr = "Observed vs. Predicted"
     if titleSuffix is not None: titleStr += " - " + titleSuffix
@@ -28,11 +28,12 @@ def plotObservedVsPredicted(prediction, observation, titleSuffix=None, X=None):
         lambda plt: plt.grid(), 
         lambda plt: plt.text(.5*(minVal + maxVal), 0.2, "R2: {}".format(R2(observation, prediction))),
         lambda plt: X is not None and plt.text(.5*(minVal + maxVal), 0.1, "Q2: {}".format(Q2(X, observation, prediction))),
-        xLabel="Predicted", yLabel="Observed", title=titleStr
+        xLabel="Predicted", yLabel="Observed", title=titleStr, 
+        figure=figure
     )
 
 
-def plotResiduals(residuals, bound=4):
+def plotResiduals(residuals, bound=4, figure=None):
     rng = range(len(residuals))
     outlierIdx = abs(residuals) > bound
 
@@ -43,10 +44,11 @@ def plotResiduals(residuals, bound=4):
         lambda plt: plt.plot([0, len(residuals)], residuals.mean()+bound*np.array([1, 1]), 'k--'),
         lambda plt: plt.plot([0, len(residuals)], residuals.mean()-1*bound*np.array([1, 1]), 'k--'),
         lambda plt: plt.xticks(rng, rng),
+        figure=figure
     )
 
 
-def plotCoefficients(coefficientValues, factorSet:FactorSet=None, confidenceInterval=None, titleSuffix=None):
+def plotCoefficients(coefficientValues, factorSet:FactorSet=None, confidenceInterval=None, titleSuffix=None, figure=None):
     titleStr = "Coefficients plot"
     if titleSuffix is not None: titleStr += " - " + titleSuffix
     l = len(coefficientValues)
@@ -73,7 +75,8 @@ def plotCoefficients(coefficientValues, factorSet:FactorSet=None, confidenceInte
         lambda plt: _plotBars(plt),
         lambda plt: plt.errorbar(range(l), coefficientValues, confidenceInterval, fmt=' ', color='b'),
         lambda plt: plt.xticks(range(l), labels, rotation=90),
-        xLabel="Coefficient", yLabel="Value", title=titleStr
+        xLabel="Coefficient", yLabel="Value", title=titleStr,
+        figure=figure
     )
 
 
@@ -87,14 +90,15 @@ def plotResponseHistogram(Y, titleSuffix=None):
     )
 
 
-def plotR2ScoreHistory(r2ScoreHistory, selectedIndex=None, q2ScoreHistory=None):
+def plotR2ScoreHistory(r2ScoreHistory, selectedIndex=None, q2ScoreHistory=None, figure=False):
 
     Common.plot(
         lambda p: p.plot(r2ScoreHistory),
         lambda p: selectedIndex is None or p.scatter(selectedIndex, r2ScoreHistory[selectedIndex], color='r'),
         lambda p: q2ScoreHistory is None or p.plot(q2ScoreHistory, color='k'),
         showLegend= q2ScoreHistory is not None,
-        xLabel="Iteration", yLabel="R2 score", title="R2 score over removed combinations"
+        xLabel="Iteration", yLabel="R2 score", title="R2 score over removed combinations",
+        figure=figure
     )
 
 def generateScaler(X):
