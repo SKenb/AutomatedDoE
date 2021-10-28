@@ -126,9 +126,12 @@ class HandleOutliers(State):
         return outlierIdx
 
     def countExperimentsInRange(self, outlierIdx, range = .05):
+        return len(self.getExperimentsInRange(outlierIdx, range))
+
+    def getExperimentsInRange(self, outlierIdx, range = .05):
         X = Statistics.orthogonalScaling(context.experimentValues)
         diff = np.sqrt(((X - X[outlierIdx,:])**2).sum(axis=1))
-        return (diff < range).sum()
+        return context.experimentValues[diff < range]
 
     def forEachOutlier(self):
         for idx, isOultier in enumerate(self.detectOutliers()):
@@ -150,7 +153,7 @@ class HandleOutliers(State):
             similarExperimentCount = self.countExperimentsInRange(idx)
             print("For Outlier #{} ({}) there are/is {} similar experiment(s)".format(idx, str(outlier), similarExperimentCount-1))
 
-            if similarExperimentCount <= 1:
+            if similarExperimentCount <= 2:
                 repeatedY, newExperimentValues = self.executeNewExperimentsAroundOutlier(outlier)
                 repeatLimit = .1
 
@@ -168,7 +171,11 @@ class HandleOutliers(State):
                     context.deleteExperiment(idx)
                     context.addNewExperiments(newExperimentValues, np.array([repeatedY]))
 
-                
+                return EvaluateExperiments()
+
+            else:
+                print("Outlier within serveral experiments -> remove all")
+                context.deleteExperiment(idx)
                 return EvaluateExperiments()
 
 
