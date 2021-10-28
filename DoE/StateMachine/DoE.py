@@ -77,45 +77,42 @@ class EvaluateExperiments(State):
 
     def onCall(self):
 
-        combinationSet = self.getInitCombinations()
+        combinations = self.getInitCombinations()
 
-        iterationHistory = {}
-        for iterationIndex in range(2**len(combinationSet)):
-            print("{} / {}".format(iterationIndex+1, 2**len(combinationSet)))
-            combinations = self.getCombinationsForBinPattern(combinationSet, iterationIndex)
-
+        iterationIndex, iterationHistory = 0, {}
+        while len(combinations) > 0:
             scaledModel, _ = self.createModels(combinations)
 
-            r2Score = Statistics.R2(LR.predict(scaledModel, Common.getXWithCombinations(context.experimentValues, combinations, Statistics.orthogonalScaling)), context.Y[:, 0])
-            iterationHistory[iterationIndex] = (combinations, r2Score)
+            X = Common.getXWithCombinations(context.experimentValues, combinations, Statistics.orthogonalScaling)
+            trainingY, predictionY = context.Y[:, 0], LR.predict(scaledModel, X)
+
+            r2Score = Statistics.R2(trainingY, predictionY)
+            q2Score = Statistics.Q2(X, trainingY, predictionY)
+            
+            iterationHistory[iterationIndex] = (combinations, r2Score, q2Score)
             iterationIndex+=1
 
-        iterationR2Values = [a[1] for a in iterationHistory.values()]
+            combinations = self.removeLeastSignificantCombination(combinations, scaledModel.conf_int())
 
-        Common.plot(
-            lambda p: p.plot(iterationR2Values),
-            lambda p: p.plot(sorted(iterationR2Values, reverse=True), linewidth=2.0),
-            xLabel="Iteration", yLabel="R2 score", title="R2 score over removed combinations"
-        )
+        
 
+        scoreIndex = 1
+        getScoreOfSet = lambda setItem: setItem[1][scoreIndex]
+        maxR2Score =  getScoreOfSet(max(iterationHistory.items(), key=getScoreOfSet))
+        filteredScoreHistory = dict(filter(lambda e: getScoreOfSet(e) > .95*maxR2Score, iterationHistory.items()))
+        filtered = min(filteredScoreHistory.items(), key=lambda a: len(a[1][0]))
+
+        selctedIndex, (combinations, r2Score, q2Score) = filtered
         scaledModel, _ = self.createModels(combinations)
-
-        hist = list(iterationHistory.values())
-        hist.sort(key=lambda t: t[1], reverse=True)
-        combis = {}
-        for tpl in hist:
-            for cbi in tpl[0]:
-                if cbi in combis:
-                    combis[cbi] += tpl[1]**2
-                else:
-                    combis[cbi] = tpl[1]**2
-
-        Common.plot(lambda p: p.bar(range(len(combis)), list(combis.values())))
+        context.factorSet.setExperimentValueCombinations(combinations)
+        
+        Statistics.plotR2ScoreHistory([a[scoreIndex] for a in iterationHistory.values()],selctedIndex)
+        Statistics.plotCoefficients(scaledModel.params, context.factorSet, scaledModel.conf_int())
 
         Statistics.plotObservedVsPredicted(LR.predict(scaledModel, Common.getXWithCombinations(context.experimentValues, combinations, Statistics.orthogonalScaling)), context.Y[:, 0])
         Statistics.plotResiduals(Statistics.residualsDeletedStudentized(scaledModel))
 
-        return StopDoE() #return HandleOutliers()
+        return HandleOutliers()
 
 
 class StopDoE(State):

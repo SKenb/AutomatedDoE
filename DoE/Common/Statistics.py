@@ -43,6 +43,7 @@ def plotResiduals(residuals, bound=4):
         lambda plt: plt.xticks(rng, rng),
     )
 
+
 def plotCoefficients(coefficientValues, factorSet:FactorSet=None, confidenceInterval=None, titleSuffix=None):
     titleStr = "Coefficients plot"
     if titleSuffix is not None: titleStr += " - " + titleSuffix
@@ -60,8 +61,6 @@ def plotCoefficients(coefficientValues, factorSet:FactorSet=None, confidenceInte
     if factorSet is not None or l != len(factorSet.getCoefficientLabels()):
         labels = factorSet.getCoefficientLabels()
 
-    print(range(l))
-    print(labels)
 
     def _plotBars(plt):
         bars = plt.bar(range(l), coefficientValues)
@@ -85,6 +84,14 @@ def plotResponseHistogram(Y, titleSuffix=None):
         xLabel="Coefficient", yLabel="Value", title=titleStr
     )
 
+
+def plotR2ScoreHistory(r2ScoreHistory, selectedIndex=None):
+
+    Common.plot(
+        lambda p: p.plot(r2ScoreHistory),
+        lambda p: p.scatter(selectedIndex, r2ScoreHistory[selectedIndex], color='r'),
+        xLabel="Iteration", yLabel="R2 score", title="R2 score over removed combinations"
+    )
 
 def generateScaler(X):
     return preprocessing.StandardScaler().fit(X)
