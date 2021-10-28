@@ -20,6 +20,8 @@ class contextDoE():
         self.model = None
         self.scaledModel = None
 
+        self.history = []
+
 
     def addNewExperiments(self, newExperimentValues, Y):
         gAppend = lambda x_, n_: n_ if len(x_) <= 0 else np.append(x_, n_, axis=0)
