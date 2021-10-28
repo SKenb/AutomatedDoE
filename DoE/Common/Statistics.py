@@ -1,4 +1,6 @@
 from typing import Callable, Iterable
+
+from matplotlib.pyplot import legend, title
 from Common import Common
 from sklearn.metrics import r2_score
 from sklearn import preprocessing
@@ -43,6 +45,7 @@ def plotResiduals(residuals, bound=4):
         lambda plt: plt.xticks(rng, rng),
     )
 
+
 def plotCoefficients(coefficientValues, factorSet:FactorSet=None, confidenceInterval=None, titleSuffix=None):
     titleStr = "Coefficients plot"
     if titleSuffix is not None: titleStr += " - " + titleSuffix
@@ -60,8 +63,6 @@ def plotCoefficients(coefficientValues, factorSet:FactorSet=None, confidenceInte
     if factorSet is not None or l != len(factorSet.getCoefficientLabels()):
         labels = factorSet.getCoefficientLabels()
 
-    print(range(l))
-    print(labels)
 
     def _plotBars(plt):
         bars = plt.bar(range(l), coefficientValues)
@@ -85,6 +86,16 @@ def plotResponseHistogram(Y, titleSuffix=None):
         xLabel="Coefficient", yLabel="Value", title=titleStr
     )
 
+
+def plotR2ScoreHistory(r2ScoreHistory, selectedIndex=None, q2ScoreHistory=None):
+
+    Common.plot(
+        lambda p: p.plot(r2ScoreHistory),
+        lambda p: selectedIndex is None or p.scatter(selectedIndex, r2ScoreHistory[selectedIndex], color='r'),
+        lambda p: q2ScoreHistory is None or p.plot(q2ScoreHistory, color='k'),
+        showLegend= q2ScoreHistory is not None,
+        xLabel="Iteration", yLabel="R2 score", title="R2 score over removed combinations"
+    )
 
 def generateScaler(X):
     return preprocessing.StandardScaler().fit(X)

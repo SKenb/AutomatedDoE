@@ -54,7 +54,7 @@ class EvaluateExperiments(State):
         super().__init__("Evaluate experiments")
 
     def getInitCombinations(self):
-        return CombinationFactory.allCombinations() # CombinationFactory.allLinearCombinations()
+        return CombinationFactory.allLinearCombinations() # CombinationFactory.allCombinations() # 
 
     def createModels(self, combinations):
 
@@ -63,31 +63,52 @@ class EvaluateExperiments(State):
 
         return context.scaledModel, context.model
 
-    def reduceLeastSignificantCombination(self, combinations, conf_int):
+    def removeLeastSignificantCombination(self, combinations, conf_int):
         _, significanceInterval = Statistics.getModelTermSignificance(conf_int)
         significanceInterval[0:5] = 100
         return Common.removeCombinations(combinations, lambda index, k, v: index == np.argmin(significanceInterval)) 
+
+    def getCombinationsForBinPattern(self, combinationSet, number):
+        removeList = list(range(5))
+        removeList.extend([int(d) for d in str(bin(number))[2:]])
+        removeList.extend(np.zeros(len(combinationSet)))
+
+        return Common.removeCombinations(combinationSet, lambda index, k, v: removeList[index] > 0) 
 
     def onCall(self):
 
         combinations = self.getInitCombinations()
 
-        iterationIndex, iterationHistory = 1, {}
+        iterationIndex, iterationHistory = 0, {}
         while len(combinations) > 0:
             scaledModel, _ = self.createModels(combinations)
 
-            r2Score = Statistics.R2(LR.predict(scaledModel, Common.getXWithCombinations(context.experimentValues, combinations, Statistics.orthogonalScaling)), context.Y[:, 0])
-            iterationHistory[iterationIndex] = (combinations, r2Score)
+            X = Common.getXWithCombinations(context.experimentValues, combinations, Statistics.orthogonalScaling)
+            trainingY, predictionY = context.Y[:, 0], LR.predict(scaledModel, X)
+
+            r2Score = Statistics.R2(trainingY, predictionY)
+            q2Score = Statistics.Q2(X, trainingY, predictionY)
+            
+            iterationHistory[iterationIndex] = (combinations, r2Score, q2Score)
             iterationIndex+=1
 
-            combinations = self.reduceLeastSignificantCombination(combinations, scaledModel.conf_int())
+            combinations = self.removeLeastSignificantCombination(combinations, scaledModel.conf_int())
 
-        Common.plot(
-            lambda p: p.plot([a[1] for a in iterationHistory.values()]),
-            xLabel="Iteration", yLabel="R2 score", title="R2 score over removed combinations"
-        )
+        
 
+        scoreIndex = 1
+        getScoreOfSet = lambda setItem: setItem[1][scoreIndex]
+        maxR2Score =  getScoreOfSet(max(iterationHistory.items(), key=getScoreOfSet))
+        filteredScoreHistory = dict(filter(lambda e: getScoreOfSet(e) > .95*maxR2Score, iterationHistory.items()))
+        filtered = min(filteredScoreHistory.items(), key=lambda a: len(a[1][0]))
+
+        selctedIndex, (combinations, r2Score, q2Score) = filtered
         scaledModel, _ = self.createModels(combinations)
+        context.factorSet.setExperimentValueCombinations(combinations)
+        
+        Statistics.plotR2ScoreHistory([a[1] for a in iterationHistory.values()], selctedIndex)
+        Statistics.plotCoefficients(scaledModel.params, context.factorSet, scaledModel.conf_int())
+
         Statistics.plotObservedVsPredicted(LR.predict(scaledModel, Common.getXWithCombinations(context.experimentValues, combinations, Statistics.orthogonalScaling)), context.Y[:, 0])
         Statistics.plotResiduals(Statistics.residualsDeletedStudentized(scaledModel))
 
