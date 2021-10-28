@@ -11,9 +11,13 @@ from pathlib import Path
 from Common.Factor import FactorSet
 
 
-def plot(*plotters, is3D=False, xLabel="x", yLabel="y", title="Plot", showLegend=False):
+def plot(*plotters, is3D=False, xLabel="x", yLabel="y", title="Plot", showLegend=False, figure=None):
     
-    figure = plt.figure()
+    if figure is None: 
+        figure = plt.figure()
+        showPlot = True
+    else:
+        showPlot = False
 
     if is3D: ax = figure.add_subplot(111, projection='3d')
     for plotter in plotters: plotter(ax if is3D else plt)
@@ -23,10 +27,26 @@ def plot(*plotters, is3D=False, xLabel="x", yLabel="y", title="Plot", showLegend
     plt.title(title)
 
     if showLegend: plt.legend()
-    
-    plt.show()
+    if showPlot: plt.show()
 
     return figure
+
+
+def subplot(*plotFunctions):
+    
+    cols = np.ceil((np.sqrt(len(plotFunctions))))
+    rows = np.ceil(len(plotFunctions) / cols)
+
+    fig = plt.figure()
+    fig.tight_layout()
+
+    for index, plot_ in enumerate(plotFunctions): 
+        plt.subplot(int(rows), int(cols), int(index+1))
+        plot_(plt)
+
+    plt.show()
+
+    return fig
 
 
 def plotSurface(plt, z, rangeX, rangeY=None):

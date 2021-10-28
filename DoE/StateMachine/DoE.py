@@ -1,3 +1,4 @@
+from matplotlib.pyplot import figlegend
 from StateMachine.StateMachine import State
 from StateMachine.Context import contextDoE
 from Common import Common
@@ -105,13 +106,14 @@ class EvaluateExperiments(State):
         selctedIndex, (combinations, r2Score, q2Score) = filtered
         scaledModel, _ = self.createModels(combinations)
         context.factorSet.setExperimentValueCombinations(combinations)
+
+        Common.subplot(
+            lambda fig: Statistics.plotR2ScoreHistory([a[1] for a in iterationHistory.values()], selctedIndex, figure=fig),
+            lambda fig: Statistics.plotCoefficients(scaledModel.params, context.factorSet, scaledModel.conf_int(), figure=fig),
+            lambda fig: Statistics.plotObservedVsPredicted(LR.predict(scaledModel, Common.getXWithCombinations(context.experimentValues, combinations, Statistics.orthogonalScaling)), context.Y[:, 0], figure=fig),
+            lambda fig: Statistics.plotResiduals(Statistics.residualsDeletedStudentized(scaledModel), figure=fig)
+        )
         
-        Statistics.plotR2ScoreHistory([a[1] for a in iterationHistory.values()], selctedIndex)
-        Statistics.plotCoefficients(scaledModel.params, context.factorSet, scaledModel.conf_int())
-
-        Statistics.plotObservedVsPredicted(LR.predict(scaledModel, Common.getXWithCombinations(context.experimentValues, combinations, Statistics.orthogonalScaling)), context.Y[:, 0])
-        Statistics.plotResiduals(Statistics.residualsDeletedStudentized(scaledModel))
-
         return HandleOutliers()
 
 
