@@ -106,7 +106,7 @@ class EvaluateExperiments(State):
         scaledModel, _ = self.createModels(combinations)
         context.factorSet.setExperimentValueCombinations(combinations)
         
-        Statistics.plotR2ScoreHistory([a[scoreIndex] for a in iterationHistory.values()],selctedIndex)
+        Statistics.plotR2ScoreHistory([a[1] for a in iterationHistory.values()], selctedIndex)
         Statistics.plotCoefficients(scaledModel.params, context.factorSet, scaledModel.conf_int())
 
         Statistics.plotObservedVsPredicted(LR.predict(scaledModel, Common.getXWithCombinations(context.experimentValues, combinations, Statistics.orthogonalScaling)), context.Y[:, 0])

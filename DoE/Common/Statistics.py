@@ -1,4 +1,6 @@
 from typing import Callable, Iterable
+
+from matplotlib.pyplot import legend, title
 from Common import Common
 from sklearn.metrics import r2_score
 from sklearn import preprocessing
@@ -85,11 +87,13 @@ def plotResponseHistogram(Y, titleSuffix=None):
     )
 
 
-def plotR2ScoreHistory(r2ScoreHistory, selectedIndex=None):
+def plotR2ScoreHistory(r2ScoreHistory, selectedIndex=None, q2ScoreHistory=None):
 
     Common.plot(
         lambda p: p.plot(r2ScoreHistory),
-        lambda p: p.scatter(selectedIndex, r2ScoreHistory[selectedIndex], color='r'),
+        lambda p: selectedIndex is None or p.scatter(selectedIndex, r2ScoreHistory[selectedIndex], color='r'),
+        lambda p: q2ScoreHistory is None or p.plot(q2ScoreHistory, color='k'),
+        showLegend= q2ScoreHistory is not None,
         xLabel="Iteration", yLabel="R2 score", title="R2 score over removed combinations"
     )
 
