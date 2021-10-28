@@ -4,15 +4,40 @@ import numpy as np
 class ExperimentFactory:
 
     def __init__(self):
-        pass
+        self.requestCount = 0
 
     def getNewExperimentSuggestion(self, factorCount=4):
 
-        #return pyDOE.ff2n(factorCount)
-        b = pyDOE.ff2n(factorCount)
-        c = np.array([[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]])
+        self.requestCount+=1
+        experiments = pyDOE.ff2n(factorCount)
 
-        return np.vstack((b, c))
+        lb, ub = int(2**(factorCount/2)), int(2**(factorCount - 1))
+
+        #1 Edges and mirrored ones
+        if self.requestCount <= 1:
+            experiments = experiments[0:lb, :]
+            experiments = np.vstack((experiments, -1*experiments))
+            return experiments
+
+        elif self.requestCount <= 2:
+            experiments = experiments[lb:ub, :]
+            experiments = np.vstack((experiments, -1*experiments))
+            return experiments
+
+        elif self.requestCount <= 3:
+            experiments = experiments[4:2**(factorCount-1), :]
+            experiments = np.vstack((experiments, -1*experiments))
+            return np.vstack((experiments, np.array([[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]])))
+
+        else:
+            print("[WARN] No more experiments :/")
+            self.requestCount = 2
+     
+            experiments = experiments[0:4, :]
+            experiments = np.vstack((experiments, -1*experiments))
+
+            return experiments
+
 
 if __name__ == "__main__":
     print(ExperimentFactory().getNewExperimentSuggestion())

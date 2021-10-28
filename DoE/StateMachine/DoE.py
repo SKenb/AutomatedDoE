@@ -14,8 +14,7 @@ context = None
 
 
 class InitDoE(State):
-    def __init__(self):
-        super().__init__("Initialize DoE")
+    def __init__(self): super().__init__("Initialize DoE")
         
     def onCall(self):
 
@@ -28,9 +27,7 @@ class InitDoE(State):
 
 
 class FindNewExperiments(State):
-    def __init__(self):
-        super().__init__("Find new experiments")
-
+    def __init__(self): super().__init__("Find new experiments")
     def onCall(self):
 
         experiments = context.experimentFactory.getNewExperimentSuggestion()
@@ -39,20 +36,17 @@ class FindNewExperiments(State):
         return ExecuteExperiments()
 
 class ExecuteExperiments(State):
-    def __init__(self):
-        super().__init__("Execute experiments")
-
+    def __init__(self): super().__init__("Execute experiments")
     def onCall(self):
 
         Y = np.array([x.getValueArray() for x in context.xamControl.workOffExperiments(context.newExperimentValues)])
-        context.addNewExperiment(context.newExperimentValues, Y)
+        context.addNewExperiments(context.newExperimentValues, Y)
 
         return EvaluateExperiments()
 
 
 class EvaluateExperiments(State):
-    def __init__(self):
-        super().__init__("Evaluate experiments")
+    def __init__(self): super().__init__("Evaluate experiments")
 
     def getInitCombinations(self):
         return CombinationFactory.allLinearCombinations() # CombinationFactory.allCombinations() # 
@@ -81,7 +75,7 @@ class EvaluateExperiments(State):
         combinations = self.getInitCombinations()
 
         iterationIndex, iterationHistory = 0, {}
-        while len(combinations) > 0:
+        while len(combinations) > 1:
             scaledModel, _ = self.createModels(combinations)
 
             X = Common.getXWithCombinations(context.experimentValues, combinations, Statistics.orthogonalScaling)
@@ -118,16 +112,14 @@ class EvaluateExperiments(State):
 
 
 class StopDoE(State):
-    def __init__(self):
-        super().__init__("Stop DoE")
+    def __init__(self): super().__init__("Stop DoE")
 
     def onCall(self):
         return None
 
 
 class HandleOutliers(State):
-    def __init__(self):
-        super().__init__("Handle outliers")
+    def __init__(self): super().__init__("Handle outliers")
 
     def detectOutliers(self):
         outlierIdx = context.scaledModel.outlier_test()[:, 0] > 4
@@ -151,12 +143,12 @@ class HandleOutliers(State):
 
         if not any(self.detectOutliers()): 
             print("No outliers detected")
-            return StopDoE()
+            return FindNewExperiments()
 
         for (idx, outlier) in self.forEachOutlier():
                 
             similarExperimentCount = self.countExperimentsInRange(idx)
-            print("For Outlier #{} ({}) there are {} similar experiment(s)".format(idx, str(outlier), similarExperimentCount-1))
+            print("For Outlier #{} ({}) there are/is {} similar experiment(s)".format(idx, str(outlier), similarExperimentCount-1))
 
             if similarExperimentCount <= 1:
                 repeatedY, newExperimentValues = self.executeNewExperimentsAroundOutlier(outlier)
@@ -174,7 +166,7 @@ class HandleOutliers(State):
                     # new result:
                     print("For Outlier #{} ({}) one more measurements resulted in a different outcome -> Replace them".format(idx, str(outlier)))
                     context.deleteExperiment(idx)
-                    context.addNewExperiment(newExperimentValues, np.array([repeatedY]))
+                    context.addNewExperiments(newExperimentValues, np.array([repeatedY]))
 
                 
                 return EvaluateExperiments()

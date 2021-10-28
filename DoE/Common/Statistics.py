@@ -74,7 +74,7 @@ def plotCoefficients(coefficientValues, factorSet:FactorSet=None, confidenceInte
     Common.plot(
         lambda plt: _plotBars(plt),
         lambda plt: plt.errorbar(range(l), coefficientValues, confidenceInterval, fmt=' ', color='b'),
-        lambda plt: plt.xticks(range(l), labels, rotation=90),
+        #lambda plt: plt.xticks(range(l), labels, rotation=90),
         xLabel="Coefficient", yLabel="Value", title=titleStr,
         figure=figure
     )
