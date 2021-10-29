@@ -110,14 +110,17 @@ class EvaluateExperiments(State):
         context.history.append([selctedIndex, combinations, r2Score, q2Score, [a[1] for a in iterationHistory.values()]])
         
         if len(context.history) >= 10: return StopDoE()
-        #if r2Score > .993: return StopDoE()
 
-        #Common.subplot(
-        #    lambda fig: Statistics.plotR2ScoreHistory([a[1] for a in iterationHistory.values()], selctedIndex, figure=fig),
-        #    lambda fig: Statistics.plotCoefficients(scaledModel.params, context.factorSet, scaledModel.conf_int(), figure=fig),
-        #    lambda fig: Statistics.plotObservedVsPredicted(LR.predict(scaledModel, Common.getXWithCombinations(context.experimentValues, combinations, Statistics.orthogonalScaling)), context.Y[:, 0], figure=fig),
-        #    lambda fig: Statistics.plotResiduals(Statistics.residualsDeletedStudentized(scaledModel), figure=fig)
-        #)
+
+
+
+
+        Common.subplot(
+            lambda fig: Statistics.plotR2ScoreHistory([a[1] for a in iterationHistory.values()], selctedIndex, figure=fig),
+            lambda fig: Statistics.plotCoefficients(scaledModel.params, context.factorSet, scaledModel.conf_int(), figure=fig),
+            lambda fig: Statistics.plotObservedVsPredicted(LR.predict(scaledModel, Common.getXWithCombinations(context.experimentValues, combinations, Statistics.orthogonalScaling)), context.Y[:, 0], figure=fig),
+            lambda fig: Statistics.plotResiduals(Statistics.residualsDeletedStudentized(scaledModel), figure=fig)
+        )
         
         return HandleOutliers()
 
@@ -142,6 +145,7 @@ class StopDoE(State):
             lambda plt: gP(plt, 3), lambda plt: gP(plt, 4), lambda plt: gP(plt, 5),
             lambda plt: gP(plt, 6), lambda plt: gP(plt, 7), lambda plt: gP(plt, 8), 
             lambda plt: gP(plt, 9),
+            lambda plt: plt.view_init(azim=0, elev=0),
             is3D=True,
         )
         
