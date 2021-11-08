@@ -1,4 +1,3 @@
-from matplotlib.pyplot import figlegend
 from StateMachine.StateMachine import State
 from StateMachine.Context import contextDoE
 from Common import Common
@@ -110,10 +109,6 @@ class EvaluateExperiments(State):
         context.history.append([selctedIndex, combinations, r2Score, q2Score, [a[1] for a in iterationHistory.values()]])
         
         if len(context.history) >= 10: return StopDoE()
-
-
-
-
 
         Common.subplot(
             lambda fig: Statistics.plotR2ScoreHistory([a[1] for a in iterationHistory.values()], selctedIndex, figure=fig),

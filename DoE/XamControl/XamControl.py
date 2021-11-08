@@ -1,9 +1,11 @@
 from typing import Iterable, Dict
+from pathlib import Path
 
 import numpy as np
 
 import logging
 import time
+import csv
 
 class XamControlExperiment:
 
@@ -69,7 +71,7 @@ class XamControlExperimentResult(XamControlExperiment):
             
 
 
-class XamControl:
+class XamControlBase:
 
     def __init__(self, name="Base class"):
         self.name = name
@@ -95,7 +97,7 @@ class XamControl:
         logging.debug("Experiment Result -> {}".format(str(result)))
     
 
-class XamControlSimpleMock(XamControl):
+class XamControlSimpleMock(XamControlBase):
 
     def __init__(self):
         super().__init__("Xam control - Mock")
@@ -184,6 +186,43 @@ class XamControlModdeYMock(XamControlSimpleMock):
         return XamControlExperimentResult(dataSet[0, 4], dataSet[0, 5], request=experiment)
 
 
+class XamControl(XamControlBase):
+
+    def __init__(self):
+        super().__init__("Xam control - CSV Implementation")
+
+        self.path = Path("./Tmp")
+        self.xFileName = Path("xnewtrue.csv")
+        self.yFileName = Path("ynewtrue.csv")
+
+    def writeNewExperimentValuesInFile(self, experiment : XamControlExperimentRequest):
+        with open(self.path / self.xFileName, 'w', newline='') as csvfile:
+
+            fileWriter = csv.writer(csvfile, delimiter=';', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+            fileWriter.writerow(experiment.getValueArray())
+
+    def waitForNewResponseValues(self):
+        pass
+
+    def readNewResponseValues(self) -> XamControlExperimentResult:
+        with open(self.path / self.yFileName, newline='') as csvfile:
+
+            fileReader = csv.reader(csvfile, delimiter=';', quotechar='|')
+            firstRow = fileReader.__next__()
+            
+            return XamControlExperimentResult(firstRow[0], firstRow[1])
+    
+    def startExperiment(self, experiment : XamControlExperimentRequest) -> XamControlExperimentResult:
+        self._startExperimentRequest(experiment)
+        
+        self.writeNewExperimentValuesInFile(experiment)
+        self.waitForNewResponseValues()
+        experimentResult = self.readNewResponseValues()
+
+        self._receivedExperimentResult(experimentResult)
+        return experimentResult
+
+
 if __name__ == "__main__":
 
     print(" Test XamControlMock ".center(80, "-"))
@@ -207,3 +246,9 @@ if __name__ == "__main__":
 
     xamControl = XamControlModdeYMock()
     print(xamControl.startExperiment(XamControlExperimentRequest(60, .2, .9, 2.5)))
+
+    ## Test File/CSV handling
+    xamControl = XamControl()
+
+    result = xamControl.startExperiment(XamControlExperimentRequest(0.9, 0.2, 6, 60))
+    print(result)
