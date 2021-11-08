@@ -1,10 +1,15 @@
 import traceback
 import logging
+import random
 import sys
+import csv
 
 from datetime import datetime
 from pathlib import Path
 from typing import Callable
+
+
+logFolder = Path("./Logs")
 
 # Initialize logging in one defines place
 # import logging in all other files
@@ -16,8 +21,16 @@ from typing import Callable
 #   - logging.error('...')
 #
 def initLogging():
+    global logFolder
 
-    logPath = Path("./Logs/log_{}.log".format(datetime.now().strftime("%d%m%Y_%H")))
+    dateString = datetime.now().strftime("%d%m%Y_%H")
+    hashString = str(random.getrandbits(32))
+    subFolder = Path("Experiment_{}_{}".format(dateString, hashString))
+
+    logFolder = logFolder / subFolder
+    logFolder.mkdir(parents=False, exist_ok=True)
+
+    logPath = Path(logFolder / "log_{}.log".format(datetime.now().strftime("%d%m%Y_%H")))
 
     logging.basicConfig(
         filename=str(logPath), 
@@ -27,6 +40,9 @@ def initLogging():
     )
 
     logging.getLogger().addHandler(logging.StreamHandler(sys.stdout))
+
+def getCurrentLogFolder():
+    return logFolder
 
 def genericLog(predicate : Callable, prefix : str, msg : str, suffix : str = "", stringBase : str = "{} {} {}"):
     predicate(stringBase.format(prefix, msg, suffix))
@@ -54,3 +70,29 @@ def logState(stateName):
 
 def logStateInfo(stateInfo, predicate=logging.info):
     genericLog(predicate, "\t-", stateInfo)
+
+
+def logEntireRun(runNumber, factorSet, experiments, responses, modelCoeffs, scaledModelCoeffs):
+
+    with open(logFolder / "experiment_{}.csv".format(runNumber), 'w', newline='') as csvfile:
+
+            fileWriter = csv.writer(csvfile, delimiter=';', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+
+            fileWriter.writerow(["Details"]) 
+            fileWriter.writerow([
+                "Run", runNumber, 
+                "DateTime", datetime.now().strftime("%d.%m.%Y %H:%M:%S"),
+                "Factor Set", str(factorSet)
+            ]) 
+
+            fileWriter.writerow(["Experiments"])            
+            for expRow in experiments: fileWriter.writerow(expRow)
+
+            fileWriter.writerow(["Responses"])
+            for respRow in responses: fileWriter.writerow(respRow)
+
+            fileWriter.writerow(["Model Coeffs"])
+            fileWriter.writerow(modelCoeffs)
+
+            fileWriter.writerow(["Scaled Model Coeffs"])
+            fileWriter.writerow(scaledModelCoeffs)

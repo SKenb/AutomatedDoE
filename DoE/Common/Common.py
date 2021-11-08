@@ -3,8 +3,8 @@ import matplotlib.pyplot as plt
 import Common.LinearRegression as LR
 import numpy as np
 import Common.Statistics as Statistics
-import logging
-import sys
+import Common.Logger as Logger
+import random
 
 from datetime import datetime
 from pathlib import Path
@@ -12,7 +12,7 @@ from pathlib import Path
 from Common.Factor import FactorSet
 
 
-def plot(*plotters, is3D=False, xLabel="x", yLabel="y", title="Plot", showLegend=False, figure=None):
+def plot(*plotters, is3D=False, xLabel="x", yLabel="y", title="Plot", showLegend=False, figure=None, saveFigure=True):
      
     if figure is None: 
         figure = plt.figure()
@@ -29,6 +29,11 @@ def plot(*plotters, is3D=False, xLabel="x", yLabel="y", title="Plot", showLegend
 
     if showLegend: plt.legend()
     if showPlot: plt.show()
+
+    if saveFigure: 
+        filename = Path("Plot_{}_{}.png".format(title, str(random.getrandbits(32))))
+        path = Logger.getCurrentLogFolder() / filename
+        plt.savefig(path)
 
     return figure
 

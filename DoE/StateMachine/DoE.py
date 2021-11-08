@@ -102,7 +102,7 @@ class EvaluateExperiments(State):
         
         selctedIndex, (combinations, r2Score, q2Score) = self.filterForBestCombinationSet(iterationHistory)
 
-        scaledModel, _ = self.createModels(combinations)
+        scaledModel, model = self.createModels(combinations)
         context.factorSet.setExperimentValueCombinations(combinations)
 
         context.history.append([selctedIndex, combinations, r2Score, q2Score, [a[1] for a in iterationHistory.values()]])
@@ -115,6 +115,8 @@ class EvaluateExperiments(State):
             lambda fig: Statistics.plotObservedVsPredicted(LR.predict(scaledModel, Common.getXWithCombinations(context.experimentValues, combinations, Statistics.orthogonalScaling)), context.Y[:, 0], figure=fig),
             lambda fig: Statistics.plotResiduals(Statistics.residualsDeletedStudentized(scaledModel), figure=fig)
         )
+
+        Logger.logEntireRun(len(context.history), context.factorSet, context.experimentValues, context.Y, model.params, scaledModel.params)
         
         return HandleOutliers()
 
