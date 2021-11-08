@@ -195,26 +195,58 @@ class XamControl(XamControlBase):
         self.xFileName = Path("xnewtrue.csv")
         self.yFileName = Path("ynewtrue.csv")
 
+        self.oldYValues = None
+        self.yValuesEpsilon = 1e-3
+
+    def xPath(self): return self.path / self.xFileName
+
+    def yPath(self): return self.path / self.yFileName
+
+    def yPathExists(self): return self.yPath().is_file()
+
+
+    def readFirstYValueRow(self):
+        with open(self.yPath(), newline='') as csvfile:
+
+            fileReader = csv.reader(csvfile, delimiter=';', quotechar='|')
+            return [float(v_) for v_ in fileReader.__next__()]      
+
+    def loadOldYValues(self):
+        self.oldYValues = None
+
+        if not self.yPathExists(): return False
+        self.oldYValues = np.array(self.readFirstYValueRow())
+
+    def newYValuesAvailable(self):
+
+        if self.oldYValues is None and self.yPathExists(): return True
+        if not self.yPathExists(): return False
+        
+        newVaules = np.array(self.readFirstYValueRow())
+
+        return not (np.abs(self.oldYValues - newVaules) <= self.yValuesEpsilon).all()
+
+
     def writeNewExperimentValuesInFile(self, experiment : XamControlExperimentRequest):
-        with open(self.path / self.xFileName, 'w', newline='') as csvfile:
+        with open(self.xPath(), 'w', newline='') as csvfile:
 
             fileWriter = csv.writer(csvfile, delimiter=';', quotechar='|', quoting=csv.QUOTE_MINIMAL)
             fileWriter.writerow(experiment.getValueArray())
 
     def waitForNewResponseValues(self):
-        pass
+        # TODO: Threading
+        while not self.yPathExists() or not self.newYValuesAvailable(): 
+            time.sleep(1)
 
     def readNewResponseValues(self) -> XamControlExperimentResult:
-        with open(self.path / self.yFileName, newline='') as csvfile:
-
-            fileReader = csv.reader(csvfile, delimiter=';', quotechar='|')
-            firstRow = fileReader.__next__()
-            
-            return XamControlExperimentResult(firstRow[0], firstRow[1])
+       
+        firstRow = self.readFirstYValueRow()
+        return XamControlExperimentResult(firstRow[0], firstRow[1])
     
     def startExperiment(self, experiment : XamControlExperimentRequest) -> XamControlExperimentResult:
         self._startExperimentRequest(experiment)
-        
+
+        self.loadOldYValues()
         self.writeNewExperimentValuesInFile(experiment)
         self.waitForNewResponseValues()
         experimentResult = self.readNewResponseValues()
