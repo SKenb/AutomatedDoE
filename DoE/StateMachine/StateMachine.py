@@ -1,7 +1,7 @@
 from typing import Callable
 
 import time
-import traceback
+import Common.Logger as Logger
 
 class State():
     def __init__(self, name : str):
@@ -12,7 +12,7 @@ class State():
 
     def __call__(self):
         try:
-            print(str(self))
+            Logger.logState(str(self))
             return self.onCall()
         except Exception as e:
             return self.onException(e)
@@ -21,7 +21,7 @@ class State():
         return None
 
     def onException(self, excpetion):
-        print("EXCEPTION: in {}: {}\n{}".format(str(self), str(excpetion), traceback.format_exc()))
+        Logger.logException(excpetion)
         return None
 
 
