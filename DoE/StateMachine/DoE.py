@@ -1,14 +1,12 @@
-from matplotlib.pyplot import figlegend
 from StateMachine.StateMachine import State
 from StateMachine.Context import contextDoE
 from Common import Common
+from Common import Logger
 from Common import Statistics
 from Common import CombinationFactory
 from Common import LinearRegression as LR
 
 import numpy as np
-
-import logging
 
 context = None
 
@@ -21,7 +19,7 @@ class InitDoE(State):
         global context
 
         context = contextDoE()
-        logging.info(str(context.factorSet))
+        Logger.logStateInfo(str(context.factorSet))
 
         return FindNewExperiments()
 
@@ -104,20 +102,21 @@ class EvaluateExperiments(State):
         
         selctedIndex, (combinations, r2Score, q2Score) = self.filterForBestCombinationSet(iterationHistory)
 
-        scaledModel, _ = self.createModels(combinations)
+        scaledModel, model = self.createModels(combinations)
         context.factorSet.setExperimentValueCombinations(combinations)
 
         context.history.append([selctedIndex, combinations, r2Score, q2Score, [a[1] for a in iterationHistory.values()]])
         
         if len(context.history) >= 10: return StopDoE()
-        #if r2Score > .993: return StopDoE()
 
-        #Common.subplot(
-        #    lambda fig: Statistics.plotR2ScoreHistory([a[1] for a in iterationHistory.values()], selctedIndex, figure=fig),
-        #    lambda fig: Statistics.plotCoefficients(scaledModel.params, context.factorSet, scaledModel.conf_int(), figure=fig),
-        #    lambda fig: Statistics.plotObservedVsPredicted(LR.predict(scaledModel, Common.getXWithCombinations(context.experimentValues, combinations, Statistics.orthogonalScaling)), context.Y[:, 0], figure=fig),
-        #    lambda fig: Statistics.plotResiduals(Statistics.residualsDeletedStudentized(scaledModel), figure=fig)
-        #)
+        Common.subplot(
+            lambda fig: Statistics.plotR2ScoreHistory([a[1] for a in iterationHistory.values()], selctedIndex, figure=fig),
+            lambda fig: Statistics.plotCoefficients(scaledModel.params, context.factorSet, scaledModel.conf_int(), figure=fig),
+            lambda fig: Statistics.plotObservedVsPredicted(LR.predict(scaledModel, Common.getXWithCombinations(context.experimentValues, combinations, Statistics.orthogonalScaling)), context.Y[:, 0], figure=fig),
+            lambda fig: Statistics.plotResiduals(Statistics.residualsDeletedStudentized(scaledModel), figure=fig)
+        )
+
+        Logger.logEntireRun(len(context.history), context.factorSet, context.experimentValues, context.Y, model.params, scaledModel.params)
         
         return HandleOutliers()
 
@@ -142,6 +141,7 @@ class StopDoE(State):
             lambda plt: gP(plt, 3), lambda plt: gP(plt, 4), lambda plt: gP(plt, 5),
             lambda plt: gP(plt, 6), lambda plt: gP(plt, 7), lambda plt: gP(plt, 8), 
             lambda plt: gP(plt, 9),
+            lambda plt: plt.view_init(azim=0, elev=0),
             is3D=True,
         )
         
@@ -174,13 +174,13 @@ class HandleOutliers(State):
     def onCall(self):
 
         if not any(self.detectOutliers()): 
-            print("No outliers detected")
+            Logger.logStateInfo("No outliers detected")
             return FindNewExperiments()
 
         for (idx, outlier) in self.forEachOutlier():
                 
             similarExperimentCount = self.countExperimentsInRange(idx)
-            print("For Outlier #{} ({}) there are/is {} similar experiment(s)".format(idx, str(outlier), similarExperimentCount-1))
+            Logger.logStateInfo("For Outlier #{} ({}) there are/is {} similar experiment(s)".format(idx, str(outlier), similarExperimentCount-1))
 
             if similarExperimentCount <= 2:
                 repeatedY, newExperimentValues = self.executeNewExperimentsAroundOutlier(outlier)
@@ -191,19 +191,19 @@ class HandleOutliers(State):
 
                 if all((abs(context.Y[idx, :] - repeatedY) < repeatLimit).reshape(-1, 1)):
                     # All the same again:
-                    print("For Outlier #{} ({}) one more measurements resulted in the same outcome -> Remove both".format(idx, str(outlier)))
+                    Logger.logStateInfo("For Outlier #{} ({}) one more measurements resulted in the same outcome -> Remove both".format(idx, str(outlier)))
                     context.deleteExperiment(idx)
 
                 else:
                     # new result:
-                    print("For Outlier #{} ({}) one more measurements resulted in a different outcome -> Replace them".format(idx, str(outlier)))
+                    Logger.logStateInfo("For Outlier #{} ({}) one more measurements resulted in a different outcome -> Replace them".format(idx, str(outlier)))
                     context.deleteExperiment(idx)
                     context.addNewExperiments(newExperimentValues, np.array([repeatedY]))
 
                 return EvaluateExperiments()
 
             else:
-                print("Outlier within serveral experiments -> remove all")
+                Logger.logStateInfo("Outlier within serveral experiments -> remove all")
                 context.deleteExperiment(idx)
                 return EvaluateExperiments()
 

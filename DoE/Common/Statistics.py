@@ -2,13 +2,13 @@ from typing import Callable, Iterable
 
 from matplotlib.pyplot import legend, title
 from Common import Common
+from Common import Logger
 from sklearn.metrics import r2_score
 from sklearn import preprocessing
 import numpy as np
 import statsmodels.api as sm
 
 from Common.Factor import FactorSet
-import logging
 
 def plotObservedVsPredicted(prediction, observation, titleSuffix=None, X=None, figure=None):
 
@@ -151,7 +151,7 @@ def Q2(X, trainingY, predictionY, roundF : Callable = lambda x: round(x, 5)):
         return roundF((1 - (PRESS / SStot)))
     
     except Exception as e:
-        logging.error("Error in Q2 - " + str(e))
+        Logger.logException(e)
         return -1
 
 def getModelTermSignificance(confidenceInterval):

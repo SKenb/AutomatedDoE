@@ -1,9 +1,11 @@
 from typing import Iterable, Dict
+from pathlib import Path
+from Common import Logger
 
 import numpy as np
 
-import logging
 import time
+import csv
 
 class XamControlExperiment:
 
@@ -69,7 +71,7 @@ class XamControlExperimentResult(XamControlExperiment):
             
 
 
-class XamControl:
+class XamControlBase:
 
     def __init__(self, name="Base class"):
         self.name = name
@@ -89,13 +91,13 @@ class XamControl:
         for valueArray in valueArrays: yield self.startExperimentFromvalues(valueArray)
 
     def _startExperimentRequest(self, experiment : XamControlExperimentRequest):
-        logging.debug("Experiment Request -> {}".format(str(experiment)))
+        Logger.logXamControl("Request -> {}".format(str(experiment)))
 
     def _receivedExperimentResult(self, result : XamControlExperimentResult):
-        logging.debug("Experiment Result -> {}".format(str(result)))
+        Logger.logXamControl("Result -> {}".format(str(result)))
     
 
-class XamControlSimpleMock(XamControl):
+class XamControlSimpleMock(XamControlBase):
 
     def __init__(self):
         super().__init__("Xam control - Mock")
@@ -184,6 +186,75 @@ class XamControlModdeYMock(XamControlSimpleMock):
         return XamControlExperimentResult(dataSet[0, 4], dataSet[0, 5], request=experiment)
 
 
+class XamControl(XamControlBase):
+
+    def __init__(self):
+        super().__init__("Xam control - CSV Implementation")
+
+        self.path = Path("./Tmp")
+        self.xFileName = Path("xnewtrue.csv")
+        self.yFileName = Path("ynewtrue.csv")
+
+        self.oldYValues = None
+        self.yValuesEpsilon = 1e-3
+
+    def xPath(self): return self.path / self.xFileName
+
+    def yPath(self): return self.path / self.yFileName
+
+    def yPathExists(self): return self.yPath().is_file()
+
+
+    def readFirstYValueRow(self):
+        with open(self.yPath(), newline='') as csvfile:
+
+            fileReader = csv.reader(csvfile, delimiter=';', quotechar='|')
+            return [float(v_) for v_ in fileReader.__next__()]      
+
+    def loadOldYValues(self):
+        self.oldYValues = None
+
+        if not self.yPathExists(): return False
+        self.oldYValues = np.array(self.readFirstYValueRow())
+
+    def newYValuesAvailable(self):
+
+        if self.oldYValues is None and self.yPathExists(): return True
+        if not self.yPathExists(): return False
+        
+        newVaules = np.array(self.readFirstYValueRow())
+
+        return not (np.abs(self.oldYValues - newVaules) <= self.yValuesEpsilon).all()
+
+
+    def writeNewExperimentValuesInFile(self, experiment : XamControlExperimentRequest):
+        with open(self.xPath(), 'w', newline='') as csvfile:
+
+            fileWriter = csv.writer(csvfile, delimiter=';', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+            fileWriter.writerow(experiment.getValueArray())
+
+    def waitForNewResponseValues(self):
+        # TODO: Threading
+        while not self.yPathExists() or not self.newYValuesAvailable(): 
+            time.sleep(1)
+
+    def readNewResponseValues(self) -> XamControlExperimentResult:
+       
+        firstRow = self.readFirstYValueRow()
+        return XamControlExperimentResult(firstRow[0], firstRow[1])
+    
+    def startExperiment(self, experiment : XamControlExperimentRequest) -> XamControlExperimentResult:
+        self._startExperimentRequest(experiment)
+
+        self.loadOldYValues()
+        self.writeNewExperimentValuesInFile(experiment)
+        self.waitForNewResponseValues()
+        experimentResult = self.readNewResponseValues()
+
+        self._receivedExperimentResult(experimentResult)
+        return experimentResult
+
+
 if __name__ == "__main__":
 
     print(" Test XamControlMock ".center(80, "-"))
@@ -207,3 +278,9 @@ if __name__ == "__main__":
 
     xamControl = XamControlModdeYMock()
     print(xamControl.startExperiment(XamControlExperimentRequest(60, .2, .9, 2.5)))
+
+    ## Test File/CSV handling
+    xamControl = XamControl()
+
+    result = xamControl.startExperiment(XamControlExperimentRequest(0.9, 0.2, 6, 60))
+    print(result)
