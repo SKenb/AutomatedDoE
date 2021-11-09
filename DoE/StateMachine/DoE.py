@@ -186,9 +186,6 @@ class HandleOutliers(State):
                 repeatedY, newExperimentValues = self.executeNewExperimentsAroundOutlier(outlier)
                 repeatLimit = .1
 
-                # TODO - remove mock
-                repeatedY = np.array([.1, repeatedY[0, 1]])
-
                 if all((abs(context.Y[idx, :] - repeatedY) < repeatLimit).reshape(-1, 1)):
                     # All the same again:
                     Logger.logStateInfo("For Outlier #{} ({}) one more measurements resulted in the same outcome -> Remove both".format(idx, str(outlier)))

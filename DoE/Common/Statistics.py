@@ -139,6 +139,7 @@ def combineCoefficients(model) -> np.array:
 
 
 def Q2(X, trainingY, predictionY, roundF : Callable = lambda x: round(x, 5)):
+    return 0
     if roundF is None: roundF = lambda x: x
     if X is None or trainingY is None or predictionY is None: return -1
 
