@@ -4,7 +4,7 @@ import Common.LinearRegression as LR
 import numpy as np
 import Common.Statistics as Statistics
 import Common.Logger as Logger
-import random
+import random   
 
 from datetime import datetime
 from pathlib import Path
