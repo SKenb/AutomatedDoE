@@ -55,10 +55,10 @@ class FactorSet:
         return resultStr + "\n\r\t+ Combis:\n\r\t\t" + "\n\r\t\t".join(map(str, self.experimentValueCombinations.keys()))
 
 
-    def realizeExperiments(self, nomredExperiments : Iterable, sortColumn=None):
+    def realizeExperiments(self, nomredExperiments : Iterable, sortColumn=None, sortReverse=False):
         self.realizedExperiments = nomredExperiments
         self._setExperimentValues(np.array([self * experiment for experiment in nomredExperiments]))
-        self.sortExperimentValues(sortColumn)
+        self.sortExperimentValues(sortColumn, sortReverse)
         return self.getExperimentValues()
 
     def getRealizedExperiments(self):
@@ -67,9 +67,13 @@ class FactorSet:
     def _setExperimentValues(self, valueArray):
         self.experimentValues = valueArray
 
-    def sortExperimentValues(self, sortColumn):
+    def sortExperimentValues(self, sortColumn, reverse=False):
         if sortColumn is not None and sortColumn < self.getFactorCount():
-            self._setExperimentValues(self.experimentValues[self.experimentValues[:, sortColumn].argsort()])
+            
+            idx = self.experimentValues[:, sortColumn].argsort()
+            if reverse: idx = idx[::-1]
+
+            self._setExperimentValues(self.experimentValues[idx])
 
     def getExperimentValues(self):
         return self.experimentValues

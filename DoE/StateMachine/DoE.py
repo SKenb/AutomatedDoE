@@ -29,7 +29,7 @@ class FindNewExperiments(State):
     def onCall(self):
 
         experiments = context.experimentFactory.getNewExperimentSuggestion()
-        context.newExperimentValues = context.factorSet.realizeExperiments(experiments, sortColumn=0)
+        context.newExperimentValues = context.factorSet.realizeExperiments(experiments, sortColumn=0, sortReverse=len(context.history) % 2)
 
         return ExecuteExperiments()
 
