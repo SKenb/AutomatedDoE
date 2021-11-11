@@ -29,7 +29,7 @@ class FindNewExperiments(State):
     def onCall(self):
 
         experiments = context.experimentFactory.getNewExperimentSuggestion()
-        context.newExperimentValues = context.factorSet.realizeExperiments(experiments, sortColumn=0)
+        context.newExperimentValues = context.factorSet.realizeExperiments(experiments, sortColumn=0, sortReverse=len(context.history) % 2)
 
         return ExecuteExperiments()
 
@@ -185,9 +185,6 @@ class HandleOutliers(State):
             if similarExperimentCount <= 2:
                 repeatedY, newExperimentValues = self.executeNewExperimentsAroundOutlier(outlier)
                 repeatLimit = .1
-
-                # TODO - remove mock
-                repeatedY = np.array([.1, repeatedY[0, 1]])
 
                 if all((abs(context.Y[idx, :] - repeatedY) < repeatLimit).reshape(-1, 1)):
                     # All the same again:
