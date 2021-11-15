@@ -21,7 +21,7 @@ def convert_time(time_date_value):
 # dirname = os.path.dirname(__file__)
 # file_name = os.path.join(dirname,'CC_DAT_DoE_SNAr_CEJ-46_Run-1_211110_V01.csv')
 
-data = pd.read_csv('CC_DAT_DoE_SNAr_CEJ-46_Run-1_211110_V01.csv', sep=";")
+data = pd.read_csv('./TestRuns/SNAr_DoE_1Run/CC_DAT_DoE_SNAr_CEJ-46_Run-1_211110_V01.csv', sep=";")
 data = data.dropna()
 
 # sample_date = datetime.datetime.strptime(data.Date.iloc[23], "%d.%m.%Y %H:%M:%S,%f")
@@ -125,4 +125,4 @@ axs3_x2.spines["top"].set_visible(False)
 
 
 fig.set_size_inches(10, 10)
-plt.savefig("CC_DAT_DoE_SNAr_CEJ-46_Run-1_211110_V01.png", dpi=500, bbox_inches="tight")
+plt.savefig("./TestRuns/SNAr_DoE_1Run/CC_DAT_DoE_SNAr_CEJ-46_Run-1_211110_V01.png", dpi=500, bbox_inches="tight")
