@@ -5,7 +5,7 @@ from Common import Common
 from Common import Logger
 from sklearn.metrics import r2_score
 from sklearn import preprocessing
-from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import cross_val_score, cross_validate, KFold
 from sklearn.base import BaseEstimator, RegressorMixin
 
 import numpy as np
@@ -143,7 +143,9 @@ def combineCoefficients(model) -> np.array:
 
 def Q2(X, Y, roundF : Callable = lambda x: round(x, 5)):
     tmpModel = SMWrapper(sm.OLS).fit(X, Y)
-    return roundF(np.mean(cross_val_score(tmpModel, X, Y, scoring='r2')))
+    foldPred = KFold(n_splits=5)
+
+    return roundF(np.mean(cross_val_score(tmpModel, X, Y, cv=foldPred, scoring='r2')))
 
 
 def getModelTermSignificance(confidenceInterval):
@@ -192,5 +194,5 @@ class SMWrapper(BaseEstimator, RegressorMixin):
 
     def predict(self, X):
         if self.fit_intercept:
-            X = sm.add_constant(X)
+            X = sm.add_constant(X, has_constant='add')
         return self.results_.predict(X)
