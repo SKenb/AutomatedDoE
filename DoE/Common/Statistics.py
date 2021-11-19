@@ -2,13 +2,16 @@ from typing import Callable, Iterable
 
 from matplotlib.pyplot import legend, title
 from Common import Common
+from Common import Logger
 from sklearn.metrics import r2_score
 from sklearn import preprocessing
+from sklearn.model_selection import cross_val_score
+from sklearn.base import BaseEstimator, RegressorMixin
+
 import numpy as np
 import statsmodels.api as sm
 
 from Common.Factor import FactorSet
-import logging
 
 def plotObservedVsPredicted(prediction, observation, titleSuffix=None, X=None, figure=None):
 
@@ -27,7 +30,7 @@ def plotObservedVsPredicted(prediction, observation, titleSuffix=None, X=None, f
         lambda plt: plt.plot([minVal, maxVal], [minVal, maxVal], 'k--', linewidth=2),
         lambda plt: plt.grid(), 
         lambda plt: plt.text(.5*(minVal + maxVal), 0.2, "R2: {}".format(R2(observation, prediction))),
-        lambda plt: X is not None and plt.text(.5*(minVal + maxVal), 0.1, "Q2: {}".format(Q2(X, observation, prediction))),
+        lambda plt: X is not None and plt.text(.5*(minVal + maxVal), 0.1, "Q2: {}".format(Q2(X, observation))),
         xLabel="Predicted", yLabel="Observed", title=titleStr, 
         figure=figure
     )
@@ -138,21 +141,9 @@ def combineCoefficients(model) -> np.array:
     return np.array(c)
 
 
-def Q2(X, trainingY, predictionY, roundF : Callable = lambda x: round(x, 5)):
-    if roundF is None: roundF = lambda x: x
-    if X is None or trainingY is None or predictionY is None: return -1
+def Q2(X, Y, roundF : Callable = lambda x: round(x, 5)):
+    return roundF(np.mean(cross_val_score(SMWrapper(sm.OLS), X, Y, scoring='r2')))
 
-    try:
-        r = trainingY - predictionY
-
-        PRESS = np.array([(r[i] / (1 - (X[i, :] @ np.linalg.inv(X.T @ X) @ X[i, :])))**2 for i in range(len(X))]).sum()
-        SStot = np.array((trainingY - trainingY.mean())**2).sum()
-
-        return roundF((1 - (PRESS / SStot)))
-    
-    except Exception as e:
-        logging.error("Error in Q2 - " + str(e))
-        return -1
 
 def getModelTermSignificance(confidenceInterval):
     isSignificant = np.sign(confidenceInterval[:, 1] * confidenceInterval[:, 0]) >= 0
@@ -183,3 +174,22 @@ def residualsDeletedStudentized(model) -> np.array:
 def RSD(residuals : np.array, residualDegreesOfFreedom):
     return np.sqrt((residuals**2).sum() / (residualDegreesOfFreedom - 2))
     #return r.std()
+
+# For Q2 score wrap extimator from statsmodels...
+class SMWrapper(BaseEstimator, RegressorMixin):
+    """ A universal sklearn-style wrapper for statsmodels regressors """
+    def __init__(self, model_class, fit_intercept=True):
+        self.model_class = model_class
+        self.fit_intercept = fit_intercept
+
+    def fit(self, X, y):
+        if self.fit_intercept:
+            X = sm.add_constant(X)
+        self.model_ = self.model_class(y, X)
+        self.results_ = self.model_.fit()
+        return self
+
+    def predict(self, X):
+        if self.fit_intercept:
+            X = sm.add_constant(X)
+        return self.results_.predict(X)

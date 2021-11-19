@@ -1,9 +1,9 @@
 from typing import Iterable, Dict
 from pathlib import Path
+from Common import Logger
 
 import numpy as np
 
-import logging
 import time
 import csv
 
@@ -91,10 +91,10 @@ class XamControlBase:
         for valueArray in valueArrays: yield self.startExperimentFromvalues(valueArray)
 
     def _startExperimentRequest(self, experiment : XamControlExperimentRequest):
-        logging.debug("Experiment Request -> {}".format(str(experiment)))
+        Logger.logXamControl("Request -> {}".format(str(experiment)))
 
     def _receivedExperimentResult(self, result : XamControlExperimentResult):
-        logging.debug("Experiment Result -> {}".format(str(result)))
+        Logger.logXamControl("Result -> {}".format(str(result)))
     
 
 class XamControlSimpleMock(XamControlBase):

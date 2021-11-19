@@ -3,16 +3,19 @@ import matplotlib.pyplot as plt
 import Common.LinearRegression as LR
 import numpy as np
 import Common.Statistics as Statistics
-import logging
+import Common.Logger as Logger
+import random   
 
 from datetime import datetime
 from pathlib import Path
 
 from Common.Factor import FactorSet
 
+#import matplotlib
 
-def plot(*plotters, is3D=False, xLabel="x", yLabel="y", title="Plot", showLegend=False, figure=None):
-    
+
+def plot(*plotters, is3D=False, xLabel="x", yLabel="y", title="Plot", showLegend=False, figure=None, saveFigure=True):
+     
     if figure is None: 
         figure = plt.figure()
         showPlot = True
@@ -28,6 +31,12 @@ def plot(*plotters, is3D=False, xLabel="x", yLabel="y", title="Plot", showLegend
 
     if showLegend: plt.legend()
     if showPlot: plt.show()
+    #matplotlib.use('Agg')
+
+    if saveFigure: 
+        filename = Path("Plot_{}_{}.png".format(title, str(random.getrandbits(32))))
+        path = Logger.getCurrentLogFolder() / filename
+        plt.savefig(path)
 
     return figure
 
@@ -56,25 +65,6 @@ def plotSurface(plt, z, rangeX, rangeY=None):
 
     plt.plot_surface(XX, YY, ZZ, linewidth=0, antialiased=False, alpha=.3)
 
-# Initialize logging in one defines place
-# import logging in all other files
-#
-# Use:
-#   - logging.debug('...')
-#   - logging.info('...')
-#   - logging.warning('...')
-#   - logging.error('...')
-#
-def initLogging():
-
-    logPath = Path("./Logs/log_{}.log".format(datetime.now().strftime("%d%m%Y_%H")))
-
-    logging.basicConfig(
-        filename=str(logPath), 
-        format='%(asctime)s\t%(levelname)s\t%(message)s',
-        datefmt='%d.%m.%Y %I:%M:%S %p',
-        level=logging.DEBUG
-    )
 
 def getModdeTestResponse():
     # Used in Modde
@@ -95,7 +85,6 @@ def fitFactorSet(factorSet : FactorSet, Y : Iterable, verbose=True):
     if verbose: 
         scaledYPrediction = LR.predict(sModel, scaledX)
         print(sModel.summary())
-        print(Statistics.Q2(scaledX, Y, scaledYPrediction))
         print(Statistics.getModelTermSignificance(sModel.conf_int()))
         
         Statistics.plotCoefficients(sModel.params, factorSet, sModel.conf_int())
