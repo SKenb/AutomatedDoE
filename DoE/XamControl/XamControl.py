@@ -186,6 +186,54 @@ class XamControlModdeYMock(XamControlSimpleMock):
         return XamControlExperimentResult(dataSet[0, 4], dataSet[0, 5], request=experiment)
 
 
+class XamControlTestRun1Mock(XamControlSimpleMock):
+
+    def _wrapXamControlExperimentResult(self, experiment) -> XamControlExperimentResult:
+        # TestRun1
+        # Data from test run 1
+        # Conv. was not rec. unf. but Sty
+        dataSet = np.array([
+            [100, 0.2, 0.9, 2.5, 0, 0.000539177],
+            [100, 0.4, 0.9, 2.5, 0, 0.066285834],
+            [100, 0.4, 3, 6, 0, 0.523382715],
+            [100, 0.2, 3, 6, 0, 0.124081704],
+            [130, 0.3, 1.95, 4.25, 0, 0.340612845],
+            [130, 0.3, 1.95, 4.25, 0, 0.342071572],
+            [160, 0.2, 0.9, 2.5, 0, 0.066361663],
+            [160, 0.4, 0.9, 2.5, 0, 0.414149606],
+            [160, 0.4, 3, 6, 0, 0.801074925],
+            [160, 0.2, 3, 6, 0, 0.317247699],
+            [160, 0.2, 0.9, 6, 0, 0.137450315],
+            [160, 0.4, 0.9, 6, 0, 0.39538596],
+            [160, 0.2, 3, 2.5, 0, 0.324086264],
+            [130, 0.3, 1.95, 4.25, 0, 0.360507817],
+            [100, 0.2, 0.9, 6, 0, 0.018517327],
+            [100, 0.4, 0.9, 6, 0, 0.119053332],
+            [100, 0.4, 3, 2.5, 0, 0.569830021],
+            [100, 0.2, 3, 2.5, 0, 0.10577096],
+            [160, 0.3, 1.95, 4.25, 0, 0.508014395],
+            [100, 0.3, 1.95, 4.25, 0, 0.174797307],
+            [130, 0.4, 1.95, 4.25, 0, 0.618870595],
+            [130, 0.2, 1.95, 4.25, 0, 0.15085711],
+            [130, 0.3, 0.9, 4.25, 0, 0.144623276],
+            [130, 0.3, 3, 4.25, 0, 0.505340362],
+            [130, 0.3, 1.95, 6, 0, 0.335538103],
+            [130, 0.3, 1.95, 2.5, 0, 0.341930795]
+        ])
+
+        for (index, value) in {
+                    0: experiment[XamControlExperimentRequest.TEMPERATURE],
+                    1: experiment[XamControlExperimentRequest.CONCENTRATION],
+                    2: experiment[XamControlExperimentRequest.REAGENTRATIO], 
+                    3: experiment[XamControlExperimentRequest.RESIDENCETIME]
+                }.items():
+            dataSet = dataSet[dataSet[:, index] == value]
+            if dataSet.size == 0: raise Exception("Data not found in dataset :/ - Note: only defined exp. r allowed")
+
+        return XamControlExperimentResult(np.mean(dataSet[0, 4]), np.mean(dataSet[:, 5]), request=experiment)
+          
+
+
 class XamControl(XamControlBase):
 
     def __init__(self):
