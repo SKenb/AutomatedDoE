@@ -11,7 +11,7 @@ from pathlib import Path
 
 from Common.Factor import FactorSet
 
-import matplotlib
+#import matplotlib
 
 
 def plot(*plotters, is3D=False, xLabel="x", yLabel="y", title="Plot", showLegend=False, figure=None, saveFigure=True):
@@ -30,8 +30,8 @@ def plot(*plotters, is3D=False, xLabel="x", yLabel="y", title="Plot", showLegend
     plt.title(title)
 
     if showLegend: plt.legend()
-    #if showPlot: plt.show()
-    matplotlib.use('Agg')
+    if showPlot: plt.show()
+    #matplotlib.use('Agg')
 
     if saveFigure: 
         filename = Path("Plot_{}_{}.png".format(title, str(random.getrandbits(32))))
@@ -85,7 +85,6 @@ def fitFactorSet(factorSet : FactorSet, Y : Iterable, verbose=True):
     if verbose: 
         scaledYPrediction = LR.predict(sModel, scaledX)
         print(sModel.summary())
-        print(Statistics.Q2(scaledX, Y, scaledYPrediction))
         print(Statistics.getModelTermSignificance(sModel.conf_int()))
         
         Statistics.plotCoefficients(sModel.params, factorSet, sModel.conf_int())

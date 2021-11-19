@@ -78,7 +78,7 @@ class EvaluateExperiments(State):
             trainingY, predictionY = context.Y[:, 0], LR.predict(scaledModel, X)
 
             r2Score = Statistics.R2(trainingY, predictionY)
-            q2Score = Statistics.Q2(X, trainingY, predictionY)
+            q2Score = Statistics.Q2(X, trainingY)
             
             iterationHistory[iterationIndex] = (combinations, r2Score, q2Score)
             iterationIndex+=1
@@ -109,10 +109,12 @@ class EvaluateExperiments(State):
         
         if len(context.history) >= 10: return StopDoE()
 
+        X = Common.getXWithCombinations(context.experimentValues, combinations, Statistics.orthogonalScaling)
+
         Common.subplot(
             lambda fig: Statistics.plotR2ScoreHistory([a[1] for a in iterationHistory.values()], selctedIndex, figure=fig),
             lambda fig: Statistics.plotCoefficients(scaledModel.params, context.factorSet, scaledModel.conf_int(), figure=fig),
-            lambda fig: Statistics.plotObservedVsPredicted(LR.predict(scaledModel, Common.getXWithCombinations(context.experimentValues, combinations, Statistics.orthogonalScaling)), context.Y[:, 0], figure=fig),
+            lambda fig: Statistics.plotObservedVsPredicted(LR.predict(scaledModel, Common.getXWithCombinations(context.experimentValues, combinations, Statistics.orthogonalScaling)), context.Y[:, 0], X=X, figure=fig),
             lambda fig: Statistics.plotResiduals(Statistics.residualsDeletedStudentized(scaledModel), figure=fig)
         )
 
@@ -176,6 +178,8 @@ class HandleOutliers(State):
         if not any(self.detectOutliers()): 
             Logger.logStateInfo("No outliers detected")
             return FindNewExperiments()
+
+        return FindNewExperiments()
 
         for (idx, outlier) in self.forEachOutlier():
                 
