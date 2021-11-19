@@ -1,15 +1,25 @@
 Details
 Run;7;DateTime;10.11.2021 18:07:42;Factor Set;|Factor Set:
-	Temperature T_1  >> (100 - 160 °C)
-	Concentration C_SM_1  >> (0.2 - 0.4 M)
-	Reagent ratio‘s R  >> (0.9 - 3 )
-	Residence time RT_1  >> (2.5 - 6 min)
-	+ Combis:
-		A*A
-		B*B
-		B*C
-		C*C
-		D*D|
+
+	Temperature T_1  >> (100 - 160 ï¿½C)
+
+	Concentration C_SM_1  >> (0.2 - 0.4 M)
+
+	Reagent ratioï¿½s R  >> (0.9 - 3 )
+
+	Residence time RT_1  >> (2.5 - 6 min)
+
+	+ Combis:
+
+		A*A
+
+		B*B
+
+		B*C
+
+		C*C
+
+		D*D|
 Experiments
 100.0;0.2;0.9;2.5
 100.0;0.4;0.9;2.5
