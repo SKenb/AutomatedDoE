@@ -49,10 +49,10 @@ class EvaluateExperiments(State):
     def getInitCombinations(self):
         return CombinationFactory.allLinearCombinations() # CombinationFactory.allCombinations() # 
 
-    def createModels(self, combinations):
+    def createModels(self, combinations, responseIdx = 1):
 
-        context.scaledModel = Common.getModel(context.experimentValues, combinations, context.Y[:, 0], Statistics.orthogonalScaling)
-        context.model = Common.getModel(context.experimentValues, combinations, context.Y[:, 0])
+        context.scaledModel = Common.getModel(context.experimentValues, combinations, context.Y[:, responseIdx], Statistics.orthogonalScaling)
+        context.model = Common.getModel(context.experimentValues, combinations, context.Y[:, responseIdx])
 
         return context.scaledModel, context.model
 
@@ -68,14 +68,14 @@ class EvaluateExperiments(State):
 
         return Common.removeCombinations(combinationSet, lambda index, k, v: removeList[index] > 0) 
 
-    def stepwiseRemoveCombinations(self, combinations):
+    def stepwiseRemoveCombinations(self, combinations, responseIdx = 1):
         iterationIndex, iterationHistory = 0, {}
 
         while len(combinations) > 1:
             scaledModel, _ = self.createModels(combinations)
 
             X = Common.getXWithCombinations(context.experimentValues, combinations, Statistics.orthogonalScaling)
-            trainingY, predictionY = context.Y[:, 0], LR.predict(scaledModel, X)
+            trainingY, predictionY = context.Y[:, responseIdx], LR.predict(scaledModel, X)
 
             r2Score = Statistics.R2(trainingY, predictionY)
             q2Score = Statistics.Q2(X, trainingY)
@@ -114,7 +114,7 @@ class EvaluateExperiments(State):
         Common.subplot(
             lambda fig: Statistics.plotR2ScoreHistory([a[1] for a in iterationHistory.values()], selctedIndex, figure=fig),
             lambda fig: Statistics.plotCoefficients(scaledModel.params, context.factorSet, scaledModel.conf_int(), figure=fig),
-            lambda fig: Statistics.plotObservedVsPredicted(LR.predict(scaledModel, Common.getXWithCombinations(context.experimentValues, combinations, Statistics.orthogonalScaling)), context.Y[:, 0], X=X, figure=fig),
+            lambda fig: Statistics.plotObservedVsPredicted(LR.predict(scaledModel, Common.getXWithCombinations(context.experimentValues, combinations, Statistics.orthogonalScaling)), context.Y[:, 1], X=X, figure=fig),
             lambda fig: Statistics.plotResiduals(Statistics.residualsDeletedStudentized(scaledModel), figure=fig)
         )
 

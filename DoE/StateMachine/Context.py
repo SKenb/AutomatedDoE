@@ -8,7 +8,7 @@ class contextDoE():
 
     def __init__(self):
 
-        self.xamControl = XamControl.XamControlModdeYMock()
+        self.xamControl = XamControl.XamControlTestRun1Mock()
         self.experimentFactory = ExperimentFactory.ExperimentFactory()
         self.factorSet = Factor.getDefaultFactorSet()
         

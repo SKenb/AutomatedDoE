@@ -153,7 +153,7 @@ class XamControlNoMixtureTermsMock(XamControlSimpleMock):
 class XamControlModdeYMock(XamControlSimpleMock):
 
     def _wrapXamControlExperimentResult(self, experiment) -> XamControlExperimentResult:
-
+        # change factor: temp [min 60 max 160]
         dataSet = np.array([
             [ 60, 0.2, 0.9, 2.5, 0.28, 0.0005],
             [ 60, 0.4, 0.9, 2.5, 0.14, 0.0005],
@@ -192,6 +192,7 @@ class XamControlTestRun1Mock(XamControlSimpleMock):
         # TestRun1
         # Data from test run 1
         # Conv. was not rec. unf. but Sty
+        # change factor: temp [min 100 max 160]
         dataSet = np.array([
             [100, 0.2, 0.9, 2.5, 0, 0.000539177],
             [100, 0.4, 0.9, 2.5, 0, 0.066285834],
@@ -218,7 +219,8 @@ class XamControlTestRun1Mock(XamControlSimpleMock):
             [130, 0.3, 0.9, 4.25, 0, 0.144623276],
             [130, 0.3, 3, 4.25, 0, 0.505340362],
             [130, 0.3, 1.95, 6, 0, 0.335538103],
-            [130, 0.3, 1.95, 2.5, 0, 0.341930795]
+            [130, 0.3, 1.95, 2.5, 0, 0.341930795],
+            [160.0, 0.4, 3.0, 2.5, 0, 0.20732678630067]
         ])
 
         for (index, value) in {
@@ -228,7 +230,9 @@ class XamControlTestRun1Mock(XamControlSimpleMock):
                     3: experiment[XamControlExperimentRequest.RESIDENCETIME]
                 }.items():
             dataSet = dataSet[dataSet[:, index] == value]
-            if dataSet.size == 0: raise Exception("Data not found in dataset :/ - Note: only defined exp. r allowed")
+
+            if dataSet.size == 0: 
+                raise Exception("Data not found in dataset :/ - Note: only defined exp. r allowed (Idx:" + str(index) + ")")
 
         return XamControlExperimentResult(np.mean(dataSet[0, 4]), np.mean(dataSet[:, 5]), request=experiment)
           
