@@ -142,7 +142,8 @@ def combineCoefficients(model) -> np.array:
 
 
 def Q2(X, Y, roundF : Callable = lambda x: round(x, 5)):
-    return roundF(np.mean(cross_val_score(SMWrapper(sm.OLS), X, Y, scoring='r2')))
+    tmpModel = SMWrapper(sm.OLS).fit(X, Y)
+    return roundF(np.mean(cross_val_score(tmpModel, X, Y, scoring='r2')))
 
 
 def getModelTermSignificance(confidenceInterval):
