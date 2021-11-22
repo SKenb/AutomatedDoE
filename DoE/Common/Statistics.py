@@ -1,4 +1,4 @@
-from typing import Callable, Iterable
+from typing import Callable, Dict, Iterable
 
 from matplotlib.pyplot import legend, title
 from Common import Common
@@ -93,16 +93,20 @@ def plotResponseHistogram(Y, titleSuffix=None):
     )
 
 
-def plotScoreHistory(r2scoreHistory, selectedIndex=None, q2ScoreHistory=None, figure=False, score="R2"):
+def plotScoreHistory(scoreHistoryDict : Dict, selectedIndex=None, figure=False):
+
+    def plotAllScores(p):
+        for _, (score, scoreHistory) in enumerate(scoreHistoryDict.items()):
+            p.plot(scoreHistory, label=score)
+            
+            if selectedIndex is not None:
+                p.scatter(selectedIndex, scoreHistory[selectedIndex], color='r'),
  
     Common.plot(
-        lambda p: p.plot(r2scoreHistory, label="R2 Score"),
-        lambda p: selectedIndex is None or p.scatter(selectedIndex, r2scoreHistory[selectedIndex], color='r'),
-        lambda p: q2ScoreHistory is None or p.plot(q2ScoreHistory, color='k', label="Scaled Q2 Score"),
-        lambda p: selectedIndex is None or q2ScoreHistory is None or p.scatter(selectedIndex, q2ScoreHistory[selectedIndex], color='r'),
-        showLegend= q2ScoreHistory is not None,
+        plotAllScores,
+        showLegend= len(scoreHistoryDict) > 1,
         xLabel="Iteration", yLabel="Score", 
-        title=score if q2ScoreHistory is None else "R2Q2" + " score over removed combinations",
+        title=("" if len(scoreHistoryDict) > 1 else scoreHistoryDict[0].keys()[0]) + "Score over removed combinations",
         figure=figure
     )
 
