@@ -81,8 +81,9 @@ class EvaluateExperiments(State):
 
             r2Score = Statistics.R2(trainingY, predictionY)
             q2Score = Statistics.Q2(X, trainingY)
+            scoreCombis = {"(R2+Q2)/2": (r2Score+q2Score)/2, "R2*Q2": r2Score*q2Score, "1/2*R2+Q2": .5*r2Score+q2Score}
             
-            combiScoreHistory.add(History.CombiScoreHistoryItem(iterationIndex, combinations, r2Score, q2Score))
+            combiScoreHistory.add(History.CombiScoreHistoryItem(iterationIndex, combinations, r2Score, q2Score, scoreCombis))
             iterationIndex+=1
 
             combinations = self.removeLeastSignificantCombination(combinations, scaledModel.conf_int())
@@ -91,7 +92,7 @@ class EvaluateExperiments(State):
 
     def filterForBestCombinationSet(self, combiScoreHistory : History.History) -> History.CombiScoreHistoryItem:
 
-        valueOfInterest = lambda item: item.q2
+        valueOfInterest = lambda item: item.scoreCombis["1/2*R2+Q2"]
 
         maxScore = valueOfInterest(max(combiScoreHistory.items(), key=valueOfInterest))
         bound = .95*maxScore if maxScore > 0 else 1.05*maxScore
@@ -118,8 +119,17 @@ class EvaluateExperiments(State):
 
         X = Common.getXWithCombinations(context.experimentValues, combinations, Statistics.orthogonalScaling)
 
+        combis = list(combiScoreHistory[0].scoreCombis.keys())
+
         Common.subplot(
-            lambda fig: Statistics.plotScoreHistory({"R2": combiScoreHistory.choose(lambda i: i.r2), "Q2": combiScoreHistory.choose(lambda i: i.q2)}, bestCombiScoreItem.index, figure=fig),
+            lambda fig: Statistics.plotScoreHistory(
+                {
+                    "R2": combiScoreHistory.choose(lambda i: i.r2), 
+                    "Q2": combiScoreHistory.choose(lambda i: i.q2),
+                    combis[0]: combiScoreHistory.choose(lambda i: i.scoreCombis[combis[0]]),
+                    combis[1]: combiScoreHistory.choose(lambda i: i.scoreCombis[combis[1]]),
+                    combis[2]: combiScoreHistory.choose(lambda i: i.scoreCombis[combis[2]])
+                }, bestCombiScoreItem.index, figure=fig),
             lambda fig: Statistics.plotCoefficients(scaledModel.params, context.factorSet, scaledModel.conf_int(), figure=fig),
             lambda fig: Statistics.plotObservedVsPredicted(LR.predict(scaledModel, Common.getXWithCombinations(context.experimentValues, combinations, Statistics.orthogonalScaling)), context.Y[:, 1], X=X, figure=fig),
             lambda fig: Statistics.plotResiduals(Statistics.residualsDeletedStudentized(scaledModel), figure=fig)
