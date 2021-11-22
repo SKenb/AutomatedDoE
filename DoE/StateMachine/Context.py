@@ -1,5 +1,6 @@
 from XamControl import XamControl
 from Common import ExperimentFactory
+from Common import History
 from Common import Factor
 
 import numpy as np
@@ -20,7 +21,7 @@ class contextDoE():
         self.model = None
         self.scaledModel = None
 
-        self.history = []
+        self.history = History.History()
 
 
     def addNewExperiments(self, newExperimentValues, Y):

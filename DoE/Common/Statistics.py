@@ -1,11 +1,11 @@
-from typing import Callable, Iterable
+from typing import Callable, Dict, Iterable
 
 from matplotlib.pyplot import legend, title
 from Common import Common
 from Common import Logger
 from sklearn.metrics import r2_score
 from sklearn import preprocessing
-from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import cross_val_score, cross_validate, KFold
 from sklearn.base import BaseEstimator, RegressorMixin
 
 import numpy as np
@@ -93,14 +93,20 @@ def plotResponseHistogram(Y, titleSuffix=None):
     )
 
 
-def plotR2ScoreHistory(r2ScoreHistory, selectedIndex=None, q2ScoreHistory=None, figure=False):
+def plotScoreHistory(scoreHistoryDict : Dict, selectedIndex=None, figure=False):
 
+    def plotAllScores(p):
+        for _, (score, scoreHistory) in enumerate(scoreHistoryDict.items()):
+            p.plot(scoreHistory, label=score)
+            
+            if selectedIndex is not None:
+                p.scatter(selectedIndex, scoreHistory[selectedIndex], color='r'),
+ 
     Common.plot(
-        lambda p: p.plot(r2ScoreHistory),
-        lambda p: selectedIndex is None or p.scatter(selectedIndex, r2ScoreHistory[selectedIndex], color='r'),
-        lambda p: q2ScoreHistory is None or p.plot(q2ScoreHistory, color='k'),
-        showLegend= q2ScoreHistory is not None,
-        xLabel="Iteration", yLabel="R2 score", title="R2 score over removed combinations",
+        plotAllScores,
+        showLegend= len(scoreHistoryDict) > 1,
+        xLabel="Iteration", yLabel="Score", 
+        title=("" if len(scoreHistoryDict) > 1 else scoreHistoryDict[0].keys()[0]) + "Score over removed combinations",
         figure=figure
     )
 
@@ -142,8 +148,17 @@ def combineCoefficients(model) -> np.array:
 
 
 def Q2(X, Y, roundF : Callable = lambda x: round(x, 5)):
-    tmpModel = SMWrapper(sm.OLS).fit(X, Y)
-    return roundF(np.mean(cross_val_score(tmpModel, X, Y, scoring='r2')))
+    #return roundF(1 - np.mean(np.abs(cross_val_score(SMWrapper(sm.OLS), X, Y, cv=5, scoring="neg_mean_squared_error"))))
+    return roundF(np.mean(cross_val_score(SMWrapper(sm.OLS), X, Y, cv=KFold(shuffle=True, n_splits=5), scoring=meanAbsolutePercentageError)))
+
+def meanAbsolutePercentageError(clf, X, y, epsilon = 1e-6):
+    yPred = clf.predict(X)
+
+    for index, yi in enumerate(y):
+        if abs(yi) < epsilon: y[index] = epsilon
+      
+    return (1/len(y))*np.sum(np.abs(y - yPred)/y) / 100
+
 
 
 def getModelTermSignificance(confidenceInterval):
@@ -185,12 +200,12 @@ class SMWrapper(BaseEstimator, RegressorMixin):
 
     def fit(self, X, y):
         if self.fit_intercept:
-            X = sm.add_constant(X)
+            X = sm.add_constant(X, has_constant='add')
         self.model_ = self.model_class(y, X)
         self.results_ = self.model_.fit()
         return self
 
     def predict(self, X):
         if self.fit_intercept:
-            X = sm.add_constant(X)
+            X = sm.add_constant(X, has_constant='add')
         return self.results_.predict(X)
