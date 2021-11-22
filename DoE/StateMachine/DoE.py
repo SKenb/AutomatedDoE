@@ -3,6 +3,7 @@ from StateMachine.Context import contextDoE
 from Common import Common
 from Common import Logger
 from Common import Statistics
+from Common import History
 from Common import CombinationFactory
 from Common import LinearRegression as LR
 
@@ -68,8 +69,9 @@ class EvaluateExperiments(State):
 
         return Common.removeCombinations(combinationSet, lambda index, k, v: removeList[index] > 0) 
 
-    def stepwiseRemoveCombinations(self, combinations, responseIdx = 1):
-        iterationIndex, iterationHistory = 0, {}
+    def stepwiseRemoveCombinations(self, combinations, responseIdx = 1) -> History.History:
+        iterationIndex = 0
+        combiScoreHistory = History.History()
 
         while len(combinations) > 1:
             scaledModel, _ = self.createModels(combinations)
@@ -80,39 +82,44 @@ class EvaluateExperiments(State):
             r2Score = Statistics.R2(trainingY, predictionY)
             q2Score = Statistics.Q2(X, trainingY)
             
-            iterationHistory[iterationIndex] = (combinations, r2Score, q2Score)
+            combiScoreHistory.add(History.CombiScoreHistoryItem(iterationIndex, combinations, r2Score, q2Score))
             iterationIndex+=1
 
             combinations = self.removeLeastSignificantCombination(combinations, scaledModel.conf_int())
 
-        return iterationHistory
+        return combiScoreHistory
 
-    def filterForBestCombinationSet(self, iterationHistory):
-        scoreIndex = 2
-        getScoreOfSet = lambda setItem: setItem[1][scoreIndex]
-        maxScore = getScoreOfSet(max(iterationHistory.items(), key=getScoreOfSet))
-        filteredScoreHistory = dict(filter(lambda e: getScoreOfSet(e) > (.95*maxScore if maxScore > 0 else 1.05*maxScore), iterationHistory.items()))
-        return min(filteredScoreHistory.items(), key=lambda a: len(a[1][0]))
+    def filterForBestCombinationSet(self, combiScoreHistory : History.History) -> History.CombiScoreHistoryItem:
+
+        valueOfInterest = lambda item: item.q2
+
+        maxScore = valueOfInterest(max(combiScoreHistory.items(), key=valueOfInterest))
+        bound = .95*maxScore if maxScore > 0 else 1.05*maxScore
+
+        filteredCombiScoreHistory = combiScoreHistory.filter(lambda item: valueOfInterest(item) > bound)
+
+        return min(filteredCombiScoreHistory, key=lambda item: len(item.combinations))
 
     def onCall(self):
 
         combinations = self.getInitCombinations()
 
-        iterationHistory = self.stepwiseRemoveCombinations(combinations)
-        
-        selctedIndex, (combinations, r2Score, q2Score) = self.filterForBestCombinationSet(iterationHistory)
+        combiScoreHistory = self.stepwiseRemoveCombinations(combinations)
+
+        bestCombiScoreItem = self.filterForBestCombinationSet(combiScoreHistory)
+        combinations = bestCombiScoreItem.combinations
 
         scaledModel, model = self.createModels(combinations)
         context.factorSet.setExperimentValueCombinations(combinations)
 
-        context.history.append([selctedIndex, combinations, r2Score, q2Score, [a[1] for a in iterationHistory.values()]])
+        context.history.add(History.DoEHistoryItem(-1, combiScoreHistory, bestCombiScoreItem))
         
         if len(context.history) >= 10: return StopDoE()
 
         X = Common.getXWithCombinations(context.experimentValues, combinations, Statistics.orthogonalScaling)
 
         Common.subplot(
-            lambda fig: Statistics.plotScoreHistory({"R2": [a[1] for a in iterationHistory.values()], "Q2": [a[2] for a in iterationHistory.values()]}, selctedIndex, figure=fig),
+            lambda fig: Statistics.plotScoreHistory({"R2": combiScoreHistory.choose(lambda i: i.r2), "Q2": combiScoreHistory.choose(lambda i: i.q2)}, bestCombiScoreItem.index, figure=fig),
             lambda fig: Statistics.plotCoefficients(scaledModel.params, context.factorSet, scaledModel.conf_int(), figure=fig),
             lambda fig: Statistics.plotObservedVsPredicted(LR.predict(scaledModel, Common.getXWithCombinations(context.experimentValues, combinations, Statistics.orthogonalScaling)), context.Y[:, 1], X=X, figure=fig),
             lambda fig: Statistics.plotResiduals(Statistics.residualsDeletedStudentized(scaledModel), figure=fig)
@@ -128,23 +135,34 @@ class StopDoE(State):
 
     def onCall(self):
 
-        r2ScoreHistory = [e[2] for e in context.history]
-        selctedIndex = [e[0] for e in context.history]
+        r2ScoreHistory = context.history.choose(lambda item: item.bestCombiScoreItem.r2)
+        q2ScoreHistory = context.history.choose(lambda item: item.bestCombiScoreItem.q2)
+        selctedIndex = context.history.choose(lambda item: item.bestCombiScoreItem.index)
 
         x = list(range(len(context.history)))
-        z = np.array([e[4] for e in context.history])
 
-        gP = lambda plt, idx: plt.plot(range(len(z[idx, :])), idx*np.ones(len(z[idx, :])), z[idx, :])
+        z = lambda pred: np.array(context.history.choose(lambda item: item.combiScoreHistory.choose(pred)))
+
+        predR2 = lambda item: item.r2
+        predQ2 = lambda item: item.q2
+
+        gP = lambda plt, idx, pred: plt.plot(range(len(z(pred)[idx, :])), idx*np.ones(len(z(pred)[idx, :])), z(pred)[idx, :])
 
         Common.plot(lambda plt: plt.plot(r2ScoreHistory))
-        Common.plot(
-            lambda plt: plt.plot(selctedIndex, range(len(context.history)), r2ScoreHistory, 'ro'),
-            lambda plt: gP(plt, 0), lambda plt: gP(plt, 1), lambda plt: gP(plt, 2),
-            lambda plt: gP(plt, 3), lambda plt: gP(plt, 4), lambda plt: gP(plt, 5),
-            lambda plt: gP(plt, 6), lambda plt: gP(plt, 7), lambda plt: gP(plt, 8), 
-            lambda plt: gP(plt, 9),
-            lambda plt: plt.view_init(azim=0, elev=0),
-            is3D=True,
+
+        plot3DHist = lambda fig, pred, scoreHistory, title: Common.plot(
+            lambda plt: plt.plot(selctedIndex, range(len(context.history)), scoreHistory, 'ro'),
+            lambda plt: gP(plt, 0, pred), lambda plt: gP(plt, 1, pred), lambda plt: gP(plt, 2, pred),
+            lambda plt: gP(plt, 3, pred), lambda plt: gP(plt, 4, pred), lambda plt: gP(plt, 5, pred),
+            lambda plt: gP(plt, 6, pred), lambda plt: gP(plt, 7, pred), lambda plt: gP(plt, 8, pred), 
+            lambda plt: gP(plt, 9, pred),
+            is3D=False, title=title, figure=fig
+        )
+
+        Common.subplot(
+            lambda fig: plot3DHist(fig, predR2, r2ScoreHistory, "R2 History"),
+            lambda fig: plot3DHist(fig, predQ2, q2ScoreHistory, "Q2 Hsitory"),
+            is3D=True
         )
         
 

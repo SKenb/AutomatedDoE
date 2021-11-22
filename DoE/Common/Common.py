@@ -42,7 +42,7 @@ def plot(*plotters, is3D=False, xLabel="x", yLabel="y", title="Plot", showLegend
     return figure
 
 
-def subplot(*plotFunctions):
+def subplot(*plotFunctions, is3D=False):
     
     cols = np.ceil((np.sqrt(len(plotFunctions))))
     rows = np.ceil(len(plotFunctions) / cols)
@@ -51,8 +51,11 @@ def subplot(*plotFunctions):
     fig.tight_layout()
 
     for index, plot_ in enumerate(plotFunctions): 
-        plt.subplot(int(rows), int(cols), int(index+1))
-        plot_(plt)
+        if is3D is False:
+            plt.subplot(int(rows), int(cols), int(index+1))
+            plot_(plt)
+        else:
+            plot_(fig.add_subplot(int(rows), int(cols), int(index+1), projection='3d'))
 
     plt.show()
 
