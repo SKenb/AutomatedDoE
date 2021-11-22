@@ -7,6 +7,8 @@ from sklearn.metrics import r2_score
 from sklearn import preprocessing
 from sklearn.model_selection import cross_val_score, cross_validate, KFold
 from sklearn.base import BaseEstimator, RegressorMixin
+from scipy.stats import skewtest, boxcox, yeojohnson
+from sklearn.preprocessing import quantile_transform
 
 import numpy as np
 import statsmodels.api as sm
@@ -83,13 +85,30 @@ def plotCoefficients(coefficientValues, factorSet:FactorSet=None, confidenceInte
     )
 
 
-def plotResponseHistogram(Y, titleSuffix=None):
+def plotResponseHistogram(Y, titleSuffix=None, roundF : Callable = lambda x: round(x, 2), figure=None, scaling=True, transfroms = {
+                                "Y": lambda x: x,
+                                "Box-Cox": lambda x: boxcox(x)[0],
+                                "Yeo and R.A. Johnson": lambda x: yeojohnson(x)[0],
+                                "Quantile": lambda x: quantile_transform(x.reshape(-1, 1))[:, 0],
+                            }):
+
     titleStr = "Histogram"
     if titleSuffix is not None: titleStr += " - " + titleSuffix
 
+    def plotAllTransforms(plt):
+        for index, (name, func) in enumerate(transfroms.items()):
+            skewTest = skewtest(func(Y)).statistic
+            plt.hist(
+                orthogonalScaling(func(Y)) if scaling else func(Y), 
+                fc=(int((index / 4) % 2), int((index / 2) % 2), int(index % 2), 0.5), 
+                label="{} ({})".format(name, roundF(skewTest))
+            )
+
     Common.plot(
-        lambda plt: plt.hist(Y),
-        xLabel="Coefficient", yLabel="Value", title=titleStr
+        plotAllTransforms,
+        xLabel="Coefficient", yLabel="Value", title=titleStr,
+        showLegend=True,
+        figure=figure
     )
 
 

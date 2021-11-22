@@ -7,6 +7,10 @@ from Common import History
 from Common import CombinationFactory
 from Common import LinearRegression as LR
 
+
+from scipy.stats import skewtest, boxcox, yeojohnson
+from sklearn.preprocessing import quantile_transform
+
 import numpy as np
 
 context = None
@@ -73,7 +77,7 @@ class EvaluateExperiments(State):
         iterationIndex = 0
         combiScoreHistory = History.History()
 
-        while len(combinations) > 1:
+        while True:
             scaledModel, _ = self.createModels(combinations)
 
             X = Common.getXWithCombinations(context.experimentValues, combinations, Statistics.orthogonalScaling)
@@ -85,6 +89,8 @@ class EvaluateExperiments(State):
             
             combiScoreHistory.add(History.CombiScoreHistoryItem(iterationIndex, combinations, r2Score, q2Score, scoreCombis))
             iterationIndex+=1
+
+            if len(combinations) <= 0: break
 
             combinations = self.removeLeastSignificantCombination(combinations, scaledModel.conf_int())
 
@@ -131,8 +137,13 @@ class EvaluateExperiments(State):
                     combis[2]: combiScoreHistory.choose(lambda i: i.scoreCombis[combis[2]])
                 }, bestCombiScoreItem.index, figure=fig),
             lambda fig: Statistics.plotCoefficients(scaledModel.params, context.factorSet, scaledModel.conf_int(), figure=fig),
+            lambda fig: Statistics.plotResponseHistogram(context.Y[:, 1], figure=fig),
             lambda fig: Statistics.plotObservedVsPredicted(LR.predict(scaledModel, Common.getXWithCombinations(context.experimentValues, combinations, Statistics.orthogonalScaling)), context.Y[:, 1], X=X, figure=fig),
-            lambda fig: Statistics.plotResiduals(Statistics.residualsDeletedStudentized(scaledModel), figure=fig)
+            lambda fig: Statistics.plotResiduals(Statistics.residualsDeletedStudentized(scaledModel), figure=fig),
+            lambda fig: Statistics.plotResponseHistogram(context.Y[:, 1], figure=fig, scaling=False, transfroms={"Y": lambda x: x}),
+            lambda fig: Statistics.plotResponseHistogram(context.Y[:, 1], figure=fig, scaling=False, transfroms={"Box-Cox": lambda x: boxcox(x)[0]}),
+            lambda fig: Statistics.plotResponseHistogram(context.Y[:, 1], figure=fig, scaling=False, transfroms={"Yeo and R.A. Johnson": lambda x: yeojohnson(x)[0]}),
+            lambda fig: Statistics.plotResponseHistogram(context.Y[:, 1], figure=fig, scaling=False, transfroms={"Quantile": lambda x: quantile_transform(x.reshape(-1, 1))[:, 0]})
         )
 
         Logger.logEntireRun(len(context.history), context.factorSet, context.experimentValues, context.Y, model.params, scaledModel.params)
@@ -158,7 +169,14 @@ class StopDoE(State):
 
         gP = lambda plt, idx, pred: plt.plot(range(len(z(pred)[idx, :])), idx*np.ones(len(z(pred)[idx, :])), z(pred)[idx, :])
 
-        Common.plot(lambda plt: plt.plot(r2ScoreHistory))
+        Common.plot(
+            lambda plt: plt.plot(r2ScoreHistory, label="R2"),
+            lambda plt: plt.plot(q2ScoreHistory, label="Q2"),
+            lambda plt: plt.plot(context.history.choose(lambda item: item.bestCombiScoreItem.scoreCombis["(R2+Q2)/2"]), label="(R2+Q2)/2"),
+            lambda plt: plt.plot(context.history.choose(lambda item: item.bestCombiScoreItem.scoreCombis["R2*Q2"]), label="R2*Q2"),
+            lambda plt: plt.plot(context.history.choose(lambda item: item.bestCombiScoreItem.scoreCombis["1/2*R2+Q2"]), label="1/2*R2+Q2"),
+            showLegend=True
+        )
 
         plot3DHist = lambda fig, pred, scoreHistory, title: Common.plot(
             lambda plt: plt.plot(selctedIndex, range(len(context.history)), scoreHistory, 'ro'),
