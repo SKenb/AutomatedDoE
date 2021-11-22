@@ -23,6 +23,7 @@ def plot(*plotters, is3D=False, xLabel="x", yLabel="y", title="Plot", showLegend
         showPlot = False
 
     if is3D: ax = figure.add_subplot(111, projection='3d')
+    
     for plotter in plotters: plotter(ax if is3D else plt)
 
     plt.xlabel(xLabel)

@@ -88,10 +88,10 @@ class EvaluateExperiments(State):
         return iterationHistory
 
     def filterForBestCombinationSet(self, iterationHistory):
-        scoreIndex = 1
+        scoreIndex = 2
         getScoreOfSet = lambda setItem: setItem[1][scoreIndex]
-        maxR2Score =  getScoreOfSet(max(iterationHistory.items(), key=getScoreOfSet))
-        filteredScoreHistory = dict(filter(lambda e: getScoreOfSet(e) > .95*maxR2Score, iterationHistory.items()))
+        maxScore = getScoreOfSet(max(iterationHistory.items(), key=getScoreOfSet))
+        filteredScoreHistory = dict(filter(lambda e: getScoreOfSet(e) > (.95*maxScore if maxScore > 0 else 1.05*maxScore), iterationHistory.items()))
         return min(filteredScoreHistory.items(), key=lambda a: len(a[1][0]))
 
     def onCall(self):
@@ -112,7 +112,9 @@ class EvaluateExperiments(State):
         X = Common.getXWithCombinations(context.experimentValues, combinations, Statistics.orthogonalScaling)
 
         Common.subplot(
-            lambda fig: Statistics.plotR2ScoreHistory([a[1] for a in iterationHistory.values()], selctedIndex, figure=fig),
+            lambda fig: Statistics.plotScoreHistory([a[1] for a in iterationHistory.values()], selctedIndex, figure=fig),
+            lambda fig: Statistics.plotScoreHistory([a[2] for a in iterationHistory.values()], selctedIndex, score="Q2", figure=fig),
+            lambda fig: Statistics.plotScoreHistory([a[1] * a[2] for a in iterationHistory.values()], selctedIndex, score="R2Q2", figure=fig),
             lambda fig: Statistics.plotCoefficients(scaledModel.params, context.factorSet, scaledModel.conf_int(), figure=fig),
             lambda fig: Statistics.plotObservedVsPredicted(LR.predict(scaledModel, Common.getXWithCombinations(context.experimentValues, combinations, Statistics.orthogonalScaling)), context.Y[:, 1], X=X, figure=fig),
             lambda fig: Statistics.plotResiduals(Statistics.residualsDeletedStudentized(scaledModel), figure=fig)

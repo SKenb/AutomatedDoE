@@ -93,14 +93,16 @@ def plotResponseHistogram(Y, titleSuffix=None):
     )
 
 
-def plotR2ScoreHistory(r2ScoreHistory, selectedIndex=None, q2ScoreHistory=None, figure=False):
-
+def plotScoreHistory(r2scoreHistory, selectedIndex=None, q2ScoreHistory=None, figure=False, score="R2"):
+ 
     Common.plot(
-        lambda p: p.plot(r2ScoreHistory),
-        lambda p: selectedIndex is None or p.scatter(selectedIndex, r2ScoreHistory[selectedIndex], color='r'),
-        lambda p: q2ScoreHistory is None or p.plot(q2ScoreHistory, color='k'),
+        lambda p: p.plot(r2scoreHistory, label="R2 Score"),
+        lambda p: selectedIndex is None or p.scatter(selectedIndex, r2scoreHistory[selectedIndex], color='r'),
+        lambda p: q2ScoreHistory is None or p.plot(q2ScoreHistory, color='k', label="Scaled Q2 Score"),
+        lambda p: selectedIndex is None or q2ScoreHistory is None or p.scatter(selectedIndex, q2ScoreHistory[selectedIndex], color='r'),
         showLegend= q2ScoreHistory is not None,
-        xLabel="Iteration", yLabel="R2 score", title="R2 score over removed combinations",
+        xLabel="Iteration", yLabel="Score", 
+        title=score if q2ScoreHistory is None else "R2Q2" + " score over removed combinations",
         figure=figure
     )
 
@@ -142,10 +144,7 @@ def combineCoefficients(model) -> np.array:
 
 
 def Q2(X, Y, roundF : Callable = lambda x: round(x, 5)):
-    tmpModel = SMWrapper(sm.OLS).fit(X, Y)
-    foldPred = KFold(n_splits=5)
-
-    return roundF(np.mean(cross_val_score(tmpModel, X, Y, cv=foldPred, scoring='r2')))
+    return roundF(1 - np.mean(np.abs(cross_val_score(SMWrapper(sm.OLS), X, Y, cv=5, scoring="neg_mean_squared_error"))))
 
 
 def getModelTermSignificance(confidenceInterval):
@@ -187,7 +186,7 @@ class SMWrapper(BaseEstimator, RegressorMixin):
 
     def fit(self, X, y):
         if self.fit_intercept:
-            X = sm.add_constant(X)
+            X = sm.add_constant(X, has_constant='add')
         self.model_ = self.model_class(y, X)
         self.results_ = self.model_.fit()
         return self
