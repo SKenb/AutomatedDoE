@@ -14,26 +14,26 @@ def reduceAllCombinations(dim, predicate : Callable, stringBuilder : Callable) -
 
     return combinations
 
-def allLinearCombinations(dim=4): 
+def allLinearCombinations(dim): 
     return reduceAllCombinations(
         dim, 
         lambda i, o: None if i>o else lambda e, a, b: e[a] * e[b],
         lambda a, b: "{}*{}".format(a, b)
     )
 
-def allSelfSquaredCombinations(dim=4):
+def allSelfSquaredCombinations(dim):
     return reduceAllCombinations(
         dim, 
         lambda i, o: None if i!=o else lambda e, a, b: e[a]**2,
         lambda a, b: "{}^2".format(a)
     )
 
-def combineCombinations(*functions, dim=4):
+def combineCombinations(*functions, dim):
     combinationsList = {}
     for func in functions: combinationsList.update(func(dim))
     return combinationsList
 
-def allCombinations(dim=4):
+def allCombinations(dim):
     return combineCombinations(allLinearCombinations, allSelfSquaredCombinations, dim=dim)
 
 if __name__ == "__main__":

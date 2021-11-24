@@ -33,7 +33,7 @@ class FindNewExperiments(State):
     def __init__(self): super().__init__("Find new experiments")
     def onCall(self):
 
-        experiments = context.experimentFactory.getNewExperimentSuggestion()
+        experiments = context.experimentFactory.getNewExperimentSuggestion(len(context.factorSet))
         context.newExperimentValues = context.factorSet.realizeExperiments(experiments, sortColumn=0, sortReverse=len(context.history) % 2)
 
         return ExecuteExperiments()
@@ -52,7 +52,7 @@ class EvaluateExperiments(State):
     def __init__(self): super().__init__("Evaluate experiments")
 
     def getInitCombinations(self):
-        return CombinationFactory.allLinearCombinations() # CombinationFactory.allCombinations() # 
+        return CombinationFactory.allLinearCombinations(len(context.factorSet)) # CombinationFactory.allCombinations() # 
 
     def createModels(self, combinations, responseIdx = 1):
 
@@ -64,7 +64,7 @@ class EvaluateExperiments(State):
     def removeLeastSignificantCombination(self, combinations, conf_int):
         _, significanceInterval = Statistics.getModelTermSignificance(conf_int)
         significanceInterval[0:5] = 100
-        return Common.removeCombinations(combinations, lambda index, k, v: index == np.argmin(significanceInterval)) 
+        return Common.removeCombinations(combinations, lambda index, k, v: index == np.argmin(significanceInterval), len(context.factorSet)) 
 
     def getCombinationsForBinPattern(self, combinationSet, number):
         removeList = list(range(5))
@@ -74,10 +74,9 @@ class EvaluateExperiments(State):
         return Common.removeCombinations(combinationSet, lambda index, k, v: removeList[index] > 0) 
 
     def stepwiseRemoveCombinations(self, combinations, responseIdx = 1) -> History.History:
-        iterationIndex = 0
         combiScoreHistory = History.History()
 
-        while True:
+        for iterationIndex in range(len(combinations)):
             scaledModel, _ = self.createModels(combinations)
 
             X = Common.getXWithCombinations(context.experimentValues, combinations, Statistics.orthogonalScaling)
@@ -88,10 +87,6 @@ class EvaluateExperiments(State):
             scoreCombis = {"(R2+Q2)/2": (r2Score+q2Score)/2, "R2*Q2": r2Score*q2Score, "1/2*R2+Q2": .5*r2Score+q2Score}
             
             combiScoreHistory.add(History.CombiScoreHistoryItem(iterationIndex, combinations, r2Score, q2Score, scoreCombis))
-            iterationIndex+=1
-
-            if len(combinations) <= 0: break
-
             combinations = self.removeLeastSignificantCombination(combinations, scaledModel.conf_int())
 
         return combiScoreHistory

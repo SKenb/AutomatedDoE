@@ -109,7 +109,7 @@ def getXWithCombinations(experimentValues : np.array, experimentValueCombination
     # Combination of scaled combinations and factors
     return np.append(scaledExperimentValues, combinations, axis=1)
 
-def removeCombinations(combinations : dict, removePredicate : Callable, factorCount = 4):
+def removeCombinations(combinations : dict, removePredicate : Callable, factorCount):
     reduced = { key:value for index, (key,value) in  
         enumerate(combinations.items()) 
         if not removePredicate(index + factorCount + 1, key, value)
