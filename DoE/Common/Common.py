@@ -117,6 +117,11 @@ def removeCombinations(combinations : dict, removePredicate : Callable, factorCo
     
     return reduced
 
+def combinationIndexContainingFactor(combinations : dict, factorIndex):
+    factorIndexChar = chr(65 + factorIndex % 26)
+    return [combiIndex for combiIndex, combiLabel in enumerate(combinations.keys()) if factorIndexChar in combiLabel]
+
+
 
 def getModel(experimentValues : np.array, combinations : dict, Y : np.array, scalingFunction : Callable = lambda x: x):
     X = getXWithCombinations(experimentValues, combinations, scalingFunction)

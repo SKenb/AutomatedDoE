@@ -61,6 +61,29 @@ class EvaluateExperiments(State):
 
         return context.scaledModel, context.model
 
+    def removeLeastSignificantFactorOrCombination(self, factorSet, combinations, conf_int):
+        _, significanceInterval = Statistics.getModelTermSignificance(conf_int)
+        significanceInterval[0] = 100 # we won't remove constant part
+
+        minIndex = np.argmin(significanceInterval)
+
+        if minIndex-1 <= len(factorSet):
+            factorIndex = minIndex-1
+            # we need to remove a factor ->
+            # before check if any combination with this factor still exists
+            idx = Common.combinationIndexContainingFactor(combinations, factorIndex)
+
+            if len(idx) < 0:
+                #No combinations with factor -> remove factor
+                factorSet = factorSet.re
+            else:
+                #Last combination first
+                lastCombinationWithFactor = idx[-1]
+                combinations = Common.removeCombinations(combinations, lambda index, k, v: index == lastCombinationWithFactor, len(context.factorSet)) 
+
+        return factorSet, combinations
+
+
     def removeLeastSignificantCombination(self, combinations, conf_int):
         _, significanceInterval = Statistics.getModelTermSignificance(conf_int)
         significanceInterval[0:5] = 100
@@ -87,7 +110,9 @@ class EvaluateExperiments(State):
             scoreCombis = {"(R2+Q2)/2": (r2Score+q2Score)/2, "R2*Q2": r2Score*q2Score, "1/2*R2+Q2": .5*r2Score+q2Score}
             
             combiScoreHistory.add(History.CombiScoreHistoryItem(iterationIndex, combinations, r2Score, q2Score, scoreCombis))
-            combinations = self.removeLeastSignificantCombination(combinations, scaledModel.conf_int())
+            
+            #combinations = self.removeLeastSignificantCombination(combinations, scaledModel.conf_int())
+            factorSet, combinations = self.removeLeastSignificantFactorOrCombination(context.factorSet, combinations, scaledModel.conf_int())
 
         return combiScoreHistory
 
