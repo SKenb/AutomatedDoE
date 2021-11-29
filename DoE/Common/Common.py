@@ -109,13 +109,18 @@ def getXWithCombinations(experimentValues : np.array, experimentValueCombination
     # Combination of scaled combinations and factors
     return np.append(scaledExperimentValues, combinations, axis=1)
 
-def removeCombinations(combinations : dict, removePredicate : Callable, factorCount = 4):
+def removeCombinations(combinations : dict, removePredicate : Callable, factorCount):
     reduced = { key:value for index, (key,value) in  
         enumerate(combinations.items()) 
         if not removePredicate(index + factorCount + 1, key, value)
     }
     
     return reduced
+
+def combinationIndexContainingFactor(combinations : dict, factorIndex):
+    factorIndexChar = chr(65 + factorIndex % 26)
+    return [combiIndex for combiIndex, combiLabel in enumerate(combinations.keys()) if factorIndexChar in combiLabel]
+
 
 
 def getModel(experimentValues : np.array, combinations : dict, Y : np.array, scalingFunction : Callable = lambda x: x):

@@ -168,7 +168,9 @@ def combineCoefficients(model) -> np.array:
 
 def Q2(X, Y, roundF : Callable = lambda x: round(x, 5)):
     #return roundF(1 - np.mean(np.abs(cross_val_score(SMWrapper(sm.OLS), X, Y, cv=5, scoring="neg_mean_squared_error"))))
-    return roundF(np.mean(cross_val_score(SMWrapper(sm.OLS), X, Y, cv=KFold(shuffle=True, n_splits=5), scoring=meanAbsolutePercentageError)))
+    #return roundF(np.mean(cross_val_score(SMWrapper(sm.OLS), X, Y, cv=KFold(shuffle=True, n_splits=5), scoring=meanAbsolutePercentageError)))
+    return roundF(np.mean(cross_val_score(SMWrapper(sm.OLS), X, Y, cv=5, scoring="r2").clip(0)))
+
 
 def meanAbsolutePercentageError(clf, X, y, epsilon = 1e-6):
     yPred = clf.predict(X)
@@ -177,6 +179,7 @@ def meanAbsolutePercentageError(clf, X, y, epsilon = 1e-6):
         if abs(yi) < epsilon: y[index] = epsilon
       
     return (1/len(y))*np.sum(np.abs(y - yPred)/y) / 100
+
 
 
 

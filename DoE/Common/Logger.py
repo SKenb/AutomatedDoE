@@ -8,6 +8,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Callable
 
+import numpy as np
+
 
 logFolder = Path("./Logs")
 
@@ -72,10 +74,17 @@ def logStateInfo(stateInfo, predicate=logging.info):
     genericLog(predicate, "\t-", stateInfo)
 
 
-def logEntireRun(runNumber, factorSet, experiments, responses, modelCoeffs, scaledModelCoeffs):
+def logEntireRun(history, factorSet, experiments, responses, modelCoeffs, scaledModelCoeffs):
 
-    with open(logFolder / "experiment_{}.csv".format(runNumber), 'w', newline='') as csvfile:
+    runNumber = len(history)
 
+    with open(logFolder / "experiment_data_{}.csv".format(runNumber), 'w', newline='') as csvfile:
+            fileWriter = csv.writer(csvfile, delimiter=';', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+
+            for expRespRow in np.append(experiments, responses, axis=1): fileWriter.writerow(expRespRow)
+
+
+    with open(logFolder / "experiment_model_{}.csv".format(runNumber), 'w', newline='') as csvfile:
             fileWriter = csv.writer(csvfile, delimiter=';', quotechar='|', quoting=csv.QUOTE_MINIMAL)
 
             fileWriter.writerow(["Details"]) 
@@ -84,12 +93,6 @@ def logEntireRun(runNumber, factorSet, experiments, responses, modelCoeffs, scal
                 "DateTime", datetime.now().strftime("%d.%m.%Y %H:%M:%S"),
                 "Factor Set", str(factorSet)
             ]) 
-
-            fileWriter.writerow(["Experiments"])            
-            for expRow in experiments: fileWriter.writerow(expRow)
-
-            fileWriter.writerow(["Responses"])
-            for respRow in responses: fileWriter.writerow(respRow)
 
             fileWriter.writerow(["Model Coeffs"])
             fileWriter.writerow(modelCoeffs)
