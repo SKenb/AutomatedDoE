@@ -171,7 +171,7 @@ class EvaluateExperiments(State):
         combis = list(combiScoreHistory[0].scoreCombis.keys())
 
 
-        if False:
+        if True:
             Common.subplot(
                 lambda fig: Statistics.plotScoreHistory(
                     {
