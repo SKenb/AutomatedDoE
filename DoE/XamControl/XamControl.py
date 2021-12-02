@@ -255,25 +255,28 @@ class XamControlFactorsOnlyMock(XamControlBase):
 
     def _wrapXamControlExperimentResult(self, experiment) -> XamControlExperimentResult:
         return XamControlExperimentResult(
-            self._genericConversionModel(experiment, 1, -2, 6, -2, 10),
-            self._genericStyModel(experiment, 1, -2, 6, 10),
+            self._genericConversionModel(experiment, 1, -2, 6, -2, 10, 15),
+            self._genericStyModel(experiment, 0, 0, 0, 1, 0),
             request=experiment
         )
 
-    def _genericConversionModel(self, exp : XamControlExperimentRequest, const, ratio, conc, ResT, Temp):
+    def _genericConversionModel(self, exp : XamControlExperimentRequest, const, ratio, conc, ResT, Temp, ResTTemp):
 
         return const \
             + ratio * exp[XamControlExperimentRequest.REAGENTRATIO] \
             + conc * exp[XamControlExperimentRequest.CONCENTRATION] \
             + ResT * exp[XamControlExperimentRequest.RESIDENCETIME] \
-            + Temp * exp[XamControlExperimentRequest.TEMPERATURE] 
+            + Temp * exp[XamControlExperimentRequest.TEMPERATURE] \
+            + ResTTemp * exp[XamControlExperimentRequest.TEMPERATURE] * exp[XamControlExperimentRequest.RESIDENCETIME]
 
-    def _genericStyModel(self, exp : XamControlExperimentRequest, const, ratio, conc, Temp):
+    def _genericStyModel(self, exp : XamControlExperimentRequest, const, ratio, conc, Temp, concTemp):
 
         return const \
             + ratio * exp[XamControlExperimentRequest.REAGENTRATIO] \
             + conc * exp[XamControlExperimentRequest.CONCENTRATION] \
-            + Temp * exp[XamControlExperimentRequest.TEMPERATURE] 
+            + Temp * exp[XamControlExperimentRequest.TEMPERATURE]  \
+            + concTemp * exp[XamControlExperimentRequest.TEMPERATURE] * exp[XamControlExperimentRequest.CONCENTRATION]
+
 
 
           

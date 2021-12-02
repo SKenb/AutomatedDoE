@@ -71,11 +71,12 @@ class EvaluateExperiments(State):
             raise Exception("Ups")
         
         minIndex = np.argmin(significanceInterval)
-        factorIndex = minIndex-1
+        isFactor = minIndex-1 < context.activeFactorCount()
 
-        if factorIndex < context.activeFactorCount() and not context.isFactorExcluded(factorIndex):
+        if isFactor:
             # we need to remove a factor ->
             # before check if any combination with this factor still exists
+            factorIndex = context.getFactorSetIndexFromCoefIndex(minIndex-1)
             idx = Common.combinationIndexContainingFactor(combinations, factorIndex)
 
             if len(idx) <= 0:
@@ -123,7 +124,8 @@ class EvaluateExperiments(State):
             
             combiScoreHistory.add(History.CombiScoreHistoryItem(iterationIndex, combinations, r2Score, q2Score, context.excludedFactors, scoreCombis))
             
-            if len(combinations) <= 0: break
+            isSignificant, _ = Statistics.getModelTermSignificance(scaledModel.conf_int())
+            if len(combinations) <= 0 and all(isSignificant): break
 
             #combinations = self.removeLeastSignificantCombination(combinations, scaledModel.conf_int())
 
@@ -144,11 +146,12 @@ class EvaluateExperiments(State):
     def filterForBestCombinationSet(self, combiScoreHistory : History.History) -> History.CombiScoreHistoryItem:
 
         valueOfInterest = lambda item: item.r2 #item.scoreCombis["R2*Q2"]
+        relScoreBound = 0.0
 
         maxScore = valueOfInterest(max(combiScoreHistory.items(), key=valueOfInterest))
-        bound = .9*maxScore if maxScore > 0 else 1.1*maxScore
+        bound = (1-relScoreBound)*maxScore if maxScore > 0 else (1+relScoreBound)*maxScore
 
-        filteredCombiScoreHistory = combiScoreHistory.filter(lambda item: valueOfInterest(item) > bound)
+        filteredCombiScoreHistory = combiScoreHistory.filter(lambda item: valueOfInterest(item) >= bound)
 
         return min(filteredCombiScoreHistory, key=lambda item: len(item.combinations))
 
@@ -188,7 +191,7 @@ class EvaluateExperiments(State):
                 lambda fig: Statistics.plotCoefficients(scaledModel.params, context, scaledModel.conf_int(), combinations=combinations, figure=fig),
                 #lambda fig: Statistics.plotResponseHistogram(context.getResponse(), figure=fig),
                 lambda fig: Statistics.plotObservedVsPredicted(LR.predict(scaledModel, X), context.getResponse(), X=X, figure=fig),
-                lambda fig: Statistics.plotResiduals(Statistics.residualsDeletedStudentized(scaledModel), figure=fig)
+                #lambda fig: Statistics.plotResiduals(Statistics.residualsDeletedStudentized(scaledModel), figure=fig)
             )
 
         Logger.logEntireRun(context.history, context.factorSet, context.getExperimentValues(), context.Y, model.params, scaledModel.params)

@@ -73,3 +73,9 @@ class ContextDoE():
 
     def isFactorExcluded(self, factorIndex):
         return factorIndex in self.excludedFactors
+
+    def getFactorSetIndexFromCoefIndex(self, coefIndex):
+        factorIndices = np.array(range(len(self.factorSet)))
+        factorIndices = np.delete(factorIndices, self.excludedFactors)
+        return factorIndices[coefIndex]
+
