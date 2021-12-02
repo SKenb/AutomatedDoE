@@ -82,7 +82,7 @@ class EvaluateExperiments(State):
             if len(idx) <= 0:
                 #No combinations with factor -> remove factor
                 context.excludeFactor(factorIndex)
-                combinations = self.getInitCombinations()
+                combinations = CombinationFactory.removeFactor(combinations, factorIndex, self.getInitCombinations())
             else:
                 #Last combination first
                 lastCombinationWithFactor = idx[-1]
