@@ -1,5 +1,6 @@
 from XamControl import XamControl
 from Common import ExperimentFactory
+from Common import Transform
 from Common import History
 from Common import Factor
 
@@ -25,8 +26,20 @@ class contextDoE():
 
         self.excludedFactors = []
 
-    def getResponse(self, responseIdx=1):
-        return self.Y[:, responseIdx]
+    def getResponse(self, responseIdx=1, transformFlagOrTransformer = True):
+        Y = self.Y[:, responseIdx]
+
+        if transformFlagOrTransformer is None: return Y
+
+        if isinstance(transformFlagOrTransformer, bool):
+            transformer = Transform.getSuggestedTransformer(Y)
+        elif isinstance(transformFlagOrTransformer, Transform.Transformer):
+            transformer = transformFlagOrTransformer
+        else:
+            raise Exception("transformFlagOrTransformer can not be used as Flag and is no Transformer :0")
+
+        return transformer.transform(Y)
+
 
     def addNewExperiments(self, newExperimentValues, Y):
         gAppend = lambda x_, n_: n_ if len(x_) <= 0 else np.append(x_, n_, axis=0)

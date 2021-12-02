@@ -129,10 +129,10 @@ class EvaluateExperiments(State):
 
             tmpScaledModel, _ = self.createModels(combinations)
             
-            Common.subplot(
-                lambda fig: Statistics.plotCoefficients(scaledModel.params, context.factorSet, scaledModel.conf_int(), figure=fig),
-                lambda fig: Statistics.plotCoefficients(tmpScaledModel.params, context.factorSet, tmpScaledModel.conf_int(), figure=fig)
-            )
+            #Common.subplot(
+            #    lambda fig: Statistics.plotCoefficients(scaledModel.params, context.factorSet, scaledModel.conf_int(), figure=fig),
+            #    lambda fig: Statistics.plotCoefficients(tmpScaledModel.params, context.factorSet, tmpScaledModel.conf_int(), figure=fig)
+            #)
 
             iterationIndex = iterationIndex+1
 
