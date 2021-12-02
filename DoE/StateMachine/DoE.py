@@ -125,7 +125,9 @@ class EvaluateExperiments(State):
             combiScoreHistory.add(History.CombiScoreHistoryItem(iterationIndex, combinations, r2Score, q2Score, context.excludedFactors, scoreCombis))
             
             isSignificant, _ = Statistics.getModelTermSignificance(scaledModel.conf_int())
+
             if len(combinations) <= 0 and all(isSignificant): break
+            if len(combinations) <= 0 and len(scaledModel.params) <= 1: break
 
             #combinations = self.removeLeastSignificantCombination(combinations, scaledModel.conf_int())
 
@@ -145,8 +147,8 @@ class EvaluateExperiments(State):
 
     def filterForBestCombinationSet(self, combiScoreHistory : History.History) -> History.CombiScoreHistoryItem:
 
-        valueOfInterest = lambda item: item.r2 #item.scoreCombis["R2*Q2"]
-        relScoreBound = 0.0
+        valueOfInterest = lambda item: item.scoreCombis["R2*Q2"] #item.r2 #
+        relScoreBound = 0.25
 
         maxScore = valueOfInterest(max(combiScoreHistory.items(), key=valueOfInterest))
         bound = (1-relScoreBound)*maxScore if maxScore > 0 else (1+relScoreBound)*maxScore
