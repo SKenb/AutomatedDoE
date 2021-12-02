@@ -23,7 +23,7 @@ class Transformer:
         return "Transformer: {}".format(self.name)
 
     def transform(self, data, checkData=True):
-        if self.transformer is None: raise Exception("Ups 0.o - I am no real transformer")
+        if self.transformer is None: raise Exception("Ups 0.o - I am not a real transformer")
         
         if checkData and not self.dataIsValid(data): 
             print("Data is invalid :/ - NO TRANSFORMATION CONDUCTED")
@@ -37,7 +37,7 @@ class Transformer:
         return self.transformer.fit_transform(data)
 
     def invTransform(self, transformedData):
-        if self.transformer is None: raise Exception("Ups 0.o - I am no real transformer")
+        if self.transformer is None: raise Exception("Ups 0.o - I am not a real transformer")
         
         if not self.fitted:
             print("Transformer is not fitted :0 - NO (INV) TRANSFORMATION CONDUCTED")

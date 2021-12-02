@@ -130,7 +130,16 @@ class EvaluateExperiments(State):
             if len(combinations) <= 0: break
 
             #combinations = self.removeLeastSignificantCombination(combinations, scaledModel.conf_int())
+
             combinations = self.removeLeastSignificantFactorOrCombination(combinations, scaledModel.conf_int())
+
+            tmpScaledModel, _ = self.createModels(combinations)
+            
+            Common.subplot(
+                lambda fig: Statistics.plotCoefficients(scaledModel.params, context.factorSet, scaledModel.conf_int(), figure=fig),
+                lambda fig: Statistics.plotCoefficients(tmpScaledModel.params, context.factorSet, tmpScaledModel.conf_int(), figure=fig)
+            )
+
             iterationIndex = iterationIndex+1
 
         return combiScoreHistory
