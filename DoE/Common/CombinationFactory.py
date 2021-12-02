@@ -1,15 +1,14 @@
 from typing import Callable, Dict, Iterable
 
-def reduceAllCombinations(dim, predicate : Callable, stringBuilder : Callable) -> Dict: 
-    letter = lambda index: chr(65 + index % 26)
+def reduceAllCombinations(dim, condition : Callable, func : Callable, stringBuilder : Callable) -> Dict: 
+    char = lambda index: chr(65 + index % 26)
     combinations = {}
 
     for outerIndex in range(dim):
         for innerIndex in range(dim):
 
-            func = predicate(outerIndex, innerIndex)
-            if func is not None:
-                combinations[stringBuilder(letter(outerIndex), letter(innerIndex))] = \
+            if condition(outerIndex, innerIndex):
+                combinations[stringBuilder(char(outerIndex), char(innerIndex))] = \
                     lambda eV, a=outerIndex, b=innerIndex: func(eV, a, b)
 
     return combinations
@@ -17,14 +16,16 @@ def reduceAllCombinations(dim, predicate : Callable, stringBuilder : Callable) -
 def allLinearCombinations(dim): 
     return reduceAllCombinations(
         dim, 
-        lambda i, o: None if i>o else lambda e, a, b: e[a] * e[b],
+        lambda o, i: i>o,
+        lambda e, a, b: e[a] * e[b],
         lambda a, b: "{}*{}".format(a, b)
     )
 
 def allSelfSquaredCombinations(dim):
     return reduceAllCombinations(
         dim, 
-        lambda i, o: None if i!=o else lambda e, a, b: e[a]**2,
+        lambda o, i: o!=i,
+        lambda e, a, b: e[a]**2,
         lambda a, b: "{}^2".format(a)
     )
 
@@ -38,6 +39,8 @@ def allCombinations(dim):
 
 if __name__ == "__main__":
 
-    c = combineCombinations(allLinearCombinations, allSelfSquaredCombinations)
-    print(c.keys())
-    print(c["C^2"]([1, 2, 3, 4, 5, 6]))
+    allLinearCombinations(3)
+
+    #c = combineCombinations(allLinearCombinations, allSelfSquaredCombinations, 5)
+    #print(c.keys())
+    #print(c["C^2"]([1, 2, 3, 4, 5, 6]))

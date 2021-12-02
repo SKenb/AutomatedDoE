@@ -6,11 +6,11 @@ from Common import Factor
 
 import numpy as np
 
-class contextDoE():
+class ContextDoE():
 
     def __init__(self):
 
-        self.xamControl = XamControl.XamControlTestRun1Mock()
+        self.xamControl = XamControl.XamControlFactorsOnlyMock() # XamControl.XamControlTestRun1Mock()
         self.experimentFactory = ExperimentFactory.ExperimentFactory()
         self.factorSet = Factor.getDefaultFactorSet()
         
@@ -26,12 +26,14 @@ class contextDoE():
 
         self.excludedFactors = []
 
-    def getResponse(self, responseIdx=1, transformFlagOrTransformer = True):
+    def getResponse(self, responseIdx=1, transformFlagOrTransformer = False):
         Y = self.Y[:, responseIdx]
 
         if transformFlagOrTransformer is None: return Y
 
         if isinstance(transformFlagOrTransformer, bool):
+            if not transformFlagOrTransformer: return Y
+            
             transformer = Transform.getSuggestedTransformer(Y)
         elif isinstance(transformFlagOrTransformer, Transform.Transformer):
             transformer = transformFlagOrTransformer
@@ -56,8 +58,11 @@ class contextDoE():
 
     def excludeFactor(self, factorIndex):
         if isinstance(factorIndex, list):
+            assert all(np.array(factorIndex) >= 0) and all(np.array(factorIndex) <= len(self.factorSet)), "Ups - U want to exclude a factor which we don't know :/"
             self.excludedFactors.extend(factorIndex)
+
         else:
+            assert factorIndex >= 0 and factorIndex <= len(self.factorSet), "Ups - U want to exclude a factor which we don't know :/"
             self.excludedFactors.append(factorIndex)
 
     def resetFactorExlusion(self):

@@ -1,5 +1,5 @@
 from StateMachine.StateMachine import State
-from StateMachine.Context import contextDoE
+from StateMachine.Context import ContextDoE
 from Common import Common
 from Common import Logger
 from Common import Statistics
@@ -23,7 +23,7 @@ class InitDoE(State):
 
         global context
 
-        context = contextDoE()
+        context = ContextDoE()
         Logger.logStateInfo(str(context.factorSet))
 
         return FindNewExperiments()
@@ -61,9 +61,11 @@ class EvaluateExperiments(State):
 
         return context.scaledModel, context.model
 
-    def removeLeastSignificantFactorOrCombination(self, combinations, conf_int):
-        _, significanceInterval = Statistics.getModelTermSignificance(conf_int)
-        significanceInterval[0] = 100 # we won't remove constant part
+    def removeLeastSignificantFactorOrCombination(self, combinations, model):
+        _, significanceInterval = Statistics.getModelTermSignificance(model.conf_int())
+
+        significanceInterval[np.abs(model.params) < 1e-4] = 0 # we remove factors / combinations which are near zero
+        significanceInterval[0] = 1000 # we won't remove constant part
 
         if(len(significanceInterval) != 1 + context.activeFactorCount() + len(combinations)):
             raise Exception("Ups")
@@ -125,13 +127,14 @@ class EvaluateExperiments(State):
 
             #combinations = self.removeLeastSignificantCombination(combinations, scaledModel.conf_int())
 
-            combinations = self.removeLeastSignificantFactorOrCombination(combinations, scaledModel.conf_int())
+            tmpCombinations = combinations
+            combinations = self.removeLeastSignificantFactorOrCombination(combinations, scaledModel)
 
             tmpScaledModel, _ = self.createModels(combinations)
             
             #Common.subplot(
-            #    lambda fig: Statistics.plotCoefficients(scaledModel.params, context.factorSet, scaledModel.conf_int(), figure=fig),
-            #    lambda fig: Statistics.plotCoefficients(tmpScaledModel.params, context.factorSet, tmpScaledModel.conf_int(), figure=fig)
+            #    lambda fig: Statistics.plotCoefficients(scaledModel.params, context, scaledModel.conf_int(), combinations=tmpCombinations, figure=fig),
+            #    lambda fig: Statistics.plotCoefficients(tmpScaledModel.params, context, tmpScaledModel.conf_int(), combinations=combinations, figure=fig)
             #)
 
             iterationIndex = iterationIndex+1
@@ -140,7 +143,7 @@ class EvaluateExperiments(State):
 
     def filterForBestCombinationSet(self, combiScoreHistory : History.History) -> History.CombiScoreHistoryItem:
 
-        valueOfInterest = lambda item: item.scoreCombis["R2*Q2"]
+        valueOfInterest = lambda item: item.r2 #item.scoreCombis["R2*Q2"]
 
         maxScore = valueOfInterest(max(combiScoreHistory.items(), key=valueOfInterest))
         bound = .9*maxScore if maxScore > 0 else 1.1*maxScore
@@ -182,7 +185,7 @@ class EvaluateExperiments(State):
                         "Q2": combiScoreHistory.choose(lambda i: i.q2),
                         combis[0]: combiScoreHistory.choose(lambda i: i.scoreCombis[combis[0]])
                     }, bestCombiScoreItem.index, figure=fig),
-                lambda fig: Statistics.plotCoefficients(scaledModel.params, context.factorSet, scaledModel.conf_int(), figure=fig),
+                lambda fig: Statistics.plotCoefficients(scaledModel.params, context, scaledModel.conf_int(), combinations=combinations, figure=fig),
                 #lambda fig: Statistics.plotResponseHistogram(context.getResponse(), figure=fig),
                 lambda fig: Statistics.plotObservedVsPredicted(LR.predict(scaledModel, X), context.getResponse(), X=X, figure=fig),
                 lambda fig: Statistics.plotResiduals(Statistics.residualsDeletedStudentized(scaledModel), figure=fig)
