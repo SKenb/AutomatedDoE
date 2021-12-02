@@ -25,6 +25,8 @@ class contextDoE():
 
         self.excludedFactors = []
 
+    def getResponse(self, responseIdx=1):
+        return self.Y[:, responseIdx]
 
     def addNewExperiments(self, newExperimentValues, Y):
         gAppend = lambda x_, n_: n_ if len(x_) <= 0 else np.append(x_, n_, axis=0)

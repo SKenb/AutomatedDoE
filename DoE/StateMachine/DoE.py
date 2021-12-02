@@ -56,8 +56,8 @@ class EvaluateExperiments(State):
 
     def createModels(self, combinations, responseIdx = 1):
 
-        context.scaledModel = Common.getModel(context.getExperimentValues(), combinations, context.Y[:, responseIdx], Statistics.orthogonalScaling)
-        context.model = Common.getModel(context.getExperimentValues(), combinations, context.Y[:, responseIdx])
+        context.scaledModel = Common.getModel(context.getExperimentValues(), combinations, context.getResponse(), Statistics.orthogonalScaling)
+        context.model = Common.getModel(context.getExperimentValues(), combinations, context.getResponse())
 
         return context.scaledModel, context.model
 
@@ -90,12 +90,6 @@ class EvaluateExperiments(State):
 
         return combinations 
 
-
-    #def removeLeastSignificantCombination(self, combinations, conf_int):
-    #    _, significanceInterval = Statistics.getModelTermSignificance(conf_int)
-    #    significanceInterval[0:5] = 100
-    #    return Common.removeCombinations(combinations, lambda index, k, v: index == np.argmin(significanceInterval), len(context.factorSet)) 
-
     def getCombinationsForBinPattern(self, combinationSet, number):
         removeList = list(range(5))
         removeList.extend([int(d) for d in str(bin(number))[2:]])
@@ -113,7 +107,7 @@ class EvaluateExperiments(State):
 
             X = Common.getXWithCombinations(context.getExperimentValues(), combinations, Statistics.orthogonalScaling)
 
-            trainingY = context.Y[:, responseIdx]
+            trainingY = context.getResponse()
             predictionY = LR.predict(scaledModel, X)
 
             r2Score = Statistics.R2(trainingY, predictionY)
@@ -186,18 +180,12 @@ class EvaluateExperiments(State):
                     {
                         "R2": combiScoreHistory.choose(lambda i: i.r2), 
                         "Q2": combiScoreHistory.choose(lambda i: i.q2),
-                        combis[0]: combiScoreHistory.choose(lambda i: i.scoreCombis[combis[0]]),
-                        #combis[1]: combiScoreHistory.choose(lambda i: i.scoreCombis[combis[1]]),
-                        #combis[2]: combiScoreHistory.choose(lambda i: i.scoreCombis[combis[2]])
+                        combis[0]: combiScoreHistory.choose(lambda i: i.scoreCombis[combis[0]])
                     }, bestCombiScoreItem.index, figure=fig),
                 lambda fig: Statistics.plotCoefficients(scaledModel.params, context.factorSet, scaledModel.conf_int(), figure=fig),
-                #lambda fig: Statistics.plotResponseHistogram(context.Y[:, 1], figure=fig),
-                lambda fig: Statistics.plotObservedVsPredicted(LR.predict(scaledModel, X), context.Y[:, 1], X=X, figure=fig),
-                lambda fig: Statistics.plotResiduals(Statistics.residualsDeletedStudentized(scaledModel), figure=fig),
-                #lambda fig: Statistics.plotResponseHistogram(context.Y[:, 1], figure=fig, scaling=False, transfroms={"Y": lambda x: x}),
-                #lambda fig: Statistics.plotResponseHistogram(context.Y[:, 1], figure=fig, scaling=False, transfroms={"Box-Cox": lambda x: boxcox(x)[0]}),
-                #lambda fig: Statistics.plotResponseHistogram(context.Y[:, 1], figure=fig, scaling=False, transfroms={"Yeo and R.A. Johnson": lambda x: yeojohnson(x)[0]}),
-                #lambda fig: Statistics.plotResponseHistogram(context.Y[:, 1], figure=fig, scaling=False, transfroms={"Quantile": lambda x: quantile_transform(x.reshape(-1, 1))[:, 0]})
+                #lambda fig: Statistics.plotResponseHistogram(context.getResponse(), figure=fig),
+                lambda fig: Statistics.plotObservedVsPredicted(LR.predict(scaledModel, X), context.getResponse(), X=X, figure=fig),
+                lambda fig: Statistics.plotResiduals(Statistics.residualsDeletedStudentized(scaledModel), figure=fig)
             )
 
         Logger.logEntireRun(context.history, context.factorSet, context.getExperimentValues(), context.Y, model.params, scaledModel.params)
