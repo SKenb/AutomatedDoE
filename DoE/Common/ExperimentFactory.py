@@ -26,7 +26,9 @@ class ExperimentFactory:
             centerExperiments[0][genIndex % factorCount] = 1
             centerExperiments = np.vstack((centerExperiments, -1*centerExperiments))
 
-        return np.vstack((experiments, centerExperiments))
+            experiments = np.vstack((experiments, centerExperiments))
+
+        return experiments
 
 
 
