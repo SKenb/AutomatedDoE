@@ -150,12 +150,12 @@ class EvaluateExperiments(State):
         search = lambda func: valueOfInterest(func(combiScoreHistory.items(), key=valueOfInterest))
         maxScore = search(max)
 
-        relScoreBound = (maxScore - search(min)) * 0.1
+        relScoreBound = (maxScore - search(min)) * 0.25
         bound = (maxScore-relScoreBound) if maxScore > 0 else (maxScore+relScoreBound)
 
         filteredCombiScoreHistory = combiScoreHistory.filter(lambda item: valueOfInterest(item) >= bound)
 
-        return min(filteredCombiScoreHistory, key=lambda item: len(item.combinations))
+        return min(filteredCombiScoreHistory, key=lambda item: len(item.combinations)-len(item.excludedFactors))
 
     def onCall(self):
 
