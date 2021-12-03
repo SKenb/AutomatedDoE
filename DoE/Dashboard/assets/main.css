@@ -65,6 +65,10 @@ body {
     left: auto; right: 25px;
 }
 
+#processControl #buttonStop {
+    left: 25px; right: 25px;
+}
+
 #processControl progress {
     width: 90%;
     margin-top: 50px;

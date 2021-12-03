@@ -1,4 +1,4 @@
-from dash import html, Dash
+from dash import html, Dash, dcc
 import plotly.express as px
 from datetime import datetime
 
@@ -14,16 +14,24 @@ def getDoELayout():
                 id="processControl",
                 children=[
                     html.P(children="STATE: "),
-                    html.P(id="state", style={'fontWeight': 'bold'}, children="READY"),
+                    html.P(id="state", children="READY"),
+                    html.P(id="processState", children=""),
                     html.Br(), 
                     html.Progress(id="stateProgessBar"),
                     html.Div(
                         id="buttonContainer",
                         children=[
                             html.Button(id="buttonStart", children="Let's do some DoE"),
-                            html.Button(id="buttonStop", children="Coffe break - now"),
+                            html.Button(id="buttonPause", children="Coffe break - now"),
                         ]
-                    )
+                    ),
+                    html.Br(), html.Br(), 
+                    html.Button(
+                        id="buttonStop", 
+                        children="STOP",
+                        style={"width": "80%", "margin": "auto"}
+                    ),
+                    dcc.Store(id='processPauseFlag')
                 ]
             ),
             html.Div(
