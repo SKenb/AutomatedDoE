@@ -7,7 +7,6 @@ from Common import History
 from Common import CombinationFactory
 from Common import LinearRegression as LR
 
-
 from scipy.stats import skewtest, boxcox, yeojohnson
 from sklearn.preprocessing import quantile_transform
 
@@ -119,7 +118,8 @@ class EvaluateExperiments(State):
             # Used as different scores so far
             scoreCombis = {
                 "R2*Q2": r2Score*q2Score, 
-                "1/2*R2+Q2": .5*r2Score+q2Score
+                "1/2*R2+Q2": .5*r2Score+q2Score, 
+                "R2-Q2": r2Score-q2Score
             }
             
             combiScoreHistory.add(History.CombiScoreHistoryItem(iterationIndex, combinations, r2Score, q2Score, context.excludedFactors, scoreCombis))
@@ -128,6 +128,8 @@ class EvaluateExperiments(State):
 
             if len(combinations) <= 0 and all(isSignificant): break
             if len(combinations) <= 0 and len(scaledModel.params) <= 1: break
+            # Return after one run
+            if len(context.history) >= 1: break
 
             #combinations = self.removeLeastSignificantCombination(combinations, scaledModel.conf_int())
 

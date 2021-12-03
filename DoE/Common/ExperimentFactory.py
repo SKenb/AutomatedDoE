@@ -17,6 +17,19 @@ class ExperimentFactory:
         lb, ub = int(2**(factorCount/2)), int(2**(factorCount - 1))
         centerPoint = np.zeros(factorCount)
 
+
+        #### Return all factors at once:
+        experiments = np.vstack((experiments, np.array([centerPoint, centerPoint, centerPoint])))
+        # add center points
+        for genIndex in range(factorCount):
+            centerExperiments = np.zeros((1, factorCount))
+            centerExperiments[0][genIndex % factorCount] = 1
+            centerExperiments = np.vstack((centerExperiments, -1*centerExperiments))
+
+        return np.vstack((experiments, centerExperiments))
+
+
+
         #1 Edges and mirrored ones
         if self.requestCount <= 1:
             # Fractional FacDesign
