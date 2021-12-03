@@ -1,15 +1,16 @@
 from XamControl import XamControl
 from Common import ExperimentFactory
+from Common import Transform
 from Common import History
 from Common import Factor
 
 import numpy as np
 
-class contextDoE():
+class ContextDoE():
 
     def __init__(self):
 
-        self.xamControl = XamControl.XamControlTestRun1Mock()
+        self.xamControl = XamControl.XamControlTestRun1Mock() #XamControl.XamControlFactorsOnlyMock() # XamControl.XamControlTestRun1Mock()
         self.experimentFactory = ExperimentFactory.ExperimentFactory()
         self.factorSet = Factor.getDefaultFactorSet()
         
@@ -24,6 +25,22 @@ class contextDoE():
         self.history = History.History()
 
         self.excludedFactors = []
+
+    def getResponse(self, responseIdx=1, transformFlagOrTransformer = True):
+        Y = self.Y[:, responseIdx]
+
+        if transformFlagOrTransformer is None: return Y
+
+        if isinstance(transformFlagOrTransformer, bool):
+            if not transformFlagOrTransformer: return Y
+            
+            transformer = Transform.getSuggestedTransformer(Y)
+        elif isinstance(transformFlagOrTransformer, Transform.Transformer):
+            transformer = transformFlagOrTransformer
+        else:
+            raise Exception("transformFlagOrTransformer can not be used as Flag and is no Transformer :0")
+
+        return transformer.transform(Y)
 
 
     def addNewExperiments(self, newExperimentValues, Y):
@@ -41,8 +58,11 @@ class contextDoE():
 
     def excludeFactor(self, factorIndex):
         if isinstance(factorIndex, list):
+            assert all(np.array(factorIndex) >= 0) and all(np.array(factorIndex) <= len(self.factorSet)), "Ups - U want to exclude a factor which we don't know :/"
             self.excludedFactors.extend(factorIndex)
+
         else:
+            assert factorIndex >= 0 and factorIndex <= len(self.factorSet), "Ups - U want to exclude a factor which we don't know :/"
             self.excludedFactors.append(factorIndex)
 
     def resetFactorExlusion(self):
@@ -53,3 +73,9 @@ class contextDoE():
 
     def isFactorExcluded(self, factorIndex):
         return factorIndex in self.excludedFactors
+
+    def getFactorSetIndexFromCoefIndex(self, coefIndex):
+        factorIndices = np.array(range(len(self.factorSet)))
+        factorIndices = np.delete(factorIndices, self.excludedFactors)
+        return factorIndices[coefIndex]
+

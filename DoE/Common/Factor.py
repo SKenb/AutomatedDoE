@@ -57,6 +57,18 @@ class FactorSet:
     def __len__(self):
         return len(self.factors)
 
+    def __mul__(self, other):
+        return [
+                factor * other[index] 
+                for index, factor in enumerate(self.factors)
+            ]
+
+    def __rmul__(self, other):
+        self.__mul__(other)
+
+    def __getitem__(self, index):
+        return self.factors[index].name
+    
     def realizeExperiments(self, nomredExperiments : Iterable, sortColumn=None, sortReverse=False):
         self.realizedExperiments = nomredExperiments
         self._setExperimentValues(np.array([self * experiment for experiment in nomredExperiments]))
@@ -112,14 +124,6 @@ class FactorSet:
         self.setExperimentValueCombinations(reduced)
         return reduced
 
-    def __mul__(self, other):
-        return [
-                factor * other[index] 
-                for index, factor in enumerate(self.factors)
-            ]
-
-    def __rmul__(self, other):
-        self.__mul__(other)
 
     def getFactorCount(self):
         return len(self.factors)

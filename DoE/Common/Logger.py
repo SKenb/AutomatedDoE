@@ -79,23 +79,23 @@ def logEntireRun(history, factorSet, experiments, responses, modelCoeffs, scaled
     runNumber = len(history)
 
     with open(logFolder / "experiment_data_{}.csv".format(runNumber), 'w', newline='') as csvfile:
-            fileWriter = csv.writer(csvfile, delimiter=';', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+        fileWriter = csv.writer(csvfile, delimiter=';', quotechar='|', quoting=csv.QUOTE_MINIMAL)
 
-            for expRespRow in np.append(experiments, responses, axis=1): fileWriter.writerow(expRespRow)
+        for expRespRow in np.append(experiments, responses, axis=1): fileWriter.writerow(expRespRow)
 
 
     with open(logFolder / "experiment_model_{}.csv".format(runNumber), 'w', newline='') as csvfile:
-            fileWriter = csv.writer(csvfile, delimiter=';', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+        fileWriter = csv.writer(csvfile, delimiter=';', quotechar='|', quoting=csv.QUOTE_MINIMAL)
 
-            fileWriter.writerow(["Details"]) 
-            fileWriter.writerow([
-                "Run", runNumber, 
-                "DateTime", datetime.now().strftime("%d.%m.%Y %H:%M:%S"),
-                "Factor Set", str(factorSet)
-            ]) 
+        fileWriter.writerow(["Details"]) 
+        fileWriter.writerow([
+            "Run", runNumber, 
+            "DateTime", datetime.now().strftime("%d.%m.%Y %H:%M:%S"),
+            "Factor Set", str(factorSet)
+        ]) 
 
-            fileWriter.writerow(["Model Coeffs"])
-            fileWriter.writerow(modelCoeffs)
+        fileWriter.writerow(["Model Coeffs"])
+        fileWriter.writerow(modelCoeffs)
 
-            fileWriter.writerow(["Scaled Model Coeffs"])
-            fileWriter.writerow(scaledModelCoeffs)
+        fileWriter.writerow(["Scaled Model Coeffs"])
+        fileWriter.writerow(scaledModelCoeffs)

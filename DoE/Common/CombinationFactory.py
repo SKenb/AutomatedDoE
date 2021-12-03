@@ -1,43 +1,69 @@
 from typing import Callable, Dict, Iterable
 
-def reduceAllCombinations(dim, predicate : Callable, stringBuilder : Callable) -> Dict: 
-    letter = lambda index: chr(65 + index % 26)
+import numpy as np
+
+def reduceAllCombinations(dim, condition : Callable, func : Callable, stringBuilder : Callable) -> dict: 
+    char = lambda index: chr(65 + index % 26)
     combinations = {}
 
     for outerIndex in range(dim):
         for innerIndex in range(dim):
 
-            func = predicate(outerIndex, innerIndex)
-            if func is not None:
-                combinations[stringBuilder(letter(outerIndex), letter(innerIndex))] = \
+            if condition(outerIndex, innerIndex):
+                combinations[stringBuilder(char(outerIndex), char(innerIndex))] = \
                     lambda eV, a=outerIndex, b=innerIndex: func(eV, a, b)
 
     return combinations
 
-def allLinearCombinations(dim): 
+def allLinearCombinations(dim) -> dict: 
     return reduceAllCombinations(
         dim, 
-        lambda i, o: None if i>o else lambda e, a, b: e[a] * e[b],
+        lambda o, i: i>o,
+        lambda e, a, b: e[a] * e[b],
         lambda a, b: "{}*{}".format(a, b)
     )
 
-def allSelfSquaredCombinations(dim):
+def allSelfSquaredCombinations(dim) -> dict:
     return reduceAllCombinations(
         dim, 
-        lambda i, o: None if i!=o else lambda e, a, b: e[a]**2,
+        lambda o, i: o!=i,
+        lambda e, a, b: e[a]**2,
         lambda a, b: "{}^2".format(a)
     )
 
-def combineCombinations(*functions, dim):
+def combineCombinations(*functions, dim) -> dict:
     combinationsList = {}
     for func in functions: combinationsList.update(func(dim))
     return combinationsList
 
-def allCombinations(dim):
+def removeFactor(combinations:dict, factorIndex, baseCombinationSet:dict):
+    char = lambda index: chr(65 + index % 26)
+    
+    isAtoZ = lambda a: a >= 65 and a <= (65+26)
+    aOrd = lambda str_: np.array([ord(c) for c in str_])
+
+    def getLabelsWithOffset(label, offset, bound):
+        return "".join([
+                    chr(ord_+offset) if isAtoZ(ord_) and ord_-65 > bound else chr(ord_) 
+                    for ord_ in aOrd(label)
+                ])
+
+    newAllowedLabels = [getLabelsWithOffset(label, -1, factorIndex) for label in combinations]
+
+    return {
+        getLabelsWithOffset(label, 1, factorIndex-1) : func 
+        for (label, func) in baseCombinationSet.items() 
+        if label in newAllowedLabels
+    }
+    
+
+def allCombinations(dim) -> dict:
     return combineCombinations(allLinearCombinations, allSelfSquaredCombinations, dim=dim)
 
 if __name__ == "__main__":
 
-    c = combineCombinations(allLinearCombinations, allSelfSquaredCombinations)
-    print(c.keys())
-    print(c["C^2"]([1, 2, 3, 4, 5, 6]))
+    allLinearCombinations(3)
+
+    #c = combineCombinations(allLinearCombinations, allSelfSquaredCombinations, 5)
+    #print(c.keys())
+    #print(c["C^2"]([1, 2, 3, 4, 5, 6]))

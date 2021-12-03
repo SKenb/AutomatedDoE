@@ -235,6 +235,50 @@ class XamControlTestRun1Mock(XamControlSimpleMock):
                 raise Exception("Data not found in dataset :/ - Note: only defined exp. r allowed (Idx:" + str(index) + ")")
 
         return XamControlExperimentResult(np.mean(dataSet[0, 4]), np.mean(dataSet[:, 5]), request=experiment)
+
+
+class XamControlFactorsOnlyMock(XamControlBase):
+
+    def __init__(self):
+        super().__init__("Xam control - Factors Only Mock")
+
+    def startExperiment(self, experiment : XamControlExperimentRequest, simulateExperimentTime = 0) -> XamControlExperimentResult:
+
+        self._startExperimentRequest(experiment)
+        
+        if simulateExperimentTime > 0: time.sleep(simulateExperimentTime)
+
+        experimentResult = self._wrapXamControlExperimentResult(experiment)
+
+        self._receivedExperimentResult(experimentResult)
+        return experimentResult
+
+    def _wrapXamControlExperimentResult(self, experiment) -> XamControlExperimentResult:
+        return XamControlExperimentResult(
+            self._genericConversionModel(experiment, 1, -2, 6, -2, 10, 15),
+            self._genericStyModel(experiment, 0, 2, 1, 1, 10),
+            request=experiment
+        )
+
+    def _genericConversionModel(self, exp : XamControlExperimentRequest, const, ratio, conc, ResT, Temp, ResTTemp):
+
+        return const \
+            + ratio * exp[XamControlExperimentRequest.REAGENTRATIO] \
+            + conc * exp[XamControlExperimentRequest.CONCENTRATION] \
+            + ResT * exp[XamControlExperimentRequest.RESIDENCETIME] \
+            + Temp * exp[XamControlExperimentRequest.TEMPERATURE] \
+            + ResTTemp * exp[XamControlExperimentRequest.TEMPERATURE] * exp[XamControlExperimentRequest.RESIDENCETIME]
+
+    def _genericStyModel(self, exp : XamControlExperimentRequest, const, ratio, conc, Temp, concTemp):
+
+        return const \
+            + ratio * exp[XamControlExperimentRequest.REAGENTRATIO] \
+            + conc * exp[XamControlExperimentRequest.CONCENTRATION] \
+            + Temp * exp[XamControlExperimentRequest.TEMPERATURE]  \
+            + concTemp * exp[XamControlExperimentRequest.TEMPERATURE] * exp[XamControlExperimentRequest.CONCENTRATION]
+
+
+
           
 
 

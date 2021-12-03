@@ -13,7 +13,7 @@ from sklearn.preprocessing import quantile_transform
 import numpy as np
 import statsmodels.api as sm
 
-from Common.Factor import FactorSet
+from StateMachine.Context import ContextDoE
 
 def plotObservedVsPredicted(prediction, observation, titleSuffix=None, X=None, figure=None):
 
@@ -31,8 +31,8 @@ def plotObservedVsPredicted(prediction, observation, titleSuffix=None, X=None, f
         lambda plt: plt.plot([0, 0], [minVal, maxVal], 'k', linewidth=1),
         lambda plt: plt.plot([minVal, maxVal], [minVal, maxVal], 'k--', linewidth=2),
         lambda plt: plt.grid(), 
-        lambda plt: plt.text(.5*(minVal + maxVal), 0.2, "R2: {}".format(R2(observation, prediction))),
-        lambda plt: X is not None and plt.text(.5*(minVal + maxVal), 0.1, "Q2: {}".format(Q2(X, observation))),
+        lambda plt: plt.text(-.25*(maxVal - minVal), .25*(maxVal - minVal), "R2: {}".format(R2(observation, prediction))),
+        lambda plt: X is not None and plt.text(.25*(maxVal - minVal), -.25*(maxVal - minVal), "Q2: {}".format(Q2(X, observation))),
         xLabel="Predicted", yLabel="Observed", title=titleStr, 
         figure=figure
     )
@@ -53,7 +53,7 @@ def plotResiduals(residuals, bound=4, figure=None):
     )
 
 
-def plotCoefficients(coefficientValues, factorSet:FactorSet=None, confidenceInterval=None, titleSuffix=None, figure=None):
+def plotCoefficients(coefficientValues, context:ContextDoE=None, confidenceInterval=None, titleSuffix=None, figure=None, combinations:dict=None, ):
     titleStr = "Coefficients plot"
     if titleSuffix is not None: titleStr += " - " + titleSuffix
     l = len(coefficientValues)
@@ -67,8 +67,12 @@ def plotCoefficients(coefficientValues, factorSet:FactorSet=None, confidenceInte
 
 
     labels = None 
-    if factorSet is not None or l != len(factorSet.getCoefficientLabels()):
-        labels = factorSet.getCoefficientLabels()
+    if context is not None and combinations is not None and l == context.activeFactorCount() + len(combinations) + 1:
+        char = lambda index: chr(65 + index % 26)
+
+        labels = ["Constant"]
+        labels.extend(["{} ({})".format(context.factorSet[index], char(index)) for index in range(len(context.factorSet)) if not context.isFactorExcluded(index)])
+        labels.extend(combinations.keys())
 
 
     def _plotBars(plt):
@@ -79,7 +83,7 @@ def plotCoefficients(coefficientValues, factorSet:FactorSet=None, confidenceInte
     Common.plot(
         lambda plt: _plotBars(plt),
         lambda plt: plt.errorbar(range(l), coefficientValues, confidenceInterval, fmt=' ', color='b'),
-        #lambda plt: plt.xticks(range(l), labels, rotation=90),
+        lambda plt: True if labels is None else plt.xticks(range(l), labels, rotation=90),
         xLabel="Coefficient", yLabel="Value", title=titleStr,
         figure=figure
     )
