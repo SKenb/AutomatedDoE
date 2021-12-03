@@ -256,7 +256,7 @@ class XamControlFactorsOnlyMock(XamControlBase):
     def _wrapXamControlExperimentResult(self, experiment) -> XamControlExperimentResult:
         return XamControlExperimentResult(
             self._genericConversionModel(experiment, 1, -2, 6, -2, 10, 15),
-            self._genericStyModel(experiment, 0, 2, 1, 0, 8),
+            self._genericStyModel(experiment, 0, 2, 0, 1, 8),
             request=experiment
         )
 

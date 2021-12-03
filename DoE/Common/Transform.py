@@ -92,11 +92,13 @@ class BoxCoxOffsetTransformer(Transformer):
     def __init__(self) -> None:
         super().__init__("Box-Cox with Offset")
         self.transformer = PowerTransformer(method='box-cox', standardize=True)
-        self.offset = 0
+        self.offset = None
 
     def _dataPreTransformation(self, data):
         dataMin = np.min(data)
-        self.offset = 0 if dataMin > 0 else np.abs(dataMin) + 1e-3
+
+        if self.offset is None:
+            self.offset = 0 if dataMin > 0 else np.abs(dataMin) + 1e-3
 
         return self.offset + data
 
