@@ -17,6 +17,57 @@ body {
 
     border-radius: 10px;
     padding: 20px 50px;
+
+    position: relative;
+}
+
+#footer {
+    font-size: red;
+    text-align: center;
+    font-size: 10px;
+
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    margin: 5px auto;
+}
+
+#footer a {
+    margin: 0 5px;
+}
+
+#header {
+    position: absolute;
+    top: 5px;
+    right: 20px;
+
+    font-size: 10px;
+}
+
+#processControl {
+    text-align: center;
+    margin: 70px auto;
+    position: relative;
+    width: 80%;
+    max-width: 400px;
+}
+
+#processControl button {
+    margin: 10px 5px;
+    font-size: 16px;
+
+    position: absolute;
+    left: 25px;
+}
+
+#processControl button:nth-child(2n) {
+    left: auto; right: 25px;
+}
+
+#processControl progress {
+    width: 90%;
+    margin-top: 50px;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -27,4 +78,8 @@ h1, h2, h3, h4, h5, h6 {
 h1 {
     font-size: 36px;
     text-align: center;
+}
+
+p {
+    display: inline;
 }
