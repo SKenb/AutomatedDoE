@@ -7,7 +7,6 @@ from Common import History
 from Common import CombinationFactory
 from Common import LinearRegression as LR
 
-
 from scipy.stats import skewtest, boxcox, yeojohnson
 from sklearn.preprocessing import quantile_transform
 
@@ -52,7 +51,7 @@ class EvaluateExperiments(State):
     def __init__(self): super().__init__("Evaluate experiments")
 
     def getInitCombinations(self):
-        return CombinationFactory.allLinearCombinations(context.activeFactorCount()) # CombinationFactory.allCombinations() # 
+        return CombinationFactory.allCombinations(context.activeFactorCount()) # CombinationFactory.allLinearCombinations(context.activeFactorCount()) # 
 
     def createModels(self, combinations, responseIdx = 1):
 
@@ -64,13 +63,13 @@ class EvaluateExperiments(State):
     def removeLeastSignificantFactorOrCombination(self, combinations, model):
         _, significanceInterval = Statistics.getModelTermSignificance(model.conf_int())
 
-        significanceInterval[np.abs(model.params) < 1e-4] = 0 # we remove factors / combinations which are near zero
-        significanceInterval[0] = 1000 # we won't remove constant part
+        significanceInterval[np.abs(model.params) < 1e-4] = 1000 # we remove factors / combinations which are near zero
+        significanceInterval[0] = 0 # we won't remove constant part
 
         if(len(significanceInterval) != 1 + context.activeFactorCount() + len(combinations)):
             raise Exception("Ups")
         
-        minIndex = np.argmin(significanceInterval)
+        minIndex = [index for index, value in enumerate(significanceInterval) if value >= max(significanceInterval)][-1] #np.argmax(significanceInterval)
         isFactor = minIndex-1 < context.activeFactorCount()
 
         if isFactor:
@@ -89,7 +88,7 @@ class EvaluateExperiments(State):
                 combinations = Common.removeCombinations(combinations, lambda index, k, v: index == lastCombinationWithFactor, -1) 
         else:
             #Remove least significant
-            combinations = Common.removeCombinations(combinations, lambda index, k, v: index == np.argmin(significanceInterval[context.activeFactorCount()+1:]), -1) 
+            combinations = Common.removeCombinations(combinations, lambda index, k, v: index == (minIndex - context.activeFactorCount() - 1), -1) 
 
         return combinations 
 
@@ -119,7 +118,7 @@ class EvaluateExperiments(State):
             # Used as different scores so far
             scoreCombis = {
                 "R2*Q2": r2Score*q2Score, 
-                "1/2*R2+Q2": .5*r2Score+q2Score
+                "1-(R2-Q2)": (1-(r2Score-q2Score))*r2Score
             }
             
             combiScoreHistory.add(History.CombiScoreHistoryItem(iterationIndex, combinations, r2Score, q2Score, context.excludedFactors, scoreCombis))
@@ -147,15 +146,16 @@ class EvaluateExperiments(State):
 
     def filterForBestCombinationSet(self, combiScoreHistory : History.History) -> History.CombiScoreHistoryItem:
 
-        valueOfInterest = lambda item: item.scoreCombis["R2*Q2"] #item.r2 #
-        relScoreBound = 0.25
+        valueOfInterest = lambda item: item.q2 #.scoreCombis["1-(R2-Q2)"] #item.r2 #
+        search = lambda func: valueOfInterest(func(combiScoreHistory.items(), key=valueOfInterest))
+        maxScore = search(max)
 
-        maxScore = valueOfInterest(max(combiScoreHistory.items(), key=valueOfInterest))
-        bound = (1-relScoreBound)*maxScore if maxScore > 0 else (1+relScoreBound)*maxScore
+        relScoreBound = (maxScore - search(min)) * 0.25
+        bound = (maxScore-relScoreBound) if maxScore > 0 else (maxScore+relScoreBound)
 
         filteredCombiScoreHistory = combiScoreHistory.filter(lambda item: valueOfInterest(item) >= bound)
 
-        return min(filteredCombiScoreHistory, key=lambda item: len(item.combinations))
+        return min(filteredCombiScoreHistory, key=lambda item: len(item.combinations)-len(item.excludedFactors))
 
     def onCall(self):
 
@@ -188,7 +188,8 @@ class EvaluateExperiments(State):
                     {
                         "R2": combiScoreHistory.choose(lambda i: i.r2), 
                         "Q2": combiScoreHistory.choose(lambda i: i.q2),
-                        combis[0]: combiScoreHistory.choose(lambda i: i.scoreCombis[combis[0]])
+                        combis[0]: combiScoreHistory.choose(lambda i: i.scoreCombis[combis[0]]),
+                        combis[1]: combiScoreHistory.choose(lambda i: i.scoreCombis[combis[1]])
                     }, bestCombiScoreItem.index, figure=fig),
                 lambda fig: Statistics.plotCoefficients(scaledModel.params, context, scaledModel.conf_int(), combinations=combinations, figure=fig),
                 #lambda fig: Statistics.plotResponseHistogram(context.getResponse(), figure=fig),
@@ -198,6 +199,9 @@ class EvaluateExperiments(State):
 
         Logger.logEntireRun(context.history, context.factorSet, context.getExperimentValues(), context.Y, model.params, scaledModel.params)
         
+        
+        # Return after one run
+        return None
         return HandleOutliers()
 
 
