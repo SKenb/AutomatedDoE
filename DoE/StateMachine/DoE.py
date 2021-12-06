@@ -1,3 +1,4 @@
+from matplotlib.pyplot import title
 from StateMachine.StateMachine import State
 from StateMachine.Context import ContextDoE
 from Common import Common
@@ -231,7 +232,8 @@ class StopDoE(State):
                             bestCombiScoreItemOverall.context, 
                             bestCombiScoreItemOverall.scaledModel.conf_int(), 
                             combinations=bestCombiScoreItemOverall.combinations, figure=fig
-                        )
+                        ),
+            saveFigure=True, title="Final"
         )
 
         plot3DHist = lambda fig, pred, scoreHistory, title: Common.plot(

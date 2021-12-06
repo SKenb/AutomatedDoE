@@ -236,6 +236,7 @@ class XamControlTestRun1Mock(XamControlSimpleMock):
             if dataSet.size == 0: 
                 raise Exception("Data not found in dataset :/ - Note: only defined exp. r allowed (Idx:" + str(index) + ")")
 
+        time.sleep(.5)
         return XamControlExperimentResult(np.mean(dataSet[0, 4]), np.mean(dataSet[:, 5]), request=experiment)
 
 

@@ -31,7 +31,7 @@ def plot(*plotters, is3D=False, xLabel="x", yLabel="y", title="Plot", showLegend
     plt.title(title)
 
     if showLegend: plt.legend()
-    if showPlot: plt.show()
+    #if showPlot: plt.show()
     matplotlib.use('Agg')
 
     if saveFigure: 
@@ -62,7 +62,7 @@ def subplot(*plotFunctions, is3D=False, saveFigure=False, title="", showPlot=Tru
         path = Logger.getCurrentLogFolder() / filename
         plt.savefig(path)
 
-    if showPlot: plt.show()
+    #if showPlot: plt.show()
 
     return fig
 
