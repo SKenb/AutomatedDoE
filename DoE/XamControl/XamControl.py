@@ -1,6 +1,6 @@
 from typing import Iterable, Dict
 from pathlib import Path
-from Common import Logger
+#from Common import Logger
 
 import numpy as np
 
@@ -91,10 +91,12 @@ class XamControlBase:
         for valueArray in valueArrays: yield self.startExperimentFromvalues(valueArray)
 
     def _startExperimentRequest(self, experiment : XamControlExperimentRequest):
-        Logger.logXamControl("Request -> {}".format(str(experiment)))
+        #Logger.logXamControl("Request -> {}".format(str(experiment)))
+        pass
 
     def _receivedExperimentResult(self, result : XamControlExperimentResult):
-        Logger.logXamControl("Result -> {}".format(str(result)))
+        #Logger.logXamControl("Result -> {}".format(str(result)))
+        pass
     
 
 class XamControlSimpleMock(XamControlBase):
@@ -300,34 +302,44 @@ class XamControl(XamControlBase):
 
     def yPathExists(self): return self.yPath().is_file()
 
+    def xPathExists(self): return self.xPath().is_file()
 
-    def readFirstYValueRow(self):
-        with open(self.yPath(), newline='') as csvfile:
+
+    def readFirstValueRow(self, path):
+        with open(path, newline='') as csvfile:
 
             fileReader = csv.reader(csvfile, delimiter=';', quotechar='|')
-            return [float(v_) for v_ in fileReader.__next__()]      
+            return [float(v_) for v_ in fileReader.__next__()]         
 
     def loadOldYValues(self):
         self.oldYValues = None
 
         if not self.yPathExists(): return False
-        self.oldYValues = np.array(self.readFirstYValueRow())
+        self.oldYValues = np.array(self.readFirstValueRow(self.yPath()))
 
     def newYValuesAvailable(self):
 
         if self.oldYValues is None and self.yPathExists(): return True
         if not self.yPathExists(): return False
         
-        newVaules = np.array(self.readFirstYValueRow())
+        newVaules = np.array(self.readFirstValueRow(self.yPath()))
 
         return not (np.abs(self.oldYValues - newVaules) <= self.yValuesEpsilon).all()
 
 
     def writeNewExperimentValuesInFile(self, experiment : XamControlExperimentRequest):
+        valuestoWrite = experiment.getValueArray()
+
+        if self.xPathExists():
+            currentXValues = np.array(self.readFirstValueRow(self.xPath()))
+            if len(valuestoWrite) == len(currentXValues) and np.linalg.norm(currentXValues - valuestoWrite) <= 1e-4:
+                #valuestoWrite += (.5 - np.random.rand(len(valuestoWrite))) / 1000
+                valuestoWrite += np.sign((.5 - np.random.rand(len(valuestoWrite)))) * valuestoWrite / 1000
+
         with open(self.xPath(), 'w', newline='') as csvfile:
 
             fileWriter = csv.writer(csvfile, delimiter=';', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-            fileWriter.writerow(experiment.getValueArray())
+            fileWriter.writerow(valuestoWrite)
 
     def waitForNewResponseValues(self):
         # TODO: Threading
@@ -336,7 +348,7 @@ class XamControl(XamControlBase):
 
     def readNewResponseValues(self) -> XamControlExperimentResult:
        
-        firstRow = self.readFirstYValueRow()
+        firstRow = self.readFirstValueRow(self.yPath())
         return XamControlExperimentResult(firstRow[0], firstRow[1])
     
     def startExperiment(self, experiment : XamControlExperimentRequest) -> XamControlExperimentResult:
@@ -378,5 +390,6 @@ if __name__ == "__main__":
     ## Test File/CSV handling
     xamControl = XamControl()
 
-    result = xamControl.startExperiment(XamControlExperimentRequest(0.9, 0.2, 6, 60))
-    print(result)
+    for _ in range(2):
+        result = xamControl.startExperiment(XamControlExperimentRequest(0.9, 0.2, 6, 60))
+        print(result)
