@@ -1,6 +1,6 @@
 from typing import Iterable, Dict
 from pathlib import Path
-#from Common import Logger
+from Common import Logger
 
 import numpy as np
 
@@ -91,11 +91,11 @@ class XamControlBase:
         for valueArray in valueArrays: yield self.startExperimentFromvalues(valueArray)
 
     def _startExperimentRequest(self, experiment : XamControlExperimentRequest):
-        #Logger.logXamControl("Request -> {}".format(str(experiment)))
+        Logger.logXamControl("Request -> {}".format(str(experiment)))
         pass
 
     def _receivedExperimentResult(self, result : XamControlExperimentResult):
-        #Logger.logXamControl("Result -> {}".format(str(result)))
+        Logger.logXamControl("Result -> {}".format(str(result)))
         pass
     
 
@@ -278,10 +278,6 @@ class XamControlFactorsOnlyMock(XamControlBase):
             + conc * exp[XamControlExperimentRequest.CONCENTRATION] \
             + Temp * exp[XamControlExperimentRequest.TEMPERATURE]  \
             + concTemp * exp[XamControlExperimentRequest.TEMPERATURE] * exp[XamControlExperimentRequest.CONCENTRATION]
-
-
-
-          
 
 
 class XamControl(XamControlBase):

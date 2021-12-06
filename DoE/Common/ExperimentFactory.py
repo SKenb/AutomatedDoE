@@ -19,17 +19,17 @@ class ExperimentFactory:
 
 
         #### Return all factors at once:
-        experiments = np.vstack((experiments, np.array([centerPoint, centerPoint, centerPoint])))
-        # add center points
-        for genIndex in range(factorCount):
-            centerExperiments = np.zeros((1, factorCount))
-            centerExperiments[0][genIndex % factorCount] = 1
-            centerExperiments = np.vstack((centerExperiments, -1*centerExperiments))
+        if False:
+            experiments = np.vstack((experiments, np.array([centerPoint, centerPoint, centerPoint])))
+            # add center points
+            for genIndex in range(factorCount):
+                centerExperiments = np.zeros((1, factorCount))
+                centerExperiments[0][genIndex % factorCount] = 1
+                centerExperiments = np.vstack((centerExperiments, -1*centerExperiments))
 
-            experiments = np.vstack((experiments, centerExperiments))
+                experiments = np.vstack((experiments, centerExperiments))
 
-        return experiments
-
+            return experiments
 
 
         #1 Edges and mirrored ones
@@ -54,9 +54,9 @@ class ExperimentFactory:
 
         else:
             Logger.logStateInfo("[WARN] No more experiments :/")
-            self.requestCount = 0
+            #self.requestCount = 0
 
-            return experiments
+            return None
 
 
 if __name__ == "__main__":

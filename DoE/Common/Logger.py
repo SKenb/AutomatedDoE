@@ -1,6 +1,6 @@
 import traceback
+import warnings
 import logging
-import random
 import sys
 import csv
 
@@ -42,6 +42,10 @@ def initLogging():
     )
 
     logging.getLogger().addHandler(logging.StreamHandler(sys.stdout))
+
+    logging.getLogger('matplotlib.font_manager').disabled = True
+    
+    warnings.filterwarnings("ignore", category=np.VisibleDeprecationWarning) 
 
 def getCurrentLogFolder():
     return logFolder

@@ -33,6 +33,9 @@ class FindNewExperiments(State):
     def onCall(self):
 
         experiments = context.experimentFactory.getNewExperimentSuggestion(len(context.factorSet))
+        if experiments is None: 
+            return StopDoE()
+
         context.newExperimentValues = context.factorSet.realizeExperiments(experiments, sortColumn=0, sortReverse=len(context.history) % 2)
 
         return ExecuteExperiments()
@@ -128,18 +131,8 @@ class EvaluateExperiments(State):
             if len(combinations) <= 0 and all(isSignificant): break
             if len(combinations) <= 0 and len(scaledModel.params) <= 1: break
 
-            #combinations = self.removeLeastSignificantCombination(combinations, scaledModel.conf_int())
 
-            tmpCombinations = combinations
             combinations = self.removeLeastSignificantFactorOrCombination(combinations, scaledModel)
-
-            tmpScaledModel, _ = self.createModels(combinations)
-            
-            #Common.subplot(
-            #    lambda fig: Statistics.plotCoefficients(scaledModel.params, context, scaledModel.conf_int(), combinations=tmpCombinations, figure=fig),
-            #    lambda fig: Statistics.plotCoefficients(tmpScaledModel.params, context, tmpScaledModel.conf_int(), combinations=combinations, figure=fig)
-            #)
-
             iterationIndex = iterationIndex+1
 
         return combiScoreHistory
@@ -199,10 +192,7 @@ class EvaluateExperiments(State):
             )
 
         Logger.logEntireRun(context.history, context.factorSet, context.getExperimentValues(), context.Y, model.params, scaledModel.params)
-        
-        
-        # Return after one run
-        return None
+
         return HandleOutliers()
 
 
@@ -210,6 +200,8 @@ class StopDoE(State):
     def __init__(self): super().__init__("Stop DoE")
 
     def onCall(self):
+
+        return
 
         r2ScoreHistory = context.history.choose(lambda item: item.bestCombiScoreItem.r2)
         q2ScoreHistory = context.history.choose(lambda item: item.bestCombiScoreItem.q2)
