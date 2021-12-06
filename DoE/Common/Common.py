@@ -14,7 +14,7 @@ from Common.Factor import FactorSet
 #import matplotlib
 
 
-def plot(*plotters, is3D=False, xLabel="x", yLabel="y", title="Plot", showLegend=False, figure=None, saveFigure=True):
+def plot(*plotters, is3D=False, xLabel="x", yLabel="y", title="Plot", showLegend=False, figure=None, saveFigure=False):
      
     if figure is None: 
         figure = plt.figure()
@@ -35,14 +35,14 @@ def plot(*plotters, is3D=False, xLabel="x", yLabel="y", title="Plot", showLegend
     #matplotlib.use('Agg')
 
     if saveFigure: 
-        filename = Path("Plot_{}_{}.png".format(title, str(random.getrandbits(32))))
+        filename = Path("Plot_{}.png".format(title))
         path = Logger.getCurrentLogFolder() / filename
         plt.savefig(path)
 
     return figure
 
 
-def subplot(*plotFunctions, is3D=False):
+def subplot(*plotFunctions, is3D=False, saveFigure=False, title=""):
     
     cols = np.ceil((np.sqrt(len(plotFunctions))))
     rows = np.ceil(len(plotFunctions) / cols)
@@ -56,6 +56,11 @@ def subplot(*plotFunctions, is3D=False):
             plot_(plt)
         else:
             plot_(fig.add_subplot(int(rows), int(cols), int(index+1), projection='3d'))
+
+    if saveFigure: 
+        filename = Path("Plot_{}.png".format(title))
+        path = Logger.getCurrentLogFolder() / filename
+        plt.savefig(path)
 
     plt.show()
 
