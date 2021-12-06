@@ -258,7 +258,7 @@ class XamControlFactorsOnlyMock(XamControlBase):
     def _wrapXamControlExperimentResult(self, experiment) -> XamControlExperimentResult:
         return XamControlExperimentResult(
             self._genericConversionModel(experiment, 1, -2, 6, -2, 10, 15),
-            self._genericStyModel(experiment, const=0, ratio=590, conc=6, Temp=1, concTemp=50, TempTemp=-1),
+            self._genericStyModel(experiment, const=0, ratio=1, conc=1, Temp=.01, concTemp=1, TempTemp=.01),
             request=experiment
         )
 
@@ -273,12 +273,15 @@ class XamControlFactorsOnlyMock(XamControlBase):
 
     def _genericStyModel(self, exp : XamControlExperimentRequest, const, ratio, conc, Temp, concTemp, TempTemp):
 
-        return const \
+        value = const \
             + ratio * exp[XamControlExperimentRequest.REAGENTRATIO] \
             + conc * exp[XamControlExperimentRequest.CONCENTRATION] \
             + Temp * exp[XamControlExperimentRequest.TEMPERATURE]  \
             + concTemp * exp[XamControlExperimentRequest.TEMPERATURE] * exp[XamControlExperimentRequest.CONCENTRATION] \
             + TempTemp * exp[XamControlExperimentRequest.TEMPERATURE] * exp[XamControlExperimentRequest.TEMPERATURE]
+
+        value += 1*(.5 - np.random.rand())
+        return value
 
 
 class XamControl(XamControlBase):
