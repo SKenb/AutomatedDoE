@@ -146,7 +146,7 @@ class EvaluateExperiments(State):
 
     def filterForBestCombinationSet(self, combiScoreHistory : History.History) -> History.CombiScoreHistoryItem:
 
-        valueOfInterest = lambda item: item.q2 #.scoreCombis["1-(R2-Q2)"] #item.r2 #
+        valueOfInterest = lambda item: item.scoreCombis["1-(R2-Q2)"] #item.r2 #
         search = lambda func: valueOfInterest(func(combiScoreHistory.items(), key=valueOfInterest))
         maxScore = search(max)
 
@@ -194,7 +194,8 @@ class EvaluateExperiments(State):
                 lambda fig: Statistics.plotCoefficients(scaledModel.params, context, scaledModel.conf_int(), combinations=combinations, figure=fig),
                 #lambda fig: Statistics.plotResponseHistogram(context.getResponse(), figure=fig),
                 lambda fig: Statistics.plotObservedVsPredicted(LR.predict(scaledModel, X), context.getResponse(), X=X, figure=fig),
-                #lambda fig: Statistics.plotResiduals(Statistics.residualsDeletedStudentized(scaledModel), figure=fig)
+                #lambda fig: Statistics.plotResiduals(Statistics.residualsDeletedStudentized(scaledModel), figure=fig),
+                saveFigure=True, title=f"{len(context.history)}"
             )
 
         Logger.logEntireRun(context.history, context.factorSet, context.getExperimentValues(), context.Y, model.params, scaledModel.params)

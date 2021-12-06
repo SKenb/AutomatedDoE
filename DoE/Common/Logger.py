@@ -25,9 +25,9 @@ logFolder = Path("./Logs")
 def initLogging():
     global logFolder
 
-    dateString = datetime.now().strftime("%d%m%Y_%H")
-    hashString = str(random.getrandbits(32))
-    subFolder = Path("Experiment_{}_{}".format(dateString, hashString))
+    dateString = datetime.now().strftime("%d%m%Y_%H.%M.%S")
+    #hashString = str(random.getrandbits(32))
+    subFolder = Path("Experiment_{}".format(dateString))
 
     logFolder = logFolder / subFolder
     logFolder.mkdir(parents=False, exist_ok=True)
