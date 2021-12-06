@@ -11,7 +11,7 @@ from pathlib import Path
 
 from Common.Factor import FactorSet
 
-#import matplotlib
+import matplotlib
 
 
 def plot(*plotters, is3D=False, xLabel="x", yLabel="y", title="Plot", showLegend=False, figure=None, saveFigure=False):
@@ -42,7 +42,7 @@ def plot(*plotters, is3D=False, xLabel="x", yLabel="y", title="Plot", showLegend
     return figure
 
 
-def subplot(*plotFunctions, is3D=False, saveFigure=False, title=""):
+def subplot(*plotFunctions, is3D=False, saveFigure=False, title="", showPlot=True):
     
     cols = np.ceil((np.sqrt(len(plotFunctions))))
     rows = np.ceil(len(plotFunctions) / cols)
@@ -62,7 +62,7 @@ def subplot(*plotFunctions, is3D=False, saveFigure=False, title=""):
         path = Logger.getCurrentLogFolder() / filename
         plt.savefig(path)
 
-    plt.show()
+    if showPlot: plt.show()
 
     return fig
 

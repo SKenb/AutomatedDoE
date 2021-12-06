@@ -10,7 +10,7 @@ class ContextDoE():
 
     def __init__(self):
 
-        self.xamControl = XamControl.XamControlFactorsOnlyMock() # XamControl.XamControlTestRun1Mock() # 
+        self.xamControl =XamControl.XamControlTestRun1Mock() #  XamControl.XamControlFactorsOnlyMock() # 
         self.experimentFactory = ExperimentFactory.ExperimentFactory()
         self.factorSet = Factor.getDefaultFactorSet()
         
@@ -25,6 +25,7 @@ class ContextDoE():
         self.history = History.History()
 
         self.excludedFactors = []
+        self.deletedExperiments = []
 
     def getResponse(self, responseIdx=1, transformFlagOrTransformer = False):
         Y = self.Y[:, responseIdx]
@@ -50,8 +51,16 @@ class ContextDoE():
         self.Y = gAppend(self.Y, Y)
 
     def deleteExperiment(self, idx):
+        self.deletedExperiments.append((self._experimentValues[idx, :], self.Y[idx, :]))
+
         self.Y = np.delete(self.Y, idx, axis=0)
         self._experimentValues = np.delete(self._experimentValues, idx, axis=0)
+
+    def restoreDeletedExperiments(self):
+        for deletedExperiment in self.deletedExperiments:
+            self.addNewExperiments([deletedExperiment[0]], [deletedExperiment[1]])
+
+        self.deletedExperiments = []
 
     def getExperimentValues(self):
         return np.delete(self._experimentValues, self.excludedFactors, axis=1)
