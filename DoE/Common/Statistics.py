@@ -49,6 +49,7 @@ def plotResiduals(residuals, bound=4, figure=None):
         lambda plt: plt.plot([0, len(residuals)], residuals.mean()+bound*np.array([1, 1]), 'k--'),
         lambda plt: plt.plot([0, len(residuals)], residuals.mean()-1*bound*np.array([1, 1]), 'k--'),
         lambda plt: plt.xticks(rng, rng),
+        title="Residuals",
         figure=figure
     )
 
