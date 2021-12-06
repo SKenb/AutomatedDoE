@@ -277,6 +277,8 @@ class HandleOutliers(State):
 
     def onCall(self):
 
+        #context.restoreDeletedExperiments()
+
         if not any(self.detectOutliers()): 
             Logger.logStateInfo("No outliers detected")
             return FindNewExperiments()
