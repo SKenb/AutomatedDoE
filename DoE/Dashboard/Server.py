@@ -15,6 +15,8 @@ import time
 import Layout
 import diskcache
 
+from pathlib import Path
+
 cache = diskcache.Cache("./cache")
 long_callback_manager = DiskcacheLongCallbackManager(cache)
 
@@ -56,9 +58,9 @@ def startServer(debug=True):
         Output("stateProgessBar", "value"), 
         Output("stateProgessBar", "max"), 
         Output("processState", "children")
-    ],
+    ]
 )
-def callback(set_progress, n_clicks):
+def processCallback(set_progress, n_clicks):
     global processPauseFlag
 
     if n_clicks is None or n_clicks <= 0: return ["READY"]
@@ -66,35 +68,40 @@ def callback(set_progress, n_clicks):
     total = 10
     for i in range(total):
 
-        while processPauseFlag: 
-            set_progress((str(i + 1), total, f"Pausing :D"))
-            time.sleep(0.5)
+        while isPausing():
+            set_progress((str(i + 1), total, f"Pausing :)"))
+            time.sleep(1)
 
-        time.sleep(0.0)
+        time.sleep(1)
         set_progress((str(i + 1), total, f"Index = {i}"))
         
-        print(processPauseFlag)
-    
-
-    return [f"READY"]
+    resume()
+    return f"READY"
 
 
 @dashboard.callback(
+    inputs=Input("buttonPause", "n_clicks"),
     output=Output("buttonPause", "children"),
-    inputs=[
-        Input("buttonPause", "n_clicks"),
-        Input("processPauseFlag", "data"),
-    ]
 )
-def callback(n_clicks, processPauseFlag):
-    processPauseFlag = not processPauseFlag
+def pauseCallback(n_clicks):
+    if isPausing(): 
+        resume() 
+    else: 
+        pause()
 
-    return [
-            "Resume" if processPauseFlag else "Coffe time - Pause",
-            processPauseFlag
-        ]
+    return "Pause / Resume"
 
+pausePath = path = Path('./PUASE.dsk')
+def pause():
+    if not isPausing(): path.touch()
+
+def resume():
+    if isPausing(): path.unlink()
+
+def isPausing():
+    return path.is_file()
 
 
 if __name__ == "__main__":
+    resume()
     startServer()

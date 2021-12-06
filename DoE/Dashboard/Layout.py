@@ -22,7 +22,7 @@ def getDoELayout():
                         id="buttonContainer",
                         children=[
                             html.Button(id="buttonStart", children="Let's do some DoE"),
-                            html.Button(id="buttonPause", children="Coffe break - now"),
+                            html.Button(id="buttonPause", children="Pause / Resume"),
                         ]
                     ),
                     html.Br(), html.Br(), 
