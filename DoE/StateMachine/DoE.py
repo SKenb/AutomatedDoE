@@ -139,7 +139,7 @@ class EvaluateExperiments(State):
 
     def filterForBestCombinationSet(self, combiScoreHistory : History.History) -> History.CombiScoreHistoryItem:
 
-        valueOfInterest = lambda item: item.scoreCombis["1-(R2-Q2)"] #item.r2 #
+        valueOfInterest = lambda item: item.q2 # item.scoreCombis["1-(R2-Q2)"] #item.r2 #
         search = lambda func: valueOfInterest(func(combiScoreHistory.items(), key=valueOfInterest))
         maxScore = search(max)
 

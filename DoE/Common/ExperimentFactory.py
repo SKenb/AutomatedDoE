@@ -19,7 +19,10 @@ class ExperimentFactory:
 
 
         #### Return all factors at once:
-        if False:
+        if True:
+
+            if self.requestCount > 1: return None
+
             experiments = np.vstack((experiments, np.array([centerPoint, centerPoint, centerPoint])))
             # add center points
             for genIndex in range(factorCount):
