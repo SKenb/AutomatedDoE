@@ -64,9 +64,10 @@ class EvaluateExperiments(State):
         return context.scaledModel, context.model
 
     def removeLeastSignificantFactorOrCombination(self, combinations, model):
-        _, significanceInterval = Statistics.getModelTermSignificance(model.conf_int())
+        isSignificant, significanceInterval = Statistics.getModelTermSignificance(model.conf_int())
 
         significanceInterval[np.abs(model.params) < 1e-4] = 1000 # we remove factors / combinations which are near zero
+        significanceInterval[isSignificant] = 0 # we won't remove significant
         significanceInterval[0] = 0 # we won't remove constant part
 
         if(len(significanceInterval) != 1 + context.activeFactorCount() + len(combinations)):
@@ -184,10 +185,11 @@ class EvaluateExperiments(State):
                         combis[0]: combiScoreHistory.choose(lambda i: i.scoreCombis[combis[0]]),
                         combis[1]: combiScoreHistory.choose(lambda i: i.scoreCombis[combis[1]])
                     }, bestCombiScoreItem.index, figure=fig),
+                lambda fig: Statistics.plotResiduals(Statistics.residualsDeletedStudentized(scaledModel), figure=fig),
                 lambda fig: Statistics.plotCoefficients(scaledModel.params, context, scaledModel.conf_int(), combinations=combinations, figure=fig),
                 #lambda fig: Statistics.plotResponseHistogram(context.getResponse(), figure=fig),
                 lambda fig: Statistics.plotObservedVsPredicted(LR.predict(scaledModel, X), context.getResponse(), X=X, figure=fig),
-                #lambda fig: Statistics.plotResiduals(Statistics.residualsDeletedStudentized(scaledModel), figure=fig),
+                lambda fig: Statistics.plotResponseHistogram(context.getResponse(), titleSuffix="Response", figure=fig),
                 saveFigure=True, title=f"{len(context.history)}"
             )
 
@@ -246,20 +248,20 @@ class HandleOutliers(State):
     def __init__(self): super().__init__("Handle outliers")
 
     def detectOutliers(self):
-        outlierIdx = context.scaledModel.outlier_test()[:, 0] > 4
+        outlierIdx = np.abs(context.scaledModel.outlier_test()[:, 0]) > 4
         return outlierIdx
 
     def countExperimentsInRange(self, outlierIdx, range = .05):
         return len(self.getExperimentsInRange(outlierIdx, range))
 
     def getExperimentsInRange(self, outlierIdx, range = .05):
-        X = Statistics.orthogonalScaling(context.experimentValues)
+        X = Statistics.orthogonalScaling(context._experimentValues)
         diff = np.sqrt(((X - X[outlierIdx,:])**2).sum(axis=1))
-        return context.experimentValues[diff < range]
+        return context._experimentValues[diff < range]
 
     def forEachOutlier(self):
         for idx, isOultier in enumerate(self.detectOutliers()):
-            if isOultier: yield (idx, context.experimentValues[idx, :])
+            if isOultier: yield (idx, context._experimentValues[idx, :])
 
     def executeNewExperimentsAroundOutlier(self, outlier):
         newExperimentValues = np.array([outlier]) #np.array([outlier, outlier])
@@ -272,7 +274,7 @@ class HandleOutliers(State):
             Logger.logStateInfo("No outliers detected")
             return FindNewExperiments()
 
-        return FindNewExperiments()
+        #return FindNewExperiments()
 
         for (idx, outlier) in self.forEachOutlier():
                 
