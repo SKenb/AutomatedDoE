@@ -1,27 +1,33 @@
 # Run this app with `python app.py` and
 # visit http://127.0.0.1:8050/ in your web browser.
 
+from typing import Callable
 import dash
 from dash.html.Main import Main
-from dash import dcc
-from dash import html
-import plotly.express as px
-import pandas as pd
+from dash import dcc, html
 from dash.dependencies import Input, Output
 from dash.long_callback import DiskcacheLongCallbackManager
 from dash.exceptions import PreventUpdate
 
 import time
-import Layout
 import diskcache
 
+import plotly.express as px
+import pandas as pd
+import numpy as np
+
 from pathlib import Path
+
+from Common import Logger
+from StateMachine import StateMachine
+from StateMachine import DoE
+
+from Dashboard import Layout
 
 cache = diskcache.Cache("./cache")
 long_callback_manager = DiskcacheLongCallbackManager(cache)
 
 dashboard = dash.Dash(__name__, long_callback_manager=long_callback_manager)
-
 
 def startServer(debug=True):
 
@@ -64,16 +70,15 @@ def processCallback(set_progress, n_clicks):
     global processPauseFlag
 
     if n_clicks is None or n_clicks <= 0: return ["READY"]
+    
+    Logger.logInfo("Start StateMachine with InitDoE")
+    mainSM = StateMachine.StateMachine(DoE.InitDoE())
+    for state in mainSM: 
+        set_progress(("1", "2", f"{state}"))
 
-    total = 10
-    for i in range(total):
-
-        while isPausing():
-            set_progress((str(i + 1), total, f"Pausing :)"))
+        while isPausing(): 
+            set_progress(("1", "2", "PAUSING :)"))
             time.sleep(1)
-
-        time.sleep(1)
-        set_progress((str(i + 1), total, f"Index = {i}"))
         
     resume()
     return f"READY"
@@ -102,6 +107,12 @@ def isPausing():
     return path.is_file()
 
 
+
 if __name__ == "__main__":
     resume()
+
+    Logger.initLogging()
+    Logger.logInfo("Start main DoE program")
+    np.set_printoptions(suppress=True)
+
     startServer()
