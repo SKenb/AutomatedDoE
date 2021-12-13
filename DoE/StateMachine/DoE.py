@@ -122,7 +122,7 @@ class EvaluateExperiments(State):
             # Used as different scores so far
             scoreCombis = {
                 "R2*Q2": r2Score*q2Score, 
-                "1-(R2-Q2)": (1-(r2Score-q2Score))*r2Score
+                "1-(R2-Q2)": (1-(r2Score-q2Score))
             }
             
             combiScoreHistory.add(History.CombiScoreHistoryItem(iterationIndex, combinations, scaledModel, context, r2Score, q2Score, context.excludedFactors, scoreCombis))
@@ -140,11 +140,11 @@ class EvaluateExperiments(State):
 
     def filterForBestCombinationSet(self, combiScoreHistory : History.History) -> History.CombiScoreHistoryItem:
 
-        valueOfInterest = lambda item: item.scoreCombis["1-(R2-Q2)"] #item.r2 # item.q2 # 
+        valueOfInterest = lambda item: item.q2 # scoreCombis["1-(R2-Q2)"] #item.r2 # item.q2 # 
         search = lambda func: valueOfInterest(func(combiScoreHistory.items(), key=valueOfInterest))
         maxScore = search(max)
 
-        relScoreBound = (maxScore - search(min)) * 0.25
+        relScoreBound = (maxScore - search(min)) * 0.05
         bound = (maxScore-relScoreBound) if maxScore > 0 else (maxScore+relScoreBound)
 
         filteredCombiScoreHistory = combiScoreHistory.filter(lambda item: valueOfInterest(item) >= bound)
@@ -218,12 +218,14 @@ class StopDoE(State):
         predQ2 = lambda item: item.q2
 
         gP = lambda plt, idx, pred: plt.plot(range(len(z(pred)[idx])), idx*np.ones(len(z(pred)[idx])), z(pred)[idx])
+        plotRO = lambda yValues: lambda plt: plt.plot(bestCombiScoreItemOverall.index, yValues[bestCombiScoreItemOverall.index], 'ro')
 
         Common.subplot(
             lambda fig: Common.plot(
                             lambda plt: plt.plot(r2ScoreHistory, label="R2"),
                             lambda plt: plt.plot(q2ScoreHistory, label="Q2"),
                             lambda plt: plt.plot(context.history.choose(lambda item: item.bestCombiScoreItem.scoreCombis["1-(R2-Q2)"]), label="1-(R2-Q2)"),
+                            plotRO(r2ScoreHistory), plotRO(q2ScoreHistory),
                             showLegend=True, figure=fig
                         ),
             lambda fig: Statistics.plotCoefficients(
@@ -277,7 +279,7 @@ class HandleOutliers(State):
 
     def onCall(self):
 
-        #context.restoreDeletedExperiments()
+        context.restoreDeletedExperiments()
 
         if not any(self.detectOutliers()): 
             Logger.logStateInfo("No outliers detected")

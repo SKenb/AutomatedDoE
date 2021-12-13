@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 
 from sklearn.preprocessing import StandardScaler, PowerTransformer
 
@@ -8,6 +9,7 @@ def getSuggestedTransformer(data):
     # Use, if possible, Box-Cox Transformer
     # otherwise use Yeo-Johnson
     for possibleTransformer in [
+            NegativeLogTransformer(),
             BoxCoxOffsetTransformer(),
         ]:
         
@@ -105,21 +107,65 @@ class BoxCoxOffsetTransformer(Transformer):
     def _dataPostInvTransformation(self, data):
         return data - self.offset
 
+class LogTransformer(Transformer):
+    def __init__(self) -> None:
+        super().__init__("Log")
+        self.transformer = PowerTransformer(method='box-cox', standardize=True)
+        self.c1 = 1
+        self.c2 = 1
 
+    def transform(self, data, checkData=True):
+        return 10*np.log10(self.c1 - self.c2*data)
+
+    def invTransform(self, transformedData):
+        return (self.c1 - 10**(transformedData / 10)) / self.c2
+
+
+class NegativeLogTransformer(Transformer):
+    def __init__(self) -> None:
+        super().__init__("Negative Log")
+        self.transformer = PowerTransformer(method='box-cox', standardize=True)
+        self.c1 = 100
+        self.c2 = 1
+
+    def transform(self, data, checkData=True):
+        return -10*np.log10(self.c1 - self.c2*data)
+
+    def invTransform(self, transformedData):
+        return (self.c1 - 10**(transformedData / -10)) / self.c2
+
+class LogitTransformer(Transformer):
+    def __init__(self) -> None:
+        super().__init__("Logit")
+        self.transformer = PowerTransformer(method='box-cox', standardize=True)
+        self.c1 = 0
+        self.c2 = 100
+
+    def transform(self, data, checkData=True):
+        return 10*np.log10((data - self.c1) / (self.c2 - data))
+
+    def invTransform(self, transformedData):
+        A =  10**(transformedData / 10)
+        return (A*self.c2 + self.c1) / (1 + A)
 
 
 if __name__ == "__main__":
+    TestRun1Data = np.array([0.000539177, 0.066285834, 0.523382715, 0.124081704, 0.340612845, 0.342071572, 0.066361663, 0.414149606, 0.801074925, 0.317247699, 0.137450315, 0.39538596, 0.324086264, 0.360507817, 0.018517327, 0.119053332, 0.569830021, 0.10577096, 0.508014395, 0.174797307, 0.618870595, 0.15085711, 0.144623276, 0.505340362, 0.335538103, 0.341930795, 0.2073267863006])
 
     for (funcName, func) in {
-            'exp': lambda data: np.exp(data),
-            'log': lambda data: np.log(np.abs(data)),
-            'x^2': lambda data: np.power(data, 2)
+            #'exp': lambda data: np.exp(data),
+            #'log': lambda data: np.log(np.abs(data)),
+            #'x^2': lambda data: np.power(data, 2),
+            'TestRun#1': lambda data: TestRun1Data
         }.items():
 
         for transformer in [
-                YeoJohnsonTransformer(),
-                BoxCoxTransformer(),
-                BoxCoxOffsetTransformer()
+                #YeoJohnsonTransformer(),
+                #BoxCoxTransformer(),
+                #BoxCoxOffsetTransformer(),
+                LogTransformer(),
+                #NegativeLogTransformer(),
+                #LogitTransformer()
             ]:
 
             data = np.random.randn(1000)
