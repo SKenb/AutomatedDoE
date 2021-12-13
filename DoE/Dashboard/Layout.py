@@ -31,7 +31,18 @@ def getDoELayout():
                         children="STOP",
                         style={"width": "80%", "margin": "auto"}
                     ),
-                    dcc.Store(id='processPauseFlag')
+                    dcc.Store(id='processPauseFlag'),
+                    html.Div(
+                        id="intermidiateResults",
+                        children=[
+                            html.Hr(),
+                            dcc.Dropdown(
+                                id='yaxis-column',
+                                options=[{'label': i, 'value': i} for i in getOptions()],
+                                value='Life expectancy at birth, total (years)'
+                            ),
+                        ]
+                    )
                 ]
             ),
             html.Div(
@@ -51,3 +62,6 @@ def getDoELayout():
             )
         ]
     )
+
+def getOptions():
+    return []
