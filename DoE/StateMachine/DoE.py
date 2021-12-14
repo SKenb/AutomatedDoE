@@ -218,14 +218,14 @@ class StopDoE(State):
         predQ2 = lambda item: item.q2
 
         gP = lambda plt, idx, pred: plt.plot(range(len(z(pred)[idx])), idx*np.ones(len(z(pred)[idx])), z(pred)[idx])
-        plotRO = lambda yValues: lambda plt: plt.plot(bestCombiScoreItemOverall.index, yValues[bestCombiScoreItemOverall.index], 'ro')
+        #plotRO = lambda yValues: lambda plt: plt.plot(bestCombiScoreItemOverall.index, yValues[bestCombiScoreItemOverall.index], 'ro')
 
         Common.subplot(
             lambda fig: Common.plot(
                             lambda plt: plt.plot(r2ScoreHistory, label="R2"),
                             lambda plt: plt.plot(q2ScoreHistory, label="Q2"),
                             lambda plt: plt.plot(context.history.choose(lambda item: item.bestCombiScoreItem.scoreCombis["1-(R2-Q2)"]), label="1-(R2-Q2)"),
-                            plotRO(r2ScoreHistory), plotRO(q2ScoreHistory),
+                            #plotRO(r2ScoreHistory), plotRO(q2ScoreHistory),
                             showLegend=True, figure=fig
                         ),
             lambda fig: Statistics.plotCoefficients(
