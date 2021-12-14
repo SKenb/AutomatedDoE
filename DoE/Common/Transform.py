@@ -1,3 +1,4 @@
+from typing import List
 import numpy as np
 import matplotlib.pyplot as plt
 import numpy as np
@@ -9,7 +10,6 @@ def getSuggestedTransformer(data):
     # Use, if possible, Box-Cox Transformer
     # otherwise use Yeo-Johnson
     for possibleTransformer in [
-            NegativeLogTransformer(),
             BoxCoxOffsetTransformer(),
         ]:
         
@@ -111,20 +111,19 @@ class LogTransformer(Transformer):
     def __init__(self) -> None:
         super().__init__("Log")
         self.transformer = PowerTransformer(method='box-cox', standardize=True)
-        self.c1 = 1
+        self.c1 = .5
         self.c2 = 1
 
     def transform(self, data, checkData=True):
-        return 10*np.log10(self.c1 - self.c2*data)
+        return 10*np.log10(self.c1 + self.c2*data)
 
     def invTransform(self, transformedData):
-        return (self.c1 - 10**(transformedData / 10)) / self.c2
+        return (10**(transformedData / 10) - self.c1) / self.c2
 
 
 class NegativeLogTransformer(Transformer):
     def __init__(self) -> None:
         super().__init__("Negative Log")
-        self.transformer = PowerTransformer(method='box-cox', standardize=True)
         self.c1 = 100
         self.c2 = 1
 
@@ -137,7 +136,6 @@ class NegativeLogTransformer(Transformer):
 class LogitTransformer(Transformer):
     def __init__(self) -> None:
         super().__init__("Logit")
-        self.transformer = PowerTransformer(method='box-cox', standardize=True)
         self.c1 = 0
         self.c2 = 100
 
@@ -149,8 +147,25 @@ class LogitTransformer(Transformer):
         return (A*self.c2 + self.c1) / (1 + A)
 
 
+class PipeTransformer(Transformer):
+    def __init__(self, transformerPipe:List = []) -> None:
+        self.transformerPipe = transformerPipe
+        super().__init__("Pipe: " + ", ".join([str(tr) for tr in transformerPipe]))
+
+    def transform(self, data, checkData=True):
+        for transformer in self.transformerPipe:
+            data = transformer.transform(data, checkData)
+
+        return data
+
+    def invTransform(self, transformedData):
+        for transformer in self.transformerPipe[::-1]:
+            transformedData = transformer.transform(transformedData)
+
+        return transformedData
+
 if __name__ == "__main__":
-    TestRun1Data = np.array([0.000539177, 0.066285834, 0.523382715, 0.124081704, 0.340612845, 0.342071572, 0.066361663, 0.414149606, 0.801074925, 0.317247699, 0.137450315, 0.39538596, 0.324086264, 0.360507817, 0.018517327, 0.119053332, 0.569830021, 0.10577096, 0.508014395, 0.174797307, 0.618870595, 0.15085711, 0.144623276, 0.505340362, 0.335538103, 0.341930795, 0.2073267863006])
+    TestRun1Data = np.array([0.000539177, 0.066285834, 0.523382715, 0.124081704, 0.340612845, 0.342071572, 0.066361663, 0.414149606, 0.801074925, 0.317247699, 0.137450315, 0.39538596, 0.324086264, 0.360507817, 0.018517327, 0.119053332, 0.569830021, 0.10577096, 0.508014395, 0.174797307, 0.618870595, 0.15085711, 0.144623276, 0.505340362, 0.335538103, 0.341930795, 1.34986653333749])
 
     for (funcName, func) in {
             #'exp': lambda data: np.exp(data),
@@ -162,8 +177,9 @@ if __name__ == "__main__":
         for transformer in [
                 #YeoJohnsonTransformer(),
                 #BoxCoxTransformer(),
-                #BoxCoxOffsetTransformer(),
+                BoxCoxOffsetTransformer(),
                 LogTransformer(),
+                #NegativeLogTransformer(),
                 #NegativeLogTransformer(),
                 #LogitTransformer()
             ]:
@@ -178,13 +194,13 @@ if __name__ == "__main__":
 
             ax1.set_title("{} for {}".format(str(transformer), funcName))
             
-            ax1.plot(data)
-            ax1.plot(invTData)
+            ax1.scatter(range(len(data)), data)
+            ax1.scatter(range(len(invTData)), invTData)
 
             ax2.hist(data)
             ax2.hist(invTData)
 
-            ax3.plot(tData)
+            ax3.scatter(range(len(tData)), tData)
             ax4.hist(tData)
 
 

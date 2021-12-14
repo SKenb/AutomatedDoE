@@ -222,7 +222,7 @@ class XamControlTestRun1Mock(XamControlSimpleMock):
             [130, 0.3, 3, 4.25, 0, 0.505340362],
             [130, 0.3, 1.95, 6, 0, 0.335538103],
             [130, 0.3, 1.95, 2.5, 0, 0.341930795],
-            [160.0, 0.4, 3.0, 2.5, 0, 0.20732678630067]
+            [160.0, 0.4, 3.0, 2.5, 0, 1.34986653333749]
         ])
 
         for (index, value) in {
@@ -236,7 +236,8 @@ class XamControlTestRun1Mock(XamControlSimpleMock):
             if dataSet.size == 0: 
                 raise Exception("Data not found in dataset :/ - Note: only defined exp. r allowed (Idx:" + str(index) + ")")
 
-        return XamControlExperimentResult(np.mean(dataSet[0, 4]), np.mean(dataSet[:, 5]), request=experiment)
+        index = np.random.randint(len(dataSet[:, 4]))
+        return XamControlExperimentResult(dataSet[index, 4], dataSet[index, 5], request=experiment)
 
 
 class XamControlFactorsOnlyMock(XamControlBase):
