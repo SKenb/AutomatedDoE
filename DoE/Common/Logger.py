@@ -68,6 +68,9 @@ def logDebug(debugMSG):
 def logInfo(infoMsg):
     genericLog(logging.info, "[INFO]", infoMsg)
 
+def logWarn(warnMsg):
+    genericLog(logging.info, "[WARN]", warnMsg)
+
 def logXamControl(msg):
     genericLog(logging.info, "\t[XamCtrl]", msg)
 

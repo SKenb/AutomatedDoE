@@ -150,7 +150,7 @@ class XamControl(XamControlBase):
         self.yFileName = Path("ynewtrue.csv")
 
         self.oldYValues = None
-        self.yValuesEpsilon = 1e-3
+        self.yValuesEpsilon = 1e-5
 
     def xPath(self): return self.path / self.xFileName
 
@@ -180,8 +180,13 @@ class XamControl(XamControlBase):
         
         newVaules = np.array(self.readFirstValueRow(self.yPath()))
 
-        return not (np.abs(self.oldYValues - newVaules) <= self.yValuesEpsilon).all()
+        if len(newVaules) != 3:
+            Logger.logWarn("XAMControl - ynewdata contains wrong number of values") 
+            return False
+            
+        if newVaules.shape != self.oldYValues.shape: return True
 
+        return not (np.abs(self.oldYValues - newVaules) <= self.yValuesEpsilon).all()
 
     def writeNewExperimentValuesInFile(self, experiment : XamControlExperimentRequest):
         valuestoWrite = experiment.getValueArray()
@@ -205,7 +210,7 @@ class XamControl(XamControlBase):
     def readNewResponseValues(self) -> XamControlExperimentResult:
        
         firstRow = self.readFirstValueRow(self.yPath())
-        return XamControlExperimentResult(firstRow[0], firstRow[1])
+        return XamControlExperimentResult(firstRow[0], firstRow[1], firstRow[2])
     
     def startExperiment(self, experiment : XamControlExperimentRequest) -> XamControlExperimentResult:
         self._startExperimentRequest(experiment)
@@ -222,3 +227,9 @@ class XamControl(XamControlBase):
 if __name__ == "__main__":
 
     print(" Test XamControlMock ".center(80, "-"))
+
+    xc = XamControl()
+
+    print(xc.startExperiment(XamControlExperimentRequest(0.8, .25, .33, 10, 100, 0)))
+    print(xc.startExperiment(XamControlExperimentRequest(0.8, .25, .33, 10, 100, 0)))
+    print(xc.startExperiment(XamControlExperimentRequest(0.8, .25, .33, 10, 100, 0)))
