@@ -141,12 +141,12 @@ class FactorSet:
 def getDefaultFactorSet():
 
     return FactorSet([
-        Factor("Temperature", 100, 160, "°C", "T_1"),
-        Factor("Concentration", .2, .4, "M", "C_SM_1"),
-        Factor("Reagent ratio‘s", .9, 3, "", "R"),
-        Factor("Residence time", 2.5, 6, "min", "RT_1"),
-        #Factor("Dummy factor 1", -100, 100, "knolls", "DF1"),
-        #Factor("Dummy factor 2", -10, 10, "knolls", "DF2"),
+        Factor("Equivalents NBS", 0.8, 1.4, "", "NBS"),
+        Factor("Concentration", .25, .45, "M", "Con"),
+        Factor("Residence time", .33, 1.5, "", "RT"),
+        Factor("Temperature", 10, 50, "°C", "T"),
+        Factor("Light intensity", 100, 800, "", "Light"),
+        Factor("Quantity AcOH", 0, 0.1, "", "AcOH"),
     ])
 
 if __name__ == '__main__':

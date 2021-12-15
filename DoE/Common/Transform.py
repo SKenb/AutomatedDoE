@@ -10,7 +10,6 @@ def getSuggestedTransformer(data):
     # Use, if possible, Box-Cox Transformer
     # otherwise use Yeo-Johnson
     for possibleTransformer in [
-            LogTransformer(),
             BoxCoxOffsetTransformer(),
         ]:
         

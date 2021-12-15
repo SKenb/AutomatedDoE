@@ -13,45 +13,26 @@ class ExperimentFactory:
 
         self.requestCount+=1
         experiments = pyDOE.ff2n(factorCount)
-
-        lb, ub = int(2**(factorCount/2)), int(2**(factorCount - 1))
         centerPoint = np.zeros(factorCount)
 
+        power = min(np.ceil(factorCount/2), 3)
+        edgeExperimentCount = 2**(factorCount-power-1)
 
-        #### Return all factors at once:
-        if False:
+        if self.requestCount <= edgeExperimentCount:
+            # Edges
+            n = self.requestCount-1
 
-            if self.requestCount > 1: return None
+            lowerBound = int(n*2**power)
+            upperBound = int(((n+1)*2**power) - 1)
 
-            experiments = np.vstack((experiments, np.array([centerPoint, centerPoint, centerPoint])))
-            # add center points
-            for genIndex in range(factorCount):
-                centerExperiments = np.zeros((1, factorCount))
-                centerExperiments[0][genIndex % factorCount] = 1
-                centerExperiments = np.vstack((centerExperiments, -1*centerExperiments))
-
-                experiments = np.vstack((experiments, centerExperiments))
-
-            return experiments
-
-
-        #1 Edges and mirrored ones
-        if self.requestCount <= 1:
-            # Fractional FacDesign
-            experiments = experiments[0:lb, :]
-            experiments = np.vstack((experiments, -1*experiments))
-            return np.vstack((experiments, np.array([centerPoint, centerPoint])))
-
-        elif self.requestCount <= 2:
-            # Full FacDesign
-            experiments = experiments[lb:ub, :]
+            experiments = experiments[lowerBound:upperBound, :]
             experiments = np.vstack((experiments, -1*experiments))
             return np.vstack((experiments, np.array([centerPoint])))
 
-        elif self.requestCount <= 10:
+        elif self.requestCount <= edgeExperimentCount+factorCount:
             # Centered Face Points
             experiments = np.zeros((1, factorCount))
-            experiments[0][(self.requestCount - 3) % factorCount] = 1
+            experiments[0][int((self.requestCount - edgeExperimentCount - 1) % factorCount)] = 1
             experiments = np.vstack((experiments, -1*experiments))
             return experiments
 
