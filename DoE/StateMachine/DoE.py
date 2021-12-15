@@ -263,7 +263,7 @@ class StopDoE(State):
 class HandleOutliers(State):
     def __init__(self): super().__init__("Handle outliers")
 
-    def detectOutliers(self):
+    def detectOutliers(self) -> np.array:
         outlierIdx = np.abs(context.scaledModel.outlier_test()[:, 0]) > 4
         return outlierIdx
 
@@ -290,6 +290,10 @@ class HandleOutliers(State):
 
         if not any(self.detectOutliers()): 
             Logger.logStateInfo("No outliers detected")
+            return FindNewExperiments()
+
+        if self.detectOutliers().sum() > 3: 
+            Logger.logStateInfo("Too many outliers detected - Maybe bad intermediate model")
             return FindNewExperiments()
 
         #return FindNewExperiments()
