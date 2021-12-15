@@ -144,6 +144,10 @@ class EvaluateExperiments(State):
         search = lambda func: valueOfInterest(func(combiScoreHistory.items(), key=valueOfInterest))
         maxScore = search(max)
 
+        if np.isnan(maxScore): 
+            # Scores results are not usefull
+            return combiScoreHistory[-1]
+
         relScoreBound = (maxScore - search(min)) * 0.05
         bound = (maxScore-relScoreBound) if maxScore > 0 else (maxScore+relScoreBound)
 
