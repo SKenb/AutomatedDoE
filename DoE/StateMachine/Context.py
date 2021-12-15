@@ -10,7 +10,7 @@ class ContextDoE():
 
     def __init__(self):
 
-        self.xamControl = XamControl.XamControlFactorsOnlyMock() # XamControl.XamControlTestRun1Mock() #  
+        self.xamControl = XamControl.XamControlFactorsOnlyMock()
         self.experimentFactory = ExperimentFactory.ExperimentFactory()
         self.factorSet = Factor.getDefaultFactorSet()
         
@@ -27,7 +27,7 @@ class ContextDoE():
         self.excludedFactors = []
         self.deletedExperiments = []
 
-    def getResponse(self, responseIdx=1, transformFlagOrTransformer = True):
+    def getResponse(self, responseIdx=0, transformFlagOrTransformer = True):
         Y = self.Y[:, responseIdx]
 
         if transformFlagOrTransformer is None: return Y
