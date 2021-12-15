@@ -58,7 +58,7 @@ class XamControlExperimentResult(XamControlExperiment):
     CONVERSION = "Conversion"
     SELECTIVITY = "Selectivity"
 
-    def __init__(self, sty, conversion, selectivity, request : XamControlExperimentRequest = None):
+    def __init__(self, sty, conversion, selectivity, request : XamControlExperimentRequest = True):
 
         super().__init__({
             XamControlExperimentResult.STY: sty,
@@ -132,7 +132,7 @@ class XamControlFactorsOnlyMock(XamControlBase):
         )
 
     def _genericStyModel(self, exp : XamControlExperimentRequest):
-        return 10 + exp[exp.TEMPERATURE] + 100*exp[exp.CONCENTRATION]
+        return 10 + exp[exp.TEMPERATURE] + 100*exp[exp.CONCENTRATION] -  20*exp[exp.TEMPERATURE]*exp[exp.CONCENTRATION]
 
     def _genericConversionModel(self, exp : XamControlExperimentRequest):
         return 0

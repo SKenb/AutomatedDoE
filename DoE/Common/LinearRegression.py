@@ -13,11 +13,11 @@ def sklearnFit(X, y, kernel=None) -> linear_model.LinearRegression:
 
 
 def fit(X, y, addConstant=True):
-    if addConstant: X=sm.add_constant(X)
+    if addConstant: X=sm.add_constant(X, has_constant='add')
     return sm.OLS(y, X).fit()
 
 def predict(model, X, addConstant=True):
-    if addConstant: X=sm.add_constant(X)
+    if addConstant: X=sm.add_constant(X, has_constant='add')
     return model.predict(X)
 
 if __name__ == '__main__':

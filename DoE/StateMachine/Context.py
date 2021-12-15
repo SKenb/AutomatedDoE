@@ -27,7 +27,7 @@ class ContextDoE():
         self.excludedFactors = []
         self.deletedExperiments = []
 
-    def getResponse(self, responseIdx=0, transformFlagOrTransformer = True):
+    def getResponse(self, responseIdx=0, transformFlagOrTransformer = False):
         Y = self.Y[:, responseIdx]
 
         if transformFlagOrTransformer is None: return Y
@@ -71,7 +71,7 @@ class ContextDoE():
             self.excludedFactors.extend(factorIndex)
 
         else:
-            assert factorIndex >= 0 and factorIndex <= len(self.factorSet), "Ups - U want to exclude a factor which we don't know :/"
+            assert factorIndex >= 0 and factorIndex <= len(self.factorSet), "Ups - U want to exclude a factor which we don't know 0.o"
             self.excludedFactors.append(factorIndex)
 
     def resetFactorExlusion(self):

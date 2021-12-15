@@ -33,8 +33,7 @@ class FindNewExperiments(State):
     def onCall(self):
 
         experiments = context.experimentFactory.getNewExperimentSuggestion(len(context.factorSet))
-        if experiments is None: 
-            return StopDoE()
+        if experiments is None: return StopDoE("No more experiments available")
 
         context.newExperimentValues = context.factorSet.realizeExperiments(experiments, sortColumn=0, sortReverse=len(context.history) % 2)
 
@@ -173,7 +172,7 @@ class EvaluateExperiments(State):
         
         context.history.add(History.DoEHistoryItem(-1, combiScoreHistory, bestCombiScoreItem))
         
-        if len(context.history) >= 10: return StopDoE()
+        if len(context.history) >= 40: return StopDoE("Exp. Iteration reached maximum")
 
         X = Common.getXWithCombinations(context.getExperimentValues(), combinations, Statistics.orthogonalScaling)
 
@@ -203,16 +202,20 @@ class EvaluateExperiments(State):
 
 
 class StopDoE(State):
-    def __init__(self): super().__init__("Stop DoE")
+    def __init__(self, reason): 
+        super().__init__("Stop DoE")
+        self.stopReason = reason
 
     def onCall(self):
+
+        Logger.logInfo("STOP due to: {}".format(self.stopReason))
 
         r2ScoreHistory = context.history.choose(lambda item: item.bestCombiScoreItem.r2)
         q2ScoreHistory = context.history.choose(lambda item: item.bestCombiScoreItem.q2)
         combiScoreHistory = context.history.choose(lambda item: item.bestCombiScoreItem.scoreCombis["1-(R2-Q2)"])
         selctedIndex = context.history.choose(lambda item: item.bestCombiScoreItem.index)
 
-        bestScoreOverall = np.argmax(combiScoreHistory)
+        bestScoreOverall = len(q2ScoreHistory) - np.argmax(q2ScoreHistory[::-1]) - 1 #Reverse
         bestCombiScoreItemOverall = context.history.choose(lambda item: item.bestCombiScoreItem)[bestScoreOverall]
 
 
@@ -316,6 +319,7 @@ class HandleOutliers(State):
             else:
                 Logger.logStateInfo("Outlier within serveral experiments -> remove all")
                 context.deleteExperiment(idx)
+        
                 return EvaluateExperiments()
 
 
