@@ -32,7 +32,7 @@ def plot(*plotters, is3D=False, xLabel="x", yLabel="y", title="Plot", showLegend
 
     if showLegend: plt.legend()
     if showPlot: plt.show()
-    #matplotlib.use('Agg')
+    matplotlib.use('Agg')
 
     if saveFigure: 
         filename = Path("Plot_{}.png".format(title))

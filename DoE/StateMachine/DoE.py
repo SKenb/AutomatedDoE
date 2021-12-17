@@ -205,6 +205,10 @@ class StopDoE(State):
     def __init__(self, reason): 
         super().__init__("Stop DoE")
         self.stopReason = reason
+        self.bestCombiScoreItemOverall = None
+
+    def result(self):
+        return self.bestCombiScoreItemOverall
 
     def onCall(self):
 
@@ -216,7 +220,7 @@ class StopDoE(State):
         selctedIndex = context.history.choose(lambda item: item.bestCombiScoreItem.index)
 
         bestScoreOverall = len(q2ScoreHistory) - np.argmax(q2ScoreHistory[::-1]) - 1 #Reverse
-        bestCombiScoreItemOverall = context.history.choose(lambda item: item.bestCombiScoreItem)[bestScoreOverall]
+        self.bestCombiScoreItemOverall = context.history.choose(lambda item: item.bestCombiScoreItem)[bestScoreOverall]
 
 
         z = lambda pred: np.array(context.history.choose(lambda item: item.combiScoreHistory.choose(pred)))
@@ -236,10 +240,10 @@ class StopDoE(State):
                             showLegend=True, figure=fig
                         ),
             lambda fig: Statistics.plotCoefficients(
-                            bestCombiScoreItemOverall.scaledModel.params, 
-                            bestCombiScoreItemOverall.context, 
-                            bestCombiScoreItemOverall.scaledModel.conf_int(), 
-                            combinations=bestCombiScoreItemOverall.combinations, figure=fig
+                            self.bestCombiScoreItemOverall.scaledModel.params, 
+                            self.bestCombiScoreItemOverall.context, 
+                            self.bestCombiScoreItemOverall.scaledModel.conf_int(), 
+                            combinations=self.bestCombiScoreItemOverall.combinations, figure=fig
                         )
         )
 

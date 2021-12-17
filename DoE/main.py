@@ -8,7 +8,9 @@ def main():
 
     Logger.logInfo("Start StateMachine with InitDoE")
     mainSM = StateMachine.StateMachine(DoE.InitDoE())
-    for _ in mainSM: pass
+    for state in mainSM: pass
+
+    print(state.result())
     
 if __name__ == '__main__':
 

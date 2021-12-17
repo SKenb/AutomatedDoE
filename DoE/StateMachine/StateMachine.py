@@ -24,12 +24,15 @@ class State():
         Logger.logException(excpetion)
         return None
 
+    def result(self):
+        return None
+
 
 class StateMachine():
     def __init__(self, currentState : State):
         self.currentState = currentState
 
-    def next(self):
+    def next(self) -> State:
         if self.currentState is None: raise Exception("No init state :0")
         self.currentState = self.currentState()
         return self.currentState
@@ -37,7 +40,7 @@ class StateMachine():
     def __iter__(self):
         return self
  
-    def __next__(self):
+    def __next__(self) -> State:
         if self.currentState is None: raise StopIteration
         calledState = self.currentState
         self.next()
