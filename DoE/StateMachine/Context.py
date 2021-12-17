@@ -88,3 +88,4 @@ class ContextDoE():
         factorIndices = np.delete(factorIndices, self.excludedFactors)
         return factorIndices[coefIndex]
 
+

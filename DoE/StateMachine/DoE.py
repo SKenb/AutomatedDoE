@@ -35,7 +35,7 @@ class FindNewExperiments(State):
         experiments = context.experimentFactory.getNewExperimentSuggestion(len(context.factorSet))
         if experiments is None: return StopDoE("No more experiments available")
 
-        context.newExperimentValues = context.factorSet.realizeExperiments(experiments, sortColumn=0, sortReverse=len(context.history) % 2)
+        context.newExperimentValues = context.factorSet.realizeExperiments(experiments, sortColumn=3, sortReverse=len(context.history) % 2)
 
         return ExecuteExperiments()
 
@@ -213,6 +213,17 @@ class StopDoE(State):
     def onCall(self):
 
         Logger.logInfo("STOP due to: {}".format(self.stopReason))
+
+        ## Experiments
+        plotter = lambda i: lambda fig: Common.plot(lambda plt: plt.scatter(list(range(len(context._experimentValues[:, i]))), context._experimentValues[:, i]), title=context.factorSet[i], figure=fig)
+        Common.subplot(
+            plotter(0), plotter(1), plotter(2), 
+            plotter(3), plotter(4), plotter(5), 
+            saveFigure=True, title="Exp_History"
+        )
+
+
+        ## Stats
 
         r2ScoreHistory = context.history.choose(lambda item: item.bestCombiScoreItem.r2)
         q2ScoreHistory = context.history.choose(lambda item: item.bestCombiScoreItem.q2)

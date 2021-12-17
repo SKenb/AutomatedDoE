@@ -9,7 +9,7 @@ class ExperimentFactory:
     def __init__(self):
         self.requestCount = 0
 
-    def getNewExperimentSuggestion(self, factorCount):
+    def getNewExperimentSuggestion(self, factorCount, temperatureColumn = 0):
 
         self.requestCount+=1
         experiments = pyDOE.ff2n(factorCount)
@@ -17,6 +17,10 @@ class ExperimentFactory:
 
         power = min(np.ceil(factorCount/2), 3)
         edgeExperimentCount = 2**(factorCount-power-1)
+
+        if temperatureColumn != 0:
+            # Replace column zero with temperatureColumn --> rising temperature
+            experiments[: [0, temperatureColumn]] = experiments[:, [temperatureColumn, 0]]
 
         if self.requestCount <= edgeExperimentCount:
             # Edges
