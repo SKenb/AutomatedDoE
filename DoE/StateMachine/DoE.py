@@ -17,13 +17,18 @@ context = None
 
 
 class InitDoE(State):
-    def __init__(self): super().__init__("Initialize DoE")
+    def __init__(self, optimum=None, optimumRange=10, returnAllExperimentsAtOnce=False): 
+        super().__init__("Initialize DoE")
+
+        self.returnAllExperimentsAtOnce = returnAllExperimentsAtOnce
+        self.optimum = optimum
+        self.optimumRange = optimumRange
         
     def onCall(self):
 
         global context
 
-        context = ContextDoE()
+        context = ContextDoE(self.optimum, self.optimumRange, self.returnAllExperimentsAtOnce)
         Logger.logStateInfo(str(context.factorSet))
 
         return FindNewExperiments()
@@ -33,11 +38,10 @@ class FindNewExperiments(State):
     def __init__(self): super().__init__("Find new experiments")
     def onCall(self):
 
-        experiments = context.experimentFactory.getNewExperimentSuggestion(len(context.factorSet))
-        if experiments is None: 
-            return StopDoE()
+        experiments = context.experimentFactory.getNewExperimentSuggestion(len(context.factorSet), returnAllExperiments=context.returnAllExperimentsAtOnce)
+        if experiments is None: return StopDoE("No more experiments available")
 
-        context.newExperimentValues = context.factorSet.realizeExperiments(experiments, sortColumn=0, sortReverse=len(context.history) % 2)
+        context.newExperimentValues = context.factorSet.realizeExperiments(experiments, sortColumn=3, sortReverse=len(context.history) % 2)
 
         return ExecuteExperiments()
 
@@ -110,7 +114,7 @@ class EvaluateExperiments(State):
         iterationIndex = 0
         while iterationIndex < 100: #Do not get stuck in loop
 
-            scaledModel, _ = self.createModels(combinations)
+            scaledModel, model = self.createModels(combinations)
 
             X = Common.getXWithCombinations(context.getExperimentValues(), combinations, Statistics.orthogonalScaling)
 
@@ -126,7 +130,7 @@ class EvaluateExperiments(State):
                 "1-(R2-Q2)": (1-(r2Score-q2Score))
             }
             
-            combiScoreHistory.add(History.CombiScoreHistoryItem(iterationIndex, combinations, scaledModel, context, r2Score, q2Score, context.excludedFactors, scoreCombis))
+            combiScoreHistory.add(History.CombiScoreHistoryItem(iterationIndex, combinations, model, scaledModel, context, r2Score, q2Score, context.excludedFactors, scoreCombis))
             
             isSignificant, _ = Statistics.getModelTermSignificance(scaledModel.conf_int())
 
@@ -144,6 +148,10 @@ class EvaluateExperiments(State):
         valueOfInterest = lambda item: item.q2 # scoreCombis["1-(R2-Q2)"] #item.r2 # item.q2 # 
         search = lambda func: valueOfInterest(func(combiScoreHistory.items(), key=valueOfInterest))
         maxScore = search(max)
+
+        if np.isnan(maxScore): 
+            # Scores results are not usefull
+            return combiScoreHistory[-1]
 
         relScoreBound = (maxScore - search(min)) * 0.05
         bound = (maxScore-relScoreBound) if maxScore > 0 else (maxScore+relScoreBound)
@@ -170,7 +178,7 @@ class EvaluateExperiments(State):
         
         context.history.add(History.DoEHistoryItem(-1, combiScoreHistory, bestCombiScoreItem))
         
-        if len(context.history) >= 10: return StopDoE()
+        if len(context.history) >= 40: return StopDoE("Exp. Iteration reached maximum")
 
         X = Common.getXWithCombinations(context.getExperimentValues(), combinations, Statistics.orthogonalScaling)
 
@@ -200,17 +208,50 @@ class EvaluateExperiments(State):
 
 
 class StopDoE(State):
-    def __init__(self): super().__init__("Stop DoE")
+    def __init__(self, reason): 
+        super().__init__("Stop DoE")
+        self.stopReason = reason
+        self.bestCombiScoreItemOverall = None
+
+    def result(self):
+        return self.bestCombiScoreItemOverall
 
     def onCall(self):
+
+        Logger.logInfo("STOP due to: {}".format(self.stopReason))
+
+        ## Experiments Factor/Response Hist.
+        plotter = lambda i: lambda fig: Common.plot(lambda plt: plt.scatter(list(range(len(context._experimentValues[:, i]))), context._experimentValues[:, i]), title=context.factorSet[i], figure=fig)
+        Common.subplot(
+            plotter(0), plotter(1), plotter(2), 
+            plotter(3), plotter(4), plotter(5), 
+            saveFigure=True, title="Exp_History"
+        )
+
+        indexTemperature = 3
+        Common.plot(
+            lambda plt: plt.plot(list(range(len(context._experimentValues[:, indexTemperature]))), context._experimentValues[:, indexTemperature]),
+            lambda plt: plt.scatter(list(range(len(context._experimentValues[:, indexTemperature]))), context._experimentValues[:, indexTemperature]),
+            saveFigure=True, title="Temperature"
+        )
+
+        responseStr = ["Space-time yield", "Conversion", "Selectivity"]
+        plotter = lambda i: lambda fig: Common.plot(lambda plt: plt.scatter(list(range(len(context.Y[:, i]))), context.Y[:, i]), title=responseStr[i], figure=fig)
+        Common.subplot(
+            plotter(0), plotter(1), plotter(2), 
+            saveFigure=True, title="Resp_History"
+        )
+
+
+        ## Stats
 
         r2ScoreHistory = context.history.choose(lambda item: item.bestCombiScoreItem.r2)
         q2ScoreHistory = context.history.choose(lambda item: item.bestCombiScoreItem.q2)
         combiScoreHistory = context.history.choose(lambda item: item.bestCombiScoreItem.scoreCombis["1-(R2-Q2)"])
         selctedIndex = context.history.choose(lambda item: item.bestCombiScoreItem.index)
 
-        bestScoreOverall = np.argmax(combiScoreHistory)
-        bestCombiScoreItemOverall = context.history.choose(lambda item: item.bestCombiScoreItem)[bestScoreOverall]
+        bestScoreOverall = len(q2ScoreHistory) - np.argmax(q2ScoreHistory[::-1]) - 1 #Reverse
+        self.bestCombiScoreItemOverall = context.history.choose(lambda item: item.bestCombiScoreItem)[bestScoreOverall]
 
 
         z = lambda pred: np.array(context.history.choose(lambda item: item.combiScoreHistory.choose(pred)))
@@ -219,23 +260,24 @@ class StopDoE(State):
         predQ2 = lambda item: item.q2
 
         gP = lambda plt, idx, pred: plt.plot(range(len(z(pred)[idx])), idx*np.ones(len(z(pred)[idx])), z(pred)[idx])
-        plotRO = lambda yValues: lambda plt: plt.plot(bestCombiScoreItemOverall.index, yValues[bestCombiScoreItemOverall.index], 'ro')
+        #plotRO = lambda yValues: lambda plt: plt.plot(bestCombiScoreItemOverall.index, yValues[bestCombiScoreItemOverall.index], 'ro')
 
         Common.subplot(
             lambda fig: Common.plot(
                             lambda plt: plt.plot(r2ScoreHistory, label="R2"),
                             lambda plt: plt.plot(q2ScoreHistory, label="Q2"),
                             lambda plt: plt.plot(context.history.choose(lambda item: item.bestCombiScoreItem.scoreCombis["1-(R2-Q2)"]), label="1-(R2-Q2)"),
-                            plotRO(r2ScoreHistory), plotRO(q2ScoreHistory),
+                            #plotRO(r2ScoreHistory), plotRO(q2ScoreHistory),
                             showLegend=True, figure=fig
                         ),
             lambda fig: Statistics.plotCoefficients(
-                            bestCombiScoreItemOverall.scaledModel.params, 
-                            bestCombiScoreItemOverall.context, 
-                            bestCombiScoreItemOverall.scaledModel.conf_int(), 
-                            combinations=bestCombiScoreItemOverall.combinations, figure=fig
+                            self.bestCombiScoreItemOverall.scaledModel.params, 
+                            self.bestCombiScoreItemOverall.context, 
+                            self.bestCombiScoreItemOverall.scaledModel.conf_int(), 
+                            combinations=self.bestCombiScoreItemOverall.combinations, 
+                            figure=fig
                         ),
-            saveFigure=True, title="Final"
+            saveFigure=True, title="Score_Best", rows=2, cols=2
         )
 
         plot3DHist = lambda fig, pred, scoreHistory, title: Common.plot(
@@ -247,18 +289,18 @@ class StopDoE(State):
             is3D=False, title=title, figure=fig
         )
 
-        Common.subplot(
-            lambda fig: plot3DHist(fig, predR2, r2ScoreHistory, "R2 History"),
-            lambda fig: plot3DHist(fig, predQ2, q2ScoreHistory, "Q2 Hsitory"),
-            is3D=True
-        )
+        #Common.subplot(
+        #    lambda fig: plot3DHist(fig, predR2, r2ScoreHistory, "R2 History"),
+        #    lambda fig: plot3DHist(fig, predQ2, q2ScoreHistory, "Q2 Hsitory"),
+        #    is3D=True
+        #)
         
 
 
 class HandleOutliers(State):
     def __init__(self): super().__init__("Handle outliers")
 
-    def detectOutliers(self):
+    def detectOutliers(self) -> np.array:
         outlierIdx = np.abs(context.scaledModel.outlier_test()[:, 0]) > 4
         return outlierIdx
 
@@ -285,6 +327,10 @@ class HandleOutliers(State):
 
         if not any(self.detectOutliers()): 
             Logger.logStateInfo("No outliers detected")
+            return FindNewExperiments()
+
+        if self.detectOutliers().sum() > 3: 
+            Logger.logStateInfo("Too many outliers detected - Maybe bad intermediate model")
             return FindNewExperiments()
 
         #return FindNewExperiments()
@@ -314,6 +360,7 @@ class HandleOutliers(State):
             else:
                 Logger.logStateInfo("Outlier within serveral experiments -> remove all")
                 context.deleteExperiment(idx)
+        
                 return EvaluateExperiments()
 
 

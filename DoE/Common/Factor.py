@@ -27,6 +27,8 @@ class Factor:
 
     def setMax(self, maxValue): self.max = maxValue
 
+    def getBounds(self): return (self.min, self.max)
+
     def delta(self): return self.max - self.min
 
     def center(self): return self.min + self.delta() / 2
@@ -36,6 +38,14 @@ class Factor:
 
     def __rmul__(self, other):
         return self.__mul__(other)
+
+    def transformToOptimum(self, optimum, range):
+        deltaAroundOptimum = self.delta() * range / 100
+
+        self.min = optimum - deltaAroundOptimum/2
+        self.max = optimum + deltaAroundOptimum/2
+
+        return self
 
 
 class FactorSet:
@@ -137,17 +147,29 @@ class FactorSet:
 
         return labels
 
+    def getBounds(self, excludedFactors):
+        normedExperiments = np.array([
+            -1*np.ones(self.getFactorCount()),
+            np.ones(self.getFactorCount())
+        ])
+
+        self.realizeExperiments(normedExperiments)
+        return [(rExp[0], rExp[1]) for index, rExp in enumerate(self.getExperimentValuesAndCombinations().T) if index not in excludedFactors]
+
 
 def getDefaultFactorSet():
 
     return FactorSet([
-        Factor("Temperature", 100, 160, "°C", "T_1"),
-        Factor("Concentration", .2, .4, "M", "C_SM_1"),
-        Factor("Reagent ratio‘s", .9, 3, "", "R"),
-        Factor("Residence time", 2.5, 6, "min", "RT_1"),
-        #Factor("Dummy factor 1", -100, 100, "knolls", "DF1"),
-        #Factor("Dummy factor 2", -10, 10, "knolls", "DF2"),
+        Factor("Equivalents NBS", 0.8, 1.4, "", "NBS"),
+        Factor("Concentration", .25, .45, "M", "Con"),
+        Factor("Residence time", .33, 1.5, "", "RT"),
+        Factor("Temperature", 10, 50, "°C", "T"),
+        Factor("Light intensity", 100, 800, "", "Light"),
+        Factor("Quantity AcOH", 0, 0.1, "", "AcOH"),
     ])
+
+def getFactorSetAroundOptimum(baseFactorSet, optimum, optimumRange=10):
+    return FactorSet([factor.transformToOptimum(optimum[index], optimumRange) for index, factor in enumerate(baseFactorSet.factors)])
 
 if __name__ == '__main__':
     
