@@ -8,11 +8,14 @@ import numpy as np
 
 class ContextDoE():
 
-    def __init__(self):
+    def __init__(self, optimum=None, optimumRange=10, returnAllExperimentsAtOnce=False):
 
-        self.xamControl =XamControl.XamControlTestRun1Mock() #  XamControl.XamControlFactorsOnlyMock() # 
+        self.xamControl = XamControl.XamControlFactorsOnlyMock()
         self.experimentFactory = ExperimentFactory.ExperimentFactory()
+
         self.factorSet = Factor.getDefaultFactorSet()
+        if optimum is not None:
+            self.factorSet = Factor.getFactorSetAroundOptimum(self.factorSet, optimum, optimumRange)
         
         self.newExperimentValues = np.array([])
         self._experimentValues = np.array([])
@@ -27,7 +30,9 @@ class ContextDoE():
         self.excludedFactors = []
         self.deletedExperiments = []
 
-    def getResponse(self, responseIdx=1, transformFlagOrTransformer = True):
+        self.returnAllExperimentsAtOnce = returnAllExperimentsAtOnce
+
+    def getResponse(self, responseIdx=0, transformFlagOrTransformer = False):
         Y = self.Y[:, responseIdx]
 
         if transformFlagOrTransformer is None: return Y
@@ -71,7 +76,7 @@ class ContextDoE():
             self.excludedFactors.extend(factorIndex)
 
         else:
-            assert factorIndex >= 0 and factorIndex <= len(self.factorSet), "Ups - U want to exclude a factor which we don't know :/"
+            assert factorIndex >= 0 and factorIndex <= len(self.factorSet), "Ups - U want to exclude a factor which we don't know 0.o"
             self.excludedFactors.append(factorIndex)
 
     def resetFactorExlusion(self):
@@ -87,4 +92,5 @@ class ContextDoE():
         factorIndices = np.array(range(len(self.factorSet)))
         factorIndices = np.delete(factorIndices, self.excludedFactors)
         return factorIndices[coefIndex]
+
 
