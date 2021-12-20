@@ -19,7 +19,8 @@ def main():
 
 
     Logger.logInfo("Start DoE around optimum")
-    mainSM = StateMachine.StateMachine(DoE.InitDoE(returnAllExperimentsAtOnce=True))
+    Logger.appendToLogFolder("DoE_Around_Optimum")
+    mainSM = StateMachine.StateMachine(DoE.InitDoE(optimum=optimum, returnAllExperimentsAtOnce=True))
     for state in mainSM: pass
 
 

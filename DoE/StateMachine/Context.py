@@ -8,11 +8,14 @@ import numpy as np
 
 class ContextDoE():
 
-    def __init__(self, returnAllExperimentsAtOnce=False):
+    def __init__(self, optimum=None, optimumRange=10, returnAllExperimentsAtOnce=False):
 
         self.xamControl = XamControl.XamControlFactorsOnlyMock()
         self.experimentFactory = ExperimentFactory.ExperimentFactory()
+
         self.factorSet = Factor.getDefaultFactorSet()
+        if optimum is not None:
+            self.factorSet = Factor.getFactorSetAroundOptimum(self.factorSet, optimum, optimumRange)
         
         self.newExperimentValues = np.array([])
         self._experimentValues = np.array([])

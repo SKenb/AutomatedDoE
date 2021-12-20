@@ -28,9 +28,7 @@ def initLogging():
     dateString = datetime.now().strftime("%d%m%Y_%H.%M.%S")
     #hashString = str(random.getrandbits(32))
     subFolder = Path("Experiment_{}".format(dateString))
-
-    logFolder = logFolder / subFolder
-    logFolder.mkdir(parents=False, exist_ok=True)
+    appendToLogFolder(subFolder)
 
     logPath = Path(logFolder / "log_{}.log".format(datetime.now().strftime("%d%m%Y_%H")))
 
@@ -49,6 +47,15 @@ def initLogging():
 
 def getCurrentLogFolder():
     return logFolder
+
+def appendToLogFolder(newSubfolder:str):
+    global logFolder
+
+    newSubfolder = Path(newSubfolder)
+
+    logFolder = logFolder / newSubfolder
+    logFolder.mkdir(parents=False, exist_ok=True)
+
 
 def genericLog(predicate : Callable, prefix : str, msg : str, suffix : str = "", stringBase : str = "{} {} {}"):
     predicate(stringBase.format(prefix, msg, suffix))

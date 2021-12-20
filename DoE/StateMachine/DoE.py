@@ -16,16 +16,18 @@ context = None
 
 
 class InitDoE(State):
-    def __init__(self, returnAllExperimentsAtOnce=False): 
+    def __init__(self, optimum=None, optimumRange=10, returnAllExperimentsAtOnce=False): 
         super().__init__("Initialize DoE")
 
         self.returnAllExperimentsAtOnce = returnAllExperimentsAtOnce
+        self.optimum = optimum
+        self.optimumRange = optimumRange
         
     def onCall(self):
 
         global context
 
-        context = ContextDoE(self.returnAllExperimentsAtOnce)
+        context = ContextDoE(self.optimum, self.optimumRange, self.returnAllExperimentsAtOnce)
         Logger.logStateInfo(str(context.factorSet))
 
         return FindNewExperiments()
