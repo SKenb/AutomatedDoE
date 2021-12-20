@@ -31,7 +31,7 @@ def plot(*plotters, is3D=False, xLabel="x", yLabel="y", title="Plot", showLegend
     plt.title(title)
 
     if showLegend: plt.legend()
-    if showPlot: plt.show()
+    #if showPlot: plt.show()
     matplotlib.use('Agg')
 
     if saveFigure: 
@@ -42,10 +42,16 @@ def plot(*plotters, is3D=False, xLabel="x", yLabel="y", title="Plot", showLegend
     return figure
 
 
-def subplot(*plotFunctions, is3D=False, saveFigure=False, title="", showPlot=True):
+def subplot(*plotFunctions, is3D=False, saveFigure=False, title="", showPlot=True, rows=None, cols=None):
     
-    cols = np.ceil((np.sqrt(len(plotFunctions))))
-    rows = np.ceil(len(plotFunctions) / cols)
+    if rows is None and cols is None:
+        cols = np.ceil((np.sqrt(len(plotFunctions))))
+        rows = np.ceil(len(plotFunctions) / cols)
+    else:
+        if rows is None: rows = np.ceil(len(plotFunctions) / cols)
+        if cols is None: cols = np.ceil(len(plotFunctions) / rows)
+
+    assert cols*rows >= len(plotFunctions), "We r unable to fit all plots :/"        
 
     fig = plt.figure()
     fig.tight_layout()

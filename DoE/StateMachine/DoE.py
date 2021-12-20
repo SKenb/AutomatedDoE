@@ -16,13 +16,16 @@ context = None
 
 
 class InitDoE(State):
-    def __init__(self): super().__init__("Initialize DoE")
+    def __init__(self, returnAllExperimentsAtOnce=False): 
+        super().__init__("Initialize DoE")
+
+        self.returnAllExperimentsAtOnce = returnAllExperimentsAtOnce
         
     def onCall(self):
 
         global context
 
-        context = ContextDoE()
+        context = ContextDoE(self.returnAllExperimentsAtOnce)
         Logger.logStateInfo(str(context.factorSet))
 
         return FindNewExperiments()
@@ -32,7 +35,7 @@ class FindNewExperiments(State):
     def __init__(self): super().__init__("Find new experiments")
     def onCall(self):
 
-        experiments = context.experimentFactory.getNewExperimentSuggestion(len(context.factorSet))
+        experiments = context.experimentFactory.getNewExperimentSuggestion(len(context.factorSet), returnAllExperiments=context.returnAllExperimentsAtOnce)
         if experiments is None: return StopDoE("No more experiments available")
 
         context.newExperimentValues = context.factorSet.realizeExperiments(experiments, sortColumn=3, sortReverse=len(context.history) % 2)
@@ -214,12 +217,26 @@ class StopDoE(State):
 
         Logger.logInfo("STOP due to: {}".format(self.stopReason))
 
-        ## Experiments
+        ## Experiments Factor/Response Hist.
         plotter = lambda i: lambda fig: Common.plot(lambda plt: plt.scatter(list(range(len(context._experimentValues[:, i]))), context._experimentValues[:, i]), title=context.factorSet[i], figure=fig)
         Common.subplot(
             plotter(0), plotter(1), plotter(2), 
             plotter(3), plotter(4), plotter(5), 
             saveFigure=True, title="Exp_History"
+        )
+
+        indexTemperature = 3
+        Common.plot(
+            lambda plt: plt.plot(list(range(len(context._experimentValues[:, indexTemperature]))), context._experimentValues[:, indexTemperature]),
+            lambda plt: plt.scatter(list(range(len(context._experimentValues[:, indexTemperature]))), context._experimentValues[:, indexTemperature]),
+            saveFigure=True, title="Temperature"
+        )
+
+        responseStr = ["Space-time yield", "Conversion", "Selectivity"]
+        plotter = lambda i: lambda fig: Common.plot(lambda plt: plt.scatter(list(range(len(context.Y[:, i]))), context.Y[:, i]), title=responseStr[i], figure=fig)
+        Common.subplot(
+            plotter(0), plotter(1), plotter(2), 
+            saveFigure=True, title="Resp_History"
         )
 
 
@@ -254,8 +271,10 @@ class StopDoE(State):
                             self.bestCombiScoreItemOverall.scaledModel.params, 
                             self.bestCombiScoreItemOverall.context, 
                             self.bestCombiScoreItemOverall.scaledModel.conf_int(), 
-                            combinations=self.bestCombiScoreItemOverall.combinations, figure=fig
-                        )
+                            combinations=self.bestCombiScoreItemOverall.combinations, 
+                            figure=fig
+                        ),
+            saveFigure=True, title="Score_Best", rows=2, cols=2
         )
 
         plot3DHist = lambda fig, pred, scoreHistory, title: Common.plot(

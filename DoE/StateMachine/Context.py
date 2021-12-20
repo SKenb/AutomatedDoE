@@ -8,7 +8,7 @@ import numpy as np
 
 class ContextDoE():
 
-    def __init__(self):
+    def __init__(self, returnAllExperimentsAtOnce=False):
 
         self.xamControl = XamControl.XamControlFactorsOnlyMock()
         self.experimentFactory = ExperimentFactory.ExperimentFactory()
@@ -26,6 +26,8 @@ class ContextDoE():
 
         self.excludedFactors = []
         self.deletedExperiments = []
+
+        self.returnAllExperimentsAtOnce = returnAllExperimentsAtOnce
 
     def getResponse(self, responseIdx=0, transformFlagOrTransformer = False):
         Y = self.Y[:, responseIdx]

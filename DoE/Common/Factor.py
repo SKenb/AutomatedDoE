@@ -27,6 +27,8 @@ class Factor:
 
     def setMax(self, maxValue): self.max = maxValue
 
+    def getBounds(self): return (self.min, self.max)
+
     def delta(self): return self.max - self.min
 
     def center(self): return self.min + self.delta() / 2
@@ -136,6 +138,16 @@ class FactorSet:
             labels.extend(self.experimentValueCombinations.keys())
 
         return labels
+
+    def getBounds(self, excludedFactors):
+        normedExperiments = np.array([
+            -1*np.ones(self.getFactorCount()),
+            np.ones(self.getFactorCount())
+        ])
+
+        self.realizeExperiments(normedExperiments)
+        return [(rExp[0], rExp[1]) for index, rExp in enumerate(self.getExperimentValuesAndCombinations().T) if index not in excludedFactors]
+
 
 
 def getDefaultFactorSet():
