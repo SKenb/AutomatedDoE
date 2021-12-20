@@ -17,12 +17,15 @@ import pandas as pd
 import numpy as np
 
 from pathlib import Path
+from datetime import datetime
 
 from Common import Logger
+from Common import Optimization
 from StateMachine import StateMachine
 from StateMachine import DoE
 
 from Dashboard import Layout
+from distutils.dir_util import copy_tree
 
 cache = diskcache.Cache("./cache")
 long_callback_manager = DiskcacheLongCallbackManager(cache)
@@ -69,20 +72,42 @@ def startServer(debug=True):
 def processCallback(set_progress, n_clicks):
     global processPauseFlag
 
+    maxStr = "4"
+    resume()
+
+    dateString = datetime.now().strftime("%d%m%Y_%H.%M.%S")
+    backUpFolder = "./Logs/ServerBackup_{}".format(dateString)
+    copy_tree(Logger.getCurrentLogFolder(), backUpFolder)
+
     if n_clicks is None or n_clicks <= 0: return ["READY"]
     
     Logger.logInfo("Start StateMachine with InitDoE")
     mainSM = StateMachine.StateMachine(DoE.InitDoE())
     for state in mainSM: 
-        set_progress(("1", "2", f"{state}"))
+        set_progress(("1", maxStr, f"{state}"))
+        hanldePausing(set_progress, "1", maxStr)
+        
 
-        while isPausing(): 
-            set_progress(("1", "2", "PAUSING :)"))
-            time.sleep(1)
+    Logger.logInfo("Find optimum")
+    set_progress(("2", maxStr, f"{state}"))
+    optimum = Optimization.optimizationFromDoEResult(state.result())
+    Logger.logInfo("Optimum @: {}".format(optimum))
+
+
+    Logger.logInfo("Start DoE around optimum")
+    Logger.appendToLogFolder("DoE_Around_Optimum")
+    mainSM = StateMachine.StateMachine(DoE.InitDoE(optimum=optimum))
+    for state in mainSM:
+        set_progress(("3", maxStr, f"{state}"))
+        hanldePausing(set_progress, "3", maxStr)
         
     resume()
     return f"READY"
 
+def hanldePausing(set_progress, minStr, maxStr):
+    while isPausing(): 
+        set_progress((minStr, maxStr, "PAUSING :)"))
+        time.sleep(1)
 
 @dashboard.callback(
     inputs=Input("buttonPause", "n_clicks"),

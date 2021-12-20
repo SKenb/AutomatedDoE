@@ -1,5 +1,4 @@
 from Common import Logger
-from Common import History
 from Common import Optimization
 from StateMachine import StateMachine
 from StateMachine import DoE
@@ -14,7 +13,7 @@ def main():
 
 
     Logger.logInfo("Find optimum")
-    optimum = optimization(state.result())
+    optimum = Optimization.optimizationFromDoEResult(state.result())
     Logger.logInfo("Optimum @: {}".format(optimum))
 
 
@@ -22,21 +21,6 @@ def main():
     Logger.appendToLogFolder("DoE_Around_Optimum")
     mainSM = StateMachine.StateMachine(DoE.InitDoE(optimum=optimum, returnAllExperimentsAtOnce=True))
     for state in mainSM: pass
-
-
-
-def optimization(result:History.CombiScoreHistoryItem):
-    if result is None: return None
-
-    model = result.model
-    factorSet = result.context.factorSet
-    excludedFactors = result.excludedFactors
-
-    optimum = Optimization.optimizeModel(model, factorSet.getBounds(excludedFactors))
-    optimum = optimum[0:len(optimum)-len(factorSet.experimentValueCombinations)]
-
-    reverseOpt = list(optimum[::-1])
-    return [factor.center() if index in excludedFactors else reverseOpt.pop() for index, factor in enumerate(factorSet.factors)]
 
 
   

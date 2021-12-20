@@ -11,7 +11,7 @@ from typing import Callable
 import numpy as np
 
 
-logFolder = Path("./Logs")
+logFolder = Path("./Logs/Server/")
 
 # Initialize logging in one defines place
 # import logging in all other files
