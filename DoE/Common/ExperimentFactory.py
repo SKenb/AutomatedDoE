@@ -48,7 +48,12 @@ class ExperimentFactory:
 
             experiments = experiments[lowerBound:upperBound, :]
             experiments = np.vstack((experiments, -1*experiments))
-            return np.vstack((experiments, np.array([centerPoint])))
+
+            centerPoints = np.array([centerPoint])
+            if self.requestCount <= 1:
+                centerPoints = np.array([centerPoint, centerPoint])
+            
+            return np.vstack((experiments, centerPoints))
 
         elif self.requestCount <= edgeExperimentCount+factorCount:
             # Centered Face Points
