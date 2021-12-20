@@ -1,6 +1,7 @@
 from dash import html, Dash, dcc
 import plotly.express as px
 from datetime import datetime
+import os
 
 def getDoELayout():
 
@@ -13,7 +14,6 @@ def getDoELayout():
             html.Div(
                 id="processControl",
                 children=[
-                    html.P(children="STATE: "),
                     html.P(id="state", children="READY"),
                     html.P(id="processState", children=""),
                     html.Br(), 
@@ -37,10 +37,13 @@ def getDoELayout():
                         children=[
                             html.Hr(),
                             dcc.Dropdown(
-                                id='yaxis-column',
+                                id='plotResultsDropDown',
                                 options=[{'label': i, 'value': i} for i in getOptions()],
-                                value='Life expectancy at birth, total (years)'
+                                value='None'
                             ),
+                            html.Img(
+                                id="plotResultsImage"
+                            )
                         ]
                     )
                 ]
@@ -64,4 +67,16 @@ def getDoELayout():
     )
 
 def getOptions():
-    return []
+    filelist=os.listdir('./assets/DoE/')
+    for fichier in filelist[:]:
+        if not(fichier.endswith(".png")):
+            filelist.remove(fichier)
+
+    filelist2=os.listdir('./assets/DoE/DoE_Around_Optimum/')
+    for fichier in filelist2[:]:
+        if not(fichier.endswith(".png")):
+            filelist2.remove(fichier)
+
+    filelist.extend(["DoE_Around_Optimum/" + f for f in filelist2])
+
+    return filelist

@@ -32,7 +32,7 @@ long_callback_manager = DiskcacheLongCallbackManager(cache)
 
 dashboard = dash.Dash(__name__, long_callback_manager=long_callback_manager)
 
-def startServer(debug=True):
+def startServer(debug=False):
 
     dashboard.title = "Automated DoE"
 
@@ -71,10 +71,14 @@ def startServer(debug=True):
 )
 def processCallback(set_progress, n_clicks):
     global processPauseFlag
-
     maxStr = "4"
+
+    print(n_clicks)
+
+    set_progress(("0", maxStr, "Prepare"))
     resume()
 
+    set_progress(("0", maxStr, "BackUp"))
     dateString = datetime.now().strftime("%d%m%Y_%H.%M.%S")
     backUpFolder = "./Logs/ServerBackup_{}".format(dateString)
     copy_tree(Logger.getCurrentLogFolder(), backUpFolder)
@@ -131,6 +135,17 @@ def resume():
 def isPausing():
     return path.is_file()
 
+
+@dashboard.callback(
+    Output('plotResultsImage', 'src'),
+    [Input('plotResultsDropDown', 'value')],
+)
+def make_graph(display_figure):
+
+    try:
+        return dashboard.get_asset_url("./DoE/{}".format(display_figure))
+    except Exception as e:
+        return None
 
 
 if __name__ == "__main__":

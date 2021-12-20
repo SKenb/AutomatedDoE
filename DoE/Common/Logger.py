@@ -11,7 +11,7 @@ from typing import Callable
 import numpy as np
 
 
-logFolder = Path("./Logs/Server/")
+logFolder = Path("./assets/DoE/")
 
 # Initialize logging in one defines place
 # import logging in all other files
@@ -27,10 +27,10 @@ def initLogging():
 
     dateString = datetime.now().strftime("%d%m%Y_%H.%M.%S")
     #hashString = str(random.getrandbits(32))
-    subFolder = Path("Experiment_{}".format(dateString))
+    subFolder = Path("") # Path("Experiment_{}".format(dateString))
     appendToLogFolder(subFolder)
 
-    logPath = Path(logFolder / "log_{}.log".format(datetime.now().strftime("%d%m%Y_%H")))
+    logPath = Path(logFolder / "log.log")
 
     logging.basicConfig(
         filename=str(logPath), 

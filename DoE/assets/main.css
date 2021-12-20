@@ -50,7 +50,7 @@ body {
     margin: 70px auto;
     position: relative;
     width: 80%;
-    max-width: 400px;
+    max-width: 500px;
 }
 
 #processControl button {
@@ -76,6 +76,12 @@ body {
 
 #intermidiateResults {
     margin-top: 100px;
+}
+
+#plotResultsImage {
+    margin: 50px auto;
+    display: block;
+    width: 100%;
 }
 
 h1, h2, h3, h4, h5, h6 {
