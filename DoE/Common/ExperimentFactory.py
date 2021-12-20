@@ -32,7 +32,7 @@ class ExperimentFactory:
                 Logger.logStateInfo("[WARN] No more experiments :/")
                 return None
     
-        power = min(np.ceil(factorCount/2), 3)
+        power = min(np.ceil(factorCount/2), 2)
         edgeExperimentCount = 2**(factorCount-power-1)
 
         if temperatureColumn != 0:
@@ -44,11 +44,16 @@ class ExperimentFactory:
             n = self.requestCount-1
 
             lowerBound = int(n*2**power)
-            upperBound = int(((n+1)*2**power) - 1)
+            upperBound = int(((n+1)*2**power))
 
             experiments = experiments[lowerBound:upperBound, :]
             experiments = np.vstack((experiments, -1*experiments))
-            return np.vstack((experiments, np.array([centerPoint])))
+
+            centerPoints = np.array([centerPoint])
+            if self.requestCount <= 1:
+                centerPoints = np.array([centerPoint, centerPoint])
+            
+            return np.vstack((experiments, centerPoints))
 
         elif self.requestCount <= edgeExperimentCount+factorCount:
             # Centered Face Points
