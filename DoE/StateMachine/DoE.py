@@ -113,7 +113,7 @@ class EvaluateExperiments(State):
         iterationIndex = 0
         while iterationIndex < 100: #Do not get stuck in loop
 
-            scaledModel, _ = self.createModels(combinations)
+            scaledModel, model = self.createModels(combinations)
 
             X = Common.getXWithCombinations(context.getExperimentValues(), combinations, Statistics.orthogonalScaling)
 
@@ -129,7 +129,7 @@ class EvaluateExperiments(State):
                 "1-(R2-Q2)": (1-(r2Score-q2Score))
             }
             
-            combiScoreHistory.add(History.CombiScoreHistoryItem(iterationIndex, combinations, scaledModel, context, r2Score, q2Score, context.excludedFactors, scoreCombis))
+            combiScoreHistory.add(History.CombiScoreHistoryItem(iterationIndex, combinations, model, scaledModel, context, r2Score, q2Score, context.excludedFactors, scoreCombis))
             
             isSignificant, _ = Statistics.getModelTermSignificance(scaledModel.conf_int())
 
@@ -288,11 +288,11 @@ class StopDoE(State):
             is3D=False, title=title, figure=fig
         )
 
-        Common.subplot(
-            lambda fig: plot3DHist(fig, predR2, r2ScoreHistory, "R2 History"),
-            lambda fig: plot3DHist(fig, predQ2, q2ScoreHistory, "Q2 Hsitory"),
-            is3D=True
-        )
+        #Common.subplot(
+        #    lambda fig: plot3DHist(fig, predR2, r2ScoreHistory, "R2 History"),
+        #    lambda fig: plot3DHist(fig, predQ2, q2ScoreHistory, "Q2 Hsitory"),
+        #    is3D=True
+        #)
         
 
 

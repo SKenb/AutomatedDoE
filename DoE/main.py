@@ -28,11 +28,11 @@ def main():
 def optimization(result:History.CombiScoreHistoryItem):
     if result is None: return None
 
-    scaledModel = result.scaledModel
+    model = result.model
     factorSet = result.context.factorSet
     excludedFactors = result.excludedFactors
 
-    optimum = Optimization.optimizeModel(scaledModel, factorSet.getBounds(excludedFactors))
+    optimum = Optimization.optimizeModel(model, factorSet.getBounds(excludedFactors))
     optimum = optimum[0:len(optimum)-len(factorSet.experimentValueCombinations)]
 
     reverseOpt = list(optimum[::-1])

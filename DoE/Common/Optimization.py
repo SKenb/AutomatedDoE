@@ -24,5 +24,4 @@ def optimize(eggholder:Callable, bounds:List):
 if __name__ == "__main__":
 
     testFunc = lambda x: x[1]+x[0]
-
     optimize(testFunc, [(-1, 1), (-1, 1)])

@@ -28,11 +28,12 @@ class History():
         return self.container[key]
 
 class CombiScoreHistoryItem(HistoryItem):
-    def __init__(self, index, combinations, scaledModel, context, r2Score, q2Score, excludedFactors, scoreCombis : Dict = {}) -> None:
+    def __init__(self, index, combinations, model, scaledModel, context, r2Score, q2Score, excludedFactors, scoreCombis : Dict = {}) -> None:
         super().__init__()
 
         self.index = index
         self.combinations = combinations
+        self.model = model
         self.scaledModel = scaledModel
         self.r2 = r2Score
         self.q2 = q2Score
