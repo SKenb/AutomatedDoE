@@ -13,6 +13,8 @@ from Common.Factor import FactorSet
 
 import matplotlib
 
+MATPLOTLIB_SAVE_PLOT_ONLY = True
+
 
 def plot(*plotters, is3D=False, xLabel="x", yLabel="y", title="Plot", showLegend=False, figure=None, saveFigure=False):
      
@@ -31,8 +33,8 @@ def plot(*plotters, is3D=False, xLabel="x", yLabel="y", title="Plot", showLegend
     plt.title(title)
 
     if showLegend: plt.legend()
-    if showPlot: plt.show()
-    #matplotlib.use('Agg')
+    if showPlot and not MATPLOTLIB_SAVE_PLOT_ONLY: plt.show()
+    if MATPLOTLIB_SAVE_PLOT_ONLY: matplotlib.use('Agg')
 
     if saveFigure: 
         filename = Path("Plot_{}.png".format(title))
@@ -42,10 +44,16 @@ def plot(*plotters, is3D=False, xLabel="x", yLabel="y", title="Plot", showLegend
     return figure
 
 
-def subplot(*plotFunctions, is3D=False, saveFigure=False, title="", showPlot=True):
+def subplot(*plotFunctions, is3D=False, saveFigure=False, title="", showPlot=True, rows=None, cols=None):
     
-    cols = np.ceil((np.sqrt(len(plotFunctions))))
-    rows = np.ceil(len(plotFunctions) / cols)
+    if rows is None and cols is None:
+        cols = np.ceil((np.sqrt(len(plotFunctions))))
+        rows = np.ceil(len(plotFunctions) / cols)
+    else:
+        if rows is None: rows = np.ceil(len(plotFunctions) / cols)
+        if cols is None: cols = np.ceil(len(plotFunctions) / rows)
+
+    assert cols*rows >= len(plotFunctions), "We r unable to fit all plots :/"        
 
     fig = plt.figure()
     fig.tight_layout()
@@ -62,7 +70,7 @@ def subplot(*plotFunctions, is3D=False, saveFigure=False, title="", showPlot=Tru
         path = Logger.getCurrentLogFolder() / filename
         plt.savefig(path)
 
-    if showPlot: plt.show()
+    if showPlot and not MATPLOTLIB_SAVE_PLOT_ONLY: plt.show()
 
     return fig
 
