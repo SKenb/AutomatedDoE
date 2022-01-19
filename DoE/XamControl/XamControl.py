@@ -36,21 +36,21 @@ class XamControlExperiment:
     
 
 class XamControlExperimentRequest(XamControlExperiment):
-    EQUIVALENTS_NBS = "Equivalents NBS"
-    CONCENTRATION = "Concentration"
+    RATIO_R1_SM1 = "Ratio R_1/SM1"
+    CONC_SM = "Conc_SM"
     RESIDENCE_TIME = "ResidenceTime"
     TEMPERATURE = "Temperature"
-    LIGHT_INTENSITY= "Light intensity"
-    QUANTITY_ACOH = "Quantity AcOH"
+    INTENSITY= "intensity"
+    RATIO_R2_SM1 = "Ratio R_2/SM1"
 
-    def __init__(self, equivalentsNBS, concentration, residenceTime, temperature, lightIntensity, quantityACOH):
+    def __init__(self, ratioR1SM1, concSM, residenceTime, temperature, intensity, ratioR2SM1):
         super().__init__({
-            XamControlExperimentRequest.EQUIVALENTS_NBS: equivalentsNBS, 
-            XamControlExperimentRequest.CONCENTRATION: concentration,  
+            XamControlExperimentRequest.RATIO_R1_SM1: ratioR1SM1, 
+            XamControlExperimentRequest.CONC_SM: concSM,  
             XamControlExperimentRequest.RESIDENCE_TIME: residenceTime,   
             XamControlExperimentRequest.TEMPERATURE: temperature,  
-            XamControlExperimentRequest.LIGHT_INTENSITY: lightIntensity,
-            XamControlExperimentRequest.QUANTITY_ACOH: quantityACOH
+            XamControlExperimentRequest.INTENSITY: intensity,
+            XamControlExperimentRequest.RATIO_R2_SM1: ratioR2SM1
         })
 
 class XamControlExperimentResult(XamControlExperiment):
@@ -87,12 +87,12 @@ class XamControlBase:
 
     def startExperimentFromvalues(self, valueArray : Iterable) -> XamControlExperimentResult:
         return self.startExperiment(XamControlExperimentRequest(
-            equivalentsNBS=valueArray[0], 
-            concentration=valueArray[1],
+            ratioR1SM1=valueArray[0], 
+            concSM=valueArray[1],
             residenceTime=valueArray[2], 
             temperature=valueArray[3],
-            lightIntensity=valueArray[4], 
-            quantityACOH=valueArray[5]
+            intensity=valueArray[4], 
+            ratioR2SM1=valueArray[5]
         ))
 
     def workOffExperiments(self, valueArrays : Iterable) -> Iterable[XamControlExperimentResult]:
@@ -132,7 +132,7 @@ class XamControlFactorsOnlyMock(XamControlBase):
         )
 
     def _genericStyModel(self, exp : XamControlExperimentRequest):
-        return 10 + exp[exp.TEMPERATURE] + 100*exp[exp.CONCENTRATION] -  20*exp[exp.TEMPERATURE]*exp[exp.CONCENTRATION]
+        return 10 + exp[exp.TEMPERATURE] + 100*exp[exp.CONC_SM] -  200*exp[exp.TEMPERATURE]*exp[exp.CONC_SM]
 
     def _genericConversionModel(self, exp : XamControlExperimentRequest):
         return 0
