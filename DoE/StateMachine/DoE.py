@@ -182,8 +182,8 @@ class EvaluateExperiments(State):
                     {
                         "R2": combiScoreHistory.choose(lambda i: i.r2), 
                         "Q2": combiScoreHistory.choose(lambda i: i.q2),
-                        combis[0]: combiScoreHistory.choose(lambda i: i.scoreCombis[combis[0]]),
-                        combis[1]: combiScoreHistory.choose(lambda i: i.scoreCombis[combis[1]])
+                        #combis[0]: combiScoreHistory.choose(lambda i: i.scoreCombis[combis[0]]),
+                        #combis[1]: combiScoreHistory.choose(lambda i: i.scoreCombis[combis[1]])
                     }, bestCombiScoreItem.index, figure=fig),
                 lambda fig: Statistics.plotResiduals(Statistics.residualsDeletedStudentized(scaledModel), figure=fig),
                 lambda fig: Statistics.plotCoefficients(scaledModel.params, context, scaledModel.conf_int(), combinations=combinations, figure=fig),
@@ -224,7 +224,7 @@ class StopDoE(State):
             lambda fig: Common.plot(
                             lambda plt: plt.plot(r2ScoreHistory, label="R2"),
                             lambda plt: plt.plot(q2ScoreHistory, label="Q2"),
-                            lambda plt: plt.plot(context.history.choose(lambda item: item.bestCombiScoreItem.scoreCombis["1-(R2-Q2)"]), label="1-(R2-Q2)"),
+                            #lambda plt: plt.plot(context.history.choose(lambda item: item.bestCombiScoreItem.scoreCombis["1-(R2-Q2)"]), label="1-(R2-Q2)"),
                             #plotRO(r2ScoreHistory), plotRO(q2ScoreHistory),
                             showLegend=True, figure=fig
                         ),
@@ -232,8 +232,10 @@ class StopDoE(State):
                             bestCombiScoreItemOverall.scaledModel.params, 
                             bestCombiScoreItemOverall.context, 
                             bestCombiScoreItemOverall.scaledModel.conf_int(), 
-                            combinations=bestCombiScoreItemOverall.combinations, figure=fig
-                        )
+                            combinations=bestCombiScoreItemOverall.combinations, 
+                            figure=fig
+                        ),
+                        saveFigure=True, title="R"
         )
 
         plot3DHist = lambda fig, pred, scoreHistory, title: Common.plot(
@@ -248,7 +250,7 @@ class StopDoE(State):
         Common.subplot(
             lambda fig: plot3DHist(fig, predR2, r2ScoreHistory, "R2 History"),
             lambda fig: plot3DHist(fig, predQ2, q2ScoreHistory, "Q2 Hsitory"),
-            is3D=True
+            is3D=True, saveFigure=True, title="3d"
         )
         
 

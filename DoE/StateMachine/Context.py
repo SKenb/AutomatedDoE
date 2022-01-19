@@ -27,7 +27,7 @@ class ContextDoE():
         self.excludedFactors = []
         self.deletedExperiments = []
 
-    def getResponse(self, responseIdx=1, transformFlagOrTransformer = True):
+    def getResponse(self, responseIdx=1, transformFlagOrTransformer = False):
         Y = self.Y[:, responseIdx]
 
         if transformFlagOrTransformer is None: return Y

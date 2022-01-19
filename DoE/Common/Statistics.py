@@ -1,6 +1,6 @@
 from typing import Callable, Dict, Iterable
 
-from matplotlib.pyplot import legend, title
+from matplotlib.pyplot import legend, title, xlabel, ylabel
 from Common import Common
 from Common import Logger
 from sklearn.metrics import r2_score
@@ -31,8 +31,8 @@ def plotObservedVsPredicted(prediction, observation, titleSuffix=None, X=None, f
         lambda plt: plt.plot([0, 0], [minVal, maxVal], 'k', linewidth=1),
         lambda plt: plt.plot([minVal, maxVal], [minVal, maxVal], 'k--', linewidth=2),
         lambda plt: plt.grid(), 
-        lambda plt: plt.text(-.25*(maxVal - minVal), .25*(maxVal - minVal), "R2: {}".format(R2(observation, prediction))),
-        lambda plt: X is not None and plt.text(.25*(maxVal - minVal), -.25*(maxVal - minVal), "Q2: {}".format(Q2(X, observation))),
+        lambda plt: plt.text(+.5*(maxVal - minVal), .2*(maxVal - minVal), "R2: {}".format(R2(observation, prediction))),
+        lambda plt: X is not None and plt.text(.5*(maxVal - minVal), .1*(maxVal - minVal), "Q2: {}".format(Q2(X, observation))),
         xLabel="Predicted", yLabel="Observed", title=titleStr, 
         figure=figure
     )
@@ -48,8 +48,8 @@ def plotResiduals(residuals, bound=4, figure=None):
         lambda plt: plt.plot([0, len(residuals)], residuals.mean()*np.array([1, 1]), 'r--'),
         lambda plt: plt.plot([0, len(residuals)], residuals.mean()+bound*np.array([1, 1]), 'k--'),
         lambda plt: plt.plot([0, len(residuals)], residuals.mean()-1*bound*np.array([1, 1]), 'k--'),
-        lambda plt: plt.xticks(rng, rng),
-        title="Residuals",
+        lambda plt: plt.xticks(rng[::2], rng[::2]),
+        title="Residuals", xLabel="", yLabel="",
         figure=figure
     )
 
@@ -114,7 +114,7 @@ def plotScoreHistory(scoreHistoryDict : Dict, selectedIndex=None, figure=False):
     Common.plot(
         plotAllScores,
         showLegend= len(scoreHistoryDict) > 1,
-        xLabel="Iteration", yLabel="Score", 
+        xLabel="", yLabel="Score", 
         title=("" if len(scoreHistoryDict) > 1 else scoreHistoryDict[0].keys()[0]) + "Score over removed combinations",
         figure=figure
     )
