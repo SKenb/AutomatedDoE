@@ -322,6 +322,8 @@ class HandleOutliers(State):
 
     def onCall(self):
 
+        return FindNewExperiments()
+
         context.restoreDeletedExperiments()
 
         if not any(self.detectOutliers()): 

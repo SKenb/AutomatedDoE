@@ -145,7 +145,7 @@ class XamControl(XamControlBase):
     def __init__(self):
         super().__init__("Xam control - CSV Implementation")
 
-        self.path = Path("./Tmp")
+        self.path = Path("\\\\RCPEPC01915\\UHPLC-Data\\")
         self.xFileName = Path("xnewtrue.csv")
         self.yFileName = Path("ynewtrue.csv")
 

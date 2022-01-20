@@ -10,7 +10,7 @@ class ContextDoE():
 
     def __init__(self, optimum=None, optimumRange=10, returnAllExperimentsAtOnce=False):
 
-        self.xamControl = XamControl.XamControlFactorsOnlyMock() # XamControl.XamControl() #
+        self.xamControl = XamControl.XamControl() # XamControl.XamControlFactorsOnlyMock() # 
         self.experimentFactory = ExperimentFactory.ExperimentFactory()
 
         self.factorSet = Factor.getDefaultFactorSet()
