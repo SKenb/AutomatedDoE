@@ -55,15 +55,15 @@ class XamControlExperimentRequest(XamControlExperiment):
 
 class XamControlExperimentResult(XamControlExperiment):
     STY = "Space-time yield"
-    #CONVERSION = "Conversion"
-    #SELECTIVITY = "Selectivity"
+    CONVERSION = "Conversion"
+    SELECTIVITY = "Selectivity"
 
-    def __init__(self, sty, request : XamControlExperimentRequest = True):
+    def __init__(self, sty, conversion, selectivity,  request : XamControlExperimentRequest = True):
 
         super().__init__({
             XamControlExperimentResult.STY: sty,
-            #XamControlExperimentResult.CONVERSION: conversion,  
-            #XamControlExperimentResult.SELECTIVITY: selectivity
+            XamControlExperimentResult.CONVERSION: conversion,  
+            XamControlExperimentResult.SELECTIVITY: selectivity
         })
 
         self.requestExperiment = request
@@ -126,8 +126,8 @@ class XamControlFactorsOnlyMock(XamControlBase):
     def _wrapXamControlExperimentResult(self, experiment) -> XamControlExperimentResult:
         return XamControlExperimentResult(
             self._genericStyModel(experiment),
-            #self._genericConversionModel(experiment),
-            #self._genericSelectivityModel(experiment),
+            self._genericConversionModel(experiment),
+            self._genericSelectivityModel(experiment),
             request=experiment
         )
 
@@ -149,7 +149,7 @@ class XamControl(XamControlBase):
         self.xFileName = Path("xnewtrue.csv")
         self.yFileName = Path("ynewtrue.csv")
 
-        self.numberOfExpectedValues = 1
+        self.numberOfExpectedValues = 3
 
         self.oldYValues = None
         self.yValuesEpsilon = 1e-5
@@ -212,7 +212,7 @@ class XamControl(XamControlBase):
     def readNewResponseValues(self) -> XamControlExperimentResult:
        
         firstRow = self.readFirstValueRow(self.yPath())
-        return XamControlExperimentResult(firstRow[0])
+        return XamControlExperimentResult(firstRow[0], firstRow[1], firstRow[2])
     
     def startExperiment(self, experiment : XamControlExperimentRequest) -> XamControlExperimentResult:
         self._startExperimentRequest(experiment)

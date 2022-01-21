@@ -164,8 +164,8 @@ def getDefaultFactorSet():
         Factor("Concentration SM", .4, .45, "M", "Con"),
         Factor("Residence time", .8, 1.2, "min", "RT"),
         Factor("Temperature", 40, 50, "°C", "T"),
-        Factor("Intensity", 500, 950, "mA", "Intensity"),
-        Factor("Ratio R_2/SM1", 0, 0.05, "1", "R_2/SM1"),
+        Factor("Intensity", 750, 950, "mA", "Intensity"),
+        Factor("Ratio R_2/SM1", 0.01, 0.05, "1", "R_2/SM1"),
     ])
 
 def getFactorSetAroundOptimum(baseFactorSet, optimum, optimumRange=10):
