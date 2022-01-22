@@ -12,7 +12,7 @@ def main():
     mainSM = StateMachine.StateMachine(DoE.InitDoE())
     for state in mainSM: pass
 
-
+    exit()
     Logger.logInfo("Find optimum")
     optimum = optimization(state.result())
     Logger.logInfo("Optimum @: {}".format(optimum))
