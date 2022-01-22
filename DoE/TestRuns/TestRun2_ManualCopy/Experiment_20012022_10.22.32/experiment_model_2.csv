@@ -1,0 +1,14 @@
+Details
+Run;2;DateTime;20.01.2022 13:26:12;Factor Set;|Factor Set:
+	Ratio R_1/SM1 R_1/SM1  >> (0.9 - 1.1 1)
+	Concentration SM Con  >> (0.4 - 0.45 M)
+	Residence time RT  >> (0.8 - 1.2 min)
+	Temperature T  >> (40 - 50 °C)
+	Intensity Intensity  >> (750 - 950 mA)
+	Ratio R_2/SM1 R_2/SM1  >> (0.01 - 0.05 1)
+	+ Combis:
+		A*C|
+Model Coeffs
+-112.15469014403367;-16.822901301737414;4.419514433401096;0.3022198782825521;15.701717064140423;-0.1514452259415309
+Scaled Model Coeffs
+4.071428989426589;0.27878841339395277;0.8839028866802169;0.278788413393952;0.27878841339395266;-1.514452259415294

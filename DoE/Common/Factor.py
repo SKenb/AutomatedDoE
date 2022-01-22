@@ -160,12 +160,12 @@ class FactorSet:
 def getDefaultFactorSet():
 
     return FactorSet([
-        Factor("Equivalents NBS", 0.8, 1.4, "", "NBS"),
-        Factor("Concentration", .25, .45, "M", "Con"),
-        Factor("Residence time", .33, 1.5, "", "RT"),
-        Factor("Temperature", 10, 50, "°C", "T"),
-        Factor("Light intensity", 100, 800, "", "Light"),
-        Factor("Quantity AcOH", 0, 0.1, "", "AcOH"),
+        Factor("Ratio R_1/SM1", 0.9, 1.1, "1", "R_1/SM1"),
+        Factor("Concentration SM", .4, .45, "M", "Con"),
+        Factor("Residence time", .8, 1.2, "min", "RT"),
+        Factor("Temperature", 40, 50, "°C", "T"),
+        Factor("Intensity", 750, 950, "mA", "Intensity"),
+        Factor("Ratio R_2/SM1", 0.01, 0.05, "1", "R_2/SM1"),
     ])
 
 def getFactorSetAroundOptimum(baseFactorSet, optimum, optimumRange=10):

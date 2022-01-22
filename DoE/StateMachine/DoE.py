@@ -234,10 +234,10 @@ class StopDoE(State):
             saveFigure=True, title="Temperature"
         )
 
-        responseStr = ["Space-time yield", "Conversion", "Selectivity"]
+        responseStr = ["Space-time yield"]
         plotter = lambda i: lambda fig: Common.plot(lambda plt: plt.scatter(list(range(len(context.Y[:, i]))), context.Y[:, i]), title=responseStr[i], figure=fig)
         Common.subplot(
-            plotter(0), plotter(1), plotter(2), 
+            plotter(0), 
             saveFigure=True, title="Resp_History"
         )
 
@@ -321,6 +321,8 @@ class HandleOutliers(State):
   
 
     def onCall(self):
+
+        return FindNewExperiments()
 
         context.restoreDeletedExperiments()
 

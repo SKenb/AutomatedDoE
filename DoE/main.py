@@ -18,10 +18,10 @@ def main():
     Logger.logInfo("Optimum @: {}".format(optimum))
 
 
-    #Logger.logInfo("Start DoE around optimum")
-    #Logger.appendToLogFolder("DoE_Around_Optimum")
-    #mainSM = StateMachine.StateMachine(DoE.InitDoE(optimum=optimum))
-    #for state in mainSM: pass
+    Logger.logInfo("Start DoE around optimum")
+    Logger.appendToLogFolder("DoE_Around_Optimum")
+    mainSM = StateMachine.StateMachine(DoE.InitDoE(optimum=optimum))
+    for state in mainSM: pass
 
 
 

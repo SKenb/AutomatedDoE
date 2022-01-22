@@ -36,34 +36,34 @@ class XamControlExperiment:
     
 
 class XamControlExperimentRequest(XamControlExperiment):
-    EQUIVALENTS_NBS = "Equivalents NBS"
-    CONCENTRATION = "Concentration"
-    RESIDENCE_TIME = "ResidenceTime"
+    RATIO_R1_SM1 = "Ratio R_1/SM1"
+    CONC_SM = "Conc_SM"
+    RESIDENCE_TIME = "Residence Time"
     TEMPERATURE = "Temperature"
-    LIGHT_INTENSITY= "Light intensity"
-    QUANTITY_ACOH = "Quantity AcOH"
+    INTENSITY= "Intensity"
+    RATIO_R2_SM1 = "Ratio R_2/SM1"
 
-    def __init__(self, equivalentsNBS, concentration, residenceTime, temperature, lightIntensity, quantityACOH):
+    def __init__(self, ratioR1SM1, concSM, residenceTime, temperature, intensity, ratioR2SM1):
         super().__init__({
-            XamControlExperimentRequest.EQUIVALENTS_NBS: equivalentsNBS, 
-            XamControlExperimentRequest.CONCENTRATION: concentration,  
+            XamControlExperimentRequest.RATIO_R1_SM1: ratioR1SM1, 
+            XamControlExperimentRequest.CONC_SM: concSM,  
             XamControlExperimentRequest.RESIDENCE_TIME: residenceTime,   
             XamControlExperimentRequest.TEMPERATURE: temperature,  
-            XamControlExperimentRequest.LIGHT_INTENSITY: lightIntensity,
-            XamControlExperimentRequest.QUANTITY_ACOH: quantityACOH
+            XamControlExperimentRequest.INTENSITY: intensity,
+            XamControlExperimentRequest.RATIO_R2_SM1: ratioR2SM1
         })
 
 class XamControlExperimentResult(XamControlExperiment):
     STY = "Space-time yield"
-    CONVERSION = "Conversion"
-    SELECTIVITY = "Selectivity"
+    #CONVERSION = "Conversion"
+    #SELECTIVITY = "Selectivity"
 
-    def __init__(self, sty, conversion, selectivity, request : XamControlExperimentRequest = True):
+    def __init__(self, sty, request : XamControlExperimentRequest = True):
 
         super().__init__({
             XamControlExperimentResult.STY: sty,
-            XamControlExperimentResult.CONVERSION: conversion,  
-            XamControlExperimentResult.SELECTIVITY: selectivity
+            #XamControlExperimentResult.CONVERSION: conversion,  
+            #XamControlExperimentResult.SELECTIVITY: selectivity
         })
 
         self.requestExperiment = request
@@ -87,12 +87,12 @@ class XamControlBase:
 
     def startExperimentFromvalues(self, valueArray : Iterable) -> XamControlExperimentResult:
         return self.startExperiment(XamControlExperimentRequest(
-            equivalentsNBS=valueArray[0], 
-            concentration=valueArray[1],
+            ratioR1SM1=valueArray[0], 
+            concSM=valueArray[1],
             residenceTime=valueArray[2], 
             temperature=valueArray[3],
-            lightIntensity=valueArray[4], 
-            quantityACOH=valueArray[5]
+            intensity=valueArray[4], 
+            ratioR2SM1=valueArray[5]
         ))
 
     def workOffExperiments(self, valueArrays : Iterable) -> Iterable[XamControlExperimentResult]:
@@ -126,13 +126,13 @@ class XamControlFactorsOnlyMock(XamControlBase):
     def _wrapXamControlExperimentResult(self, experiment) -> XamControlExperimentResult:
         return XamControlExperimentResult(
             self._genericStyModel(experiment),
-            self._genericConversionModel(experiment),
-            self._genericSelectivityModel(experiment),
+            #self._genericConversionModel(experiment),
+            #self._genericSelectivityModel(experiment),
             request=experiment
         )
 
     def _genericStyModel(self, exp : XamControlExperimentRequest):
-        return 10 + exp[exp.TEMPERATURE] + 100*exp[exp.CONCENTRATION] -  20*exp[exp.TEMPERATURE]*exp[exp.CONCENTRATION]
+        return 10 + exp[exp.TEMPERATURE] + 100*exp[exp.CONC_SM] -  200*exp[exp.TEMPERATURE]*exp[exp.CONC_SM]
 
     def _genericConversionModel(self, exp : XamControlExperimentRequest):
         return 0
@@ -148,6 +148,8 @@ class XamControl(XamControlBase):
         self.path = Path("./Tmp")
         self.xFileName = Path("xnewtrue.csv")
         self.yFileName = Path("ynewtrue.csv")
+
+        self.numberOfExpectedValues = 1
 
         self.oldYValues = None
         self.yValuesEpsilon = 1e-5
@@ -180,7 +182,7 @@ class XamControl(XamControlBase):
         
         newVaules = np.array(self.readFirstValueRow(self.yPath()))
 
-        if len(newVaules) != 3:
+        if len(newVaules) != self.numberOfExpectedValues:
             Logger.logWarn("XAMControl - ynewdata contains wrong number of values") 
             return False
             
@@ -210,7 +212,7 @@ class XamControl(XamControlBase):
     def readNewResponseValues(self) -> XamControlExperimentResult:
        
         firstRow = self.readFirstValueRow(self.yPath())
-        return XamControlExperimentResult(firstRow[0], firstRow[1], firstRow[2])
+        return XamControlExperimentResult(firstRow[0])
     
     def startExperiment(self, experiment : XamControlExperimentRequest) -> XamControlExperimentResult:
         self._startExperimentRequest(experiment)
