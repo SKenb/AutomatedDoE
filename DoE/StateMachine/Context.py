@@ -10,7 +10,7 @@ class ContextDoE():
 
     def __init__(self, optimum=None, optimumRange=10, returnAllExperimentsAtOnce=False):
 
-        self.xamControl = XamControl.XamControlTestRun2Mock() # XamControl.XamControl() #
+        self.xamControl = XamControl.XamControlTestRun1Mock() # XamControl.XamControl() #
         self.experimentFactory = ExperimentFactory.ExperimentFactory()
 
         self.factorSet = Factor.getDefaultFactorSet()
@@ -32,7 +32,7 @@ class ContextDoE():
 
         self.returnAllExperimentsAtOnce = returnAllExperimentsAtOnce
 
-    def getResponse(self, responseIdx=0, transformFlagOrTransformer = False):
+    def getResponse(self, responseIdx=0, transformFlagOrTransformer = True):
         Y = self.Y[:, responseIdx]
 
         if transformFlagOrTransformer is None: return Y

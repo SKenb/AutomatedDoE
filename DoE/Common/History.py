@@ -1,5 +1,5 @@
 from typing import Dict
-
+import copy
 
 class HistoryItem():
     def __init__(self) -> None:

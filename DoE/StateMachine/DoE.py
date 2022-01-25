@@ -41,7 +41,7 @@ class FindNewExperiments(State):
         experiments = context.experimentFactory.getNewExperimentSuggestion(len(context.factorSet), returnAllExperiments=context.returnAllExperimentsAtOnce)
         if experiments is None: return StopDoE("No more experiments available")
 
-        context.newExperimentValues = context.factorSet.realizeExperiments(experiments, sortColumn=3, sortReverse=len(context.history) % 2)
+        context.newExperimentValues = context.factorSet.realizeExperiments(experiments, sortColumn=0, sortReverse=len(context.history) % 2)
 
         return ExecuteExperiments()
 
@@ -193,7 +193,7 @@ class EvaluateExperiments(State):
                         "Q2": combiScoreHistory.choose(lambda i: i.q2)
                     }, bestCombiScoreItem.index, figure=fig),
                 lambda fig: Statistics.plotResiduals(Statistics.residualsDeletedStudentized(scaledModel), figure=fig),
-                #lambda fig: Statistics.plotCoefficients(scaledModel.params, context, scaledModel.conf_int(), combinations=combinations, figure=fig),
+                lambda fig: Statistics.plotCoefficients(scaledModel.params, context, scaledModel.conf_int(), combinations=combinations, figure=fig),
                 #lambda fig: Statistics.plotResponseHistogram(context.getResponse(), figure=fig),
                 lambda fig: Statistics.plotObservedVsPredicted(LR.predict(scaledModel, X), context.getResponse(), X=X, figure=fig),
                 lambda fig: Statistics.plotResponseHistogram(context.getResponse(), titleSuffix="Response", figure=fig),
@@ -222,7 +222,7 @@ class StopDoE(State):
         plotter = lambda i: lambda fig: Common.plot(lambda plt: plt.scatter(list(range(len(context._experimentValues[:, i]))), context._experimentValues[:, i]), title=context.factorSet[i], figure=fig)
         Common.subplot(
             plotter(0), plotter(1), plotter(2), 
-            plotter(3), plotter(4), plotter(5), 
+            plotter(3),
             saveFigure=True, title="Exp_History"
         )
 
@@ -242,7 +242,6 @@ class StopDoE(State):
 
 
         ## Stats
-
         r2ScoreHistory = context.history.choose(lambda item: item.bestCombiScoreItem.r2)
         q2ScoreHistory = context.history.choose(lambda item: item.bestCombiScoreItem.q2)
         combiScoreHistory = context.history.choose(lambda item: item.bestCombiScoreItem.scoreCombis["1-(R2-Q2)"])

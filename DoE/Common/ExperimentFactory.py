@@ -9,7 +9,7 @@ class ExperimentFactory:
     def __init__(self):
         self.requestCount = 0
 
-    def getNewExperimentSuggestion(self, factorCount, temperatureColumn = 3, returnAllExperiments=False):
+    def getNewExperimentSuggestion(self, factorCount, temperatureColumn = 0, returnAllExperiments=False):
 
         self.requestCount+=1
         experiments = pyDOE.ff2n(factorCount)

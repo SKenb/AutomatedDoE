@@ -160,12 +160,12 @@ class FactorSet:
 def getDefaultFactorSet():
 
     return FactorSet([
-        Factor("Ratio R_1/SM1", 0.9, 1.1, "1", "R_1/SM1"),
-        Factor("Concentration SM", .4, .45, "M", "Con"),
-        Factor("Residence time", .8, 1.2, "min", "RT"),
-        Factor("Temperature", 40, 50, "°C", "T"),
-        Factor("Intensity", 750, 950, "mA", "Intensity"),
-        Factor("Ratio R_2/SM1", 0.01, 0.05, "1", "R_2/SM1"),
+        Factor("Temperature", 100, 160, "°C", "T_1"),
+        Factor("Concentration", .2, .4, "M", "C_SM_1"),
+        Factor("Reagent ratio‘s", .9, 3, "", "R"),
+        Factor("Residence time", 2.5, 6, "min", "RT_1"),
+        #Factor("Dummy factor 1", -100, 100, "knolls", "DF1"),
+        #Factor("Dummy factor 2", -10, 10, "knolls", "DF2"),
     ])
 
 def getFactorSetAroundOptimum(baseFactorSet, optimum, optimumRange=10):

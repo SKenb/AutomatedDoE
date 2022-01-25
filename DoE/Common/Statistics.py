@@ -94,7 +94,7 @@ def plotResponseHistogram(Y, titleSuffix=None, figure=None):
 
     Common.plot(
         lambda plt: plt.hist(Y),
-        xLabel="Coefficient", yLabel="Value", title=titleStr,
+        xLabel="Response", yLabel="Value", title=titleStr,
         figure=figure
     )
 

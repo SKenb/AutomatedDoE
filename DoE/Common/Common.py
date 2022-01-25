@@ -55,7 +55,7 @@ def subplot(*plotFunctions, is3D=False, saveFigure=False, title="", showPlot=Tru
 
     assert cols*rows >= len(plotFunctions), "We r unable to fit all plots :/"        
 
-    fig = plt.figure(constrained_layout=True)
+    fig = plt.figure() #constrained_layout=True)
     #fig.tight_layout()
 
     for index, plot_ in enumerate(plotFunctions): 
@@ -71,7 +71,7 @@ def subplot(*plotFunctions, is3D=False, saveFigure=False, title="", showPlot=Tru
         plt.savefig(path)
 
     #plt.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=None, hspace=None)
-    plt.subplots_adjust(wspace=5, hspace=5)
+    #plt.subplots_adjust(wspace=5, hspace=5)
 
     if showPlot and not MATPLOTLIB_SAVE_PLOT_ONLY: plt.show()
 
