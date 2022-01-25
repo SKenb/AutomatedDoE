@@ -39,7 +39,7 @@ class CombiScoreHistoryItem(HistoryItem):
         self.q2 = q2Score
         self.scoreCombis = scoreCombis
         self.excludedFactors = excludedFactors.copy()
-        self.context = context
+        self.context = copy.deepcopy(context)
 
 class DoEHistoryItem(HistoryItem):
     def __init__(self, index, combiScoreHistory, bestCombiScoreItem) -> None:

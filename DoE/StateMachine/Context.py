@@ -25,7 +25,7 @@ class ContextDoE():
         self.model = None
         self.scaledModel = None
 
-        self.history = History.History()
+        #self.history = History.History()
 
         self.excludedFactors = []
         self.deletedExperiments = []

@@ -14,7 +14,7 @@ from sklearn.preprocessing import quantile_transform
 import numpy as np
 
 context = None
-
+history = History.History()
 
 class InitDoE(State):
     def __init__(self, optimum=None, optimumRange=10, returnAllExperimentsAtOnce=False): 
@@ -41,7 +41,7 @@ class FindNewExperiments(State):
         experiments = context.experimentFactory.getNewExperimentSuggestion(len(context.factorSet), returnAllExperiments=context.returnAllExperimentsAtOnce)
         if experiments is None: return StopDoE("No more experiments available")
 
-        context.newExperimentValues = context.factorSet.realizeExperiments(experiments, sortColumn=0, sortReverse=len(context.history) % 2)
+        context.newExperimentValues = context.factorSet.realizeExperiments(experiments, sortColumn=0, sortReverse=len(history) % 2)
 
         return ExecuteExperiments()
 
@@ -176,9 +176,9 @@ class EvaluateExperiments(State):
 
         scaledModel, model = self.createModels(combinations)
         
-        context.history.add(History.DoEHistoryItem(-1, combiScoreHistory, bestCombiScoreItem))
+        history.add(History.DoEHistoryItem(-1, combiScoreHistory, bestCombiScoreItem))
         
-        if len(context.history) >= 40: return StopDoE("Exp. Iteration reached maximum")
+        if len(history) >= 40: return StopDoE("Exp. Iteration reached maximum")
 
         X = Common.getXWithCombinations(context.getExperimentValues(), combinations, Statistics.orthogonalScaling)
 
@@ -197,10 +197,10 @@ class EvaluateExperiments(State):
                 #lambda fig: Statistics.plotResponseHistogram(context.getResponse(), figure=fig),
                 lambda fig: Statistics.plotObservedVsPredicted(LR.predict(scaledModel, X), context.getResponse(), X=X, figure=fig),
                 lambda fig: Statistics.plotResponseHistogram(context.getResponse(), titleSuffix="Response", figure=fig),
-                saveFigure=True, title=f"{len(context.history)}", showPlot=False
+                saveFigure=True, title=f"{len(history)}", showPlot=False
             )
 
-        Logger.logEntireRun(context.history, context.factorSet, context.getExperimentValues(), context.Y, model.params, scaledModel.params)
+        Logger.logEntireRun(history, context.factorSet, context.getExperimentValues(), context.Y, model.params, scaledModel.params)
 
         return HandleOutliers()
 
@@ -242,16 +242,16 @@ class StopDoE(State):
 
 
         ## Stats
-        r2ScoreHistory = context.history.choose(lambda item: item.bestCombiScoreItem.r2)
-        q2ScoreHistory = context.history.choose(lambda item: item.bestCombiScoreItem.q2)
-        combiScoreHistory = context.history.choose(lambda item: item.bestCombiScoreItem.scoreCombis["1-(R2-Q2)"])
-        selctedIndex = context.history.choose(lambda item: item.bestCombiScoreItem.index)
+        r2ScoreHistory = history.choose(lambda item: item.bestCombiScoreItem.r2)
+        q2ScoreHistory = history.choose(lambda item: item.bestCombiScoreItem.q2)
+        combiScoreHistory = history.choose(lambda item: item.bestCombiScoreItem.scoreCombis["1-(R2-Q2)"])
+        selctedIndex = history.choose(lambda item: item.bestCombiScoreItem.index)
 
         bestScoreOverall = len(q2ScoreHistory) - np.argmax(q2ScoreHistory[::-1]) - 1 #Reverse
-        self.bestCombiScoreItemOverall = context.history.choose(lambda item: item.bestCombiScoreItem)[bestScoreOverall]
+        self.bestCombiScoreItemOverall = history.choose(lambda item: item.bestCombiScoreItem)[bestScoreOverall]
 
 
-        z = lambda pred: np.array(context.history.choose(lambda item: item.combiScoreHistory.choose(pred)))
+        z = lambda pred: np.array(history.choose(lambda item: item.combiScoreHistory.choose(pred)))
 
         predR2 = lambda item: item.r2
         predQ2 = lambda item: item.q2
@@ -278,7 +278,7 @@ class StopDoE(State):
         )
 
         plot3DHist = lambda fig, pred, scoreHistory, title: Common.plot(
-            lambda plt: plt.plot(selctedIndex, range(len(context.history)), scoreHistory, 'ro'),
+            lambda plt: plt.plot(selctedIndex, range(len(history)), scoreHistory, 'ro'),
             lambda plt: gP(plt, 0, pred), lambda plt: gP(plt, 1, pred), lambda plt: gP(plt, 2, pred),
             lambda plt: gP(plt, 3, pred), lambda plt: gP(plt, 4, pred), lambda plt: gP(plt, 5, pred),
             lambda plt: gP(plt, 6, pred), lambda plt: gP(plt, 7, pred), lambda plt: gP(plt, 8, pred), 
