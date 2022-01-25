@@ -8,9 +8,11 @@ import numpy as np
 
 class ContextDoE():
 
-    def __init__(self, optimum=None, optimumRange=10, returnAllExperimentsAtOnce=False):
+    def __init__(self, optimum=None, optimumRange=10, returnAllExperimentsAtOnce=False, setXAMControl=None):
 
-        self.xamControl = XamControl.XamControlTestRun1Mock() # XamControl.XamControl() #
+        self.xamControl = XamControl.XamControl() #
+        if setXAMControl is not None: self.xamControl = setXAMControl
+        
         self.experimentFactory = ExperimentFactory.ExperimentFactory()
 
         self.factorSet = Factor.getDefaultFactorSet()
@@ -32,7 +34,7 @@ class ContextDoE():
 
         self.returnAllExperimentsAtOnce = returnAllExperimentsAtOnce
 
-    def getResponse(self, responseIdx=0, transformFlagOrTransformer = True):
+    def getResponse(self, responseIdx=0, transformFlagOrTransformer = False):
         Y = self.Y[:, responseIdx]
 
         if transformFlagOrTransformer is None: return Y

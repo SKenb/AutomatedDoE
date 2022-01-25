@@ -17,18 +17,19 @@ context = None
 history = History.History()
 
 class InitDoE(State):
-    def __init__(self, optimum=None, optimumRange=10, returnAllExperimentsAtOnce=False): 
+    def __init__(self, optimum=None, optimumRange=10, returnAllExperimentsAtOnce=False, setXAMControl=None): 
         super().__init__("Initialize DoE")
 
         self.returnAllExperimentsAtOnce = returnAllExperimentsAtOnce
         self.optimum = optimum
         self.optimumRange = optimumRange
+        self.setXAMControl = setXAMControl
         
     def onCall(self):
 
         global context
 
-        context = ContextDoE(self.optimum, self.optimumRange, self.returnAllExperimentsAtOnce)
+        context = ContextDoE(self.optimum, self.optimumRange, self.returnAllExperimentsAtOnce, self.setXAMControl)
         Logger.logStateInfo(str(context.factorSet))
 
         return FindNewExperiments()
@@ -320,7 +321,7 @@ class HandleOutliers(State):
 
     def onCall(self):
 
-        #return FindNewExperiments()
+        return FindNewExperiments()
 
         context.restoreDeletedExperiments()
 
