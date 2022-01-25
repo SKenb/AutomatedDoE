@@ -1,3 +1,4 @@
+from matplotlib.pyplot import ylabel
 from StateMachine.StateMachine import State
 from StateMachine.Context import ContextDoE
 from Common import Common
@@ -189,12 +190,10 @@ class EvaluateExperiments(State):
                 lambda fig: Statistics.plotScoreHistory(
                     {
                         "R2": combiScoreHistory.choose(lambda i: i.r2), 
-                        "Q2": combiScoreHistory.choose(lambda i: i.q2),
-                        combis[0]: combiScoreHistory.choose(lambda i: i.scoreCombis[combis[0]]),
-                        combis[1]: combiScoreHistory.choose(lambda i: i.scoreCombis[combis[1]])
+                        "Q2": combiScoreHistory.choose(lambda i: i.q2)
                     }, bestCombiScoreItem.index, figure=fig),
                 lambda fig: Statistics.plotResiduals(Statistics.residualsDeletedStudentized(scaledModel), figure=fig),
-                lambda fig: Statistics.plotCoefficients(scaledModel.params, context, scaledModel.conf_int(), combinations=combinations, figure=fig),
+                #lambda fig: Statistics.plotCoefficients(scaledModel.params, context, scaledModel.conf_int(), combinations=combinations, figure=fig),
                 #lambda fig: Statistics.plotResponseHistogram(context.getResponse(), figure=fig),
                 lambda fig: Statistics.plotObservedVsPredicted(LR.predict(scaledModel, X), context.getResponse(), X=X, figure=fig),
                 lambda fig: Statistics.plotResponseHistogram(context.getResponse(), titleSuffix="Response", figure=fig),
@@ -265,8 +264,8 @@ class StopDoE(State):
             lambda fig: Common.plot(
                             lambda plt: plt.plot(r2ScoreHistory, label="R2"),
                             lambda plt: plt.plot(q2ScoreHistory, label="Q2"),
-                            lambda plt: plt.plot(context.history.choose(lambda item: item.bestCombiScoreItem.scoreCombis["1-(R2-Q2)"]), label="1-(R2-Q2)"),
                             #plotRO(r2ScoreHistory), plotRO(q2ScoreHistory),
+                            xLabel="Exp. Iteration", yLabel="Score", title="Score over Exp.It.",
                             showLegend=True, figure=fig
                         ),
             lambda fig: Statistics.plotCoefficients(
@@ -322,7 +321,7 @@ class HandleOutliers(State):
 
     def onCall(self):
 
-        return FindNewExperiments()
+        #return FindNewExperiments()
 
         context.restoreDeletedExperiments()
 

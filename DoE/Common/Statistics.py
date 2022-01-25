@@ -28,8 +28,8 @@ def plotObservedVsPredicted(prediction, observation, titleSuffix=None, X=None, f
         lambda plt: plt.plot([0, 0], [minVal, maxVal], 'k', linewidth=1),
         lambda plt: plt.plot([minVal, maxVal], [minVal, maxVal], 'k--', linewidth=2),
         lambda plt: plt.grid(), 
-        lambda plt: plt.text(-.25*(maxVal - minVal), .25*(maxVal - minVal), "R2: {}".format(R2(observation, prediction))),
-        lambda plt: X is not None and plt.text(.25*(maxVal - minVal), -.25*(maxVal - minVal), "Q2: {}".format(Q2(X, observation))),
+        lambda plt: plt.text(.05*(maxVal - minVal), -.15*(maxVal - minVal), "R2: {}".format(round(R2(observation, prediction), 2))),
+        lambda plt: X is not None and plt.text(.4*(maxVal - minVal), -.15*(maxVal - minVal), "Q2: {}".format(round(Q2(X, observation), 2))),
         xLabel="Predicted", yLabel="Observed", title=titleStr, 
         figure=figure
     )
@@ -45,7 +45,7 @@ def plotResiduals(residuals, bound=4, figure=None):
         lambda plt: plt.plot([0, len(residuals)], residuals.mean()*np.array([1, 1]), 'r--'),
         lambda plt: plt.plot([0, len(residuals)], residuals.mean()+bound*np.array([1, 1]), 'k--'),
         lambda plt: plt.plot([0, len(residuals)], residuals.mean()-1*bound*np.array([1, 1]), 'k--'),
-        lambda plt: plt.xticks(rng, rng),
+        #lambda plt: plt.xticks(rng, rng),
         title="Residuals",
         figure=figure
     )
@@ -112,7 +112,7 @@ def plotScoreHistory(scoreHistoryDict : Dict, selectedIndex=None, figure=False):
         plotAllScores,
         showLegend= len(scoreHistoryDict) > 1,
         xLabel="Iteration", yLabel="Score", 
-        title=("" if len(scoreHistoryDict) > 1 else scoreHistoryDict[0].keys()[0]) + "Score over removed combinations",
+        title=("" if len(scoreHistoryDict) > 1 else scoreHistoryDict[0].keys()[0]) + "Score",
         figure=figure
     )
 
