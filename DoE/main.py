@@ -31,12 +31,11 @@ def optimization(result:History.CombiScoreHistoryItem):
     factorSet = result.context.factorSet
     excludedFactors = result.excludedFactors
 
+    # do this in loop
+    result.context.factorSet.setExperimentValueCombinations(result.combinations)
+    
     bounds = factorSet.getBounds(excludedFactors)
-    red = lambda i: [fB[0] for fB in bounds]
 
-    combiBounds = [(func(red(0)), func(red(1))) for func in result.combinations.values()]
-
-    bounds.extend(combiBounds)
     optimum = Optimization.optimizeModel(model, bounds)
     optimum = optimum[0:len(optimum)-len(factorSet.experimentValueCombinations)]
 
