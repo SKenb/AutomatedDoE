@@ -109,7 +109,7 @@ class EvaluateExperiments(State):
 
         return Common.removeCombinations(combinationSet, lambda index, k, v: removeList[index] > 0) 
 
-    def stepwiseRemoveCombinations(self, combinations, responseIdx = 1) -> History.History:
+    def stepwiseRemoveCombinations(self, combinations) -> History.History:
         combiScoreHistory = History.History()
 
         iterationIndex = 0
@@ -321,7 +321,7 @@ class HandleOutliers(State):
 
     def onCall(self):
 
-        return FindNewExperiments()
+        #return FindNewExperiments()
 
         context.restoreDeletedExperiments()
 
