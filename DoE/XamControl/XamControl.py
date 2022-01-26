@@ -52,12 +52,14 @@ class XamControlExperimentRequest(XamControlExperiment):
 class XamControlExperimentResult(XamControlExperiment):
     STY = "Space-time yield"
     CONVERSION = "Conversion"
+    EFACTOR = "E-Factor"
 
-    def __init__(self, sty, conversion, request : XamControlExperimentRequest = True):
+    def __init__(self, sty, conversion, efactor, request : XamControlExperimentRequest = True):
 
         super().__init__({
             XamControlExperimentResult.STY: sty,
-            XamControlExperimentResult.CONVERSION: conversion
+            XamControlExperimentResult.CONVERSION: conversion,
+            XamControlExperimentResult.EFACTOR: efactor
         })
 
         self.requestExperiment = request
@@ -204,11 +206,11 @@ class XamControl(XamControlBase):
     def __init__(self):
         super().__init__("Xam control - CSV Implementation")
 
-        self.path = Path("./Tmp")
+        self.path = Path("\\\\RCPEPC01915\\UHPLC-Data\\") #Path("./Tmp")
         self.xFileName = Path("xnewtrue.csv")
         self.yFileName = Path("ynewtrue.csv")
 
-        self.numberOfExpectedValues = 1
+        self.numberOfExpectedValues = 3
 
         self.oldYValues = None
         self.yValuesEpsilon = 1e-5
@@ -271,7 +273,7 @@ class XamControl(XamControlBase):
     def readNewResponseValues(self) -> XamControlExperimentResult:
        
         firstRow = self.readFirstValueRow(self.yPath())
-        return XamControlExperimentResult(firstRow[0], firstRow[1])
+        return XamControlExperimentResult(firstRow[0], firstRow[1], firstRow[2])
     
     def startExperiment(self, experiment : XamControlExperimentRequest) -> XamControlExperimentResult:
         self._startExperimentRequest(experiment)
