@@ -1,0 +1,12 @@
+Details
+Run;6;DateTime;27.01.2022 09:07:30;Factor Set;|Factor Set:
+	Temperature T_1  >> (100 - 160 °C)
+	Concentration C_SM_1  >> (0.2 - 0.4 M)
+	Reagent ratio‘s R  >> (0.9 - 3 )
+	Residence time RT_1  >> (2.5 - 6 min)
+	+ Combis:
+		|
+Model Coeffs
+-1.22867576027622;0.004835887006180536;2.007215167965272;0.1723976028220897
+Scaled Model Coeffs
+0.3383294264199071;0.14507661018541604;0.20072151679652736;0.1810174829631941
