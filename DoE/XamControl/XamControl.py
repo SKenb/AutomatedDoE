@@ -164,7 +164,7 @@ class XamControlTestRun1Mock(XamControlBase):
                 raise Exception("Data not found in dataset :/ - Note: only defined exp. r allowed (Idx:" + str(index) + ")")
 
         # Conversion not in test data set
-        return XamControlExperimentResult(np.mean(dataSet[0, 5]), np.mean(dataSet[:, 4]), request=experiment)
+        return XamControlExperimentResult(np.mean(dataSet[0, 5]), np.mean(dataSet[:, 4]), 0, request=experiment)
 
 
 
@@ -263,7 +263,8 @@ class XamControl(XamControlBase):
         with open(self.xPath(), 'w', newline='') as csvfile:
 
             fileWriter = csv.writer(csvfile, delimiter=';', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-            fileWriter.writerow(valuestoWrite)
+            #fileWriter.writerow(valuestoWrite)
+            fileWriter.writerow(np.array(experiment.getValueArray())[[2, 1, 3, 0]])
 
     def waitForNewResponseValues(self):
         # TODO: Threading
