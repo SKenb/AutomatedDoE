@@ -321,7 +321,7 @@ class HandleOutliers(State):
 
     def onCall(self):
 
-        #return FindNewExperiments()
+        return FindNewExperiments()
 
         context.restoreDeletedExperiments()
 
