@@ -17,6 +17,9 @@ def main():
     optimum = optimization(state.result())
     Logger.logInfo("Optimum @: {}".format(optimum))
 
+    #[160.0, 0.4, 3.0, 2.5] 
+    optimum = [160.0, 0.4, 3.0, 2.5]
+
     Logger.logInfo("Start DoE around optimum")
     Logger.appendToLogFolder("DoE_Around_Optimum")
     mainSM = StateMachine.StateMachine(DoE.InitDoE(optimum=optimum))
@@ -40,7 +43,7 @@ def optimization(result:History.CombiScoreHistoryItem):
     optimum = optimum[0:len(optimum)-len(factorSet.experimentValueCombinations)]
 
     reverseOpt = list(optimum[::-1])
-    return [factor.center() if index in excludedFactors else reverseOpt.pop() for index, factor in enumerate(factorSet.factors)]
+    return [factor.min if index in excludedFactors else reverseOpt.pop() for index, factor in enumerate(factorSet.factors)]
 
 
   
