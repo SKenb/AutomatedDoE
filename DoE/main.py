@@ -22,7 +22,7 @@ def main():
 
     Logger.logInfo("Start DoE around optimum")
     Logger.appendToLogFolder("DoE_Around_Optimum")
-    mainSM = StateMachine.StateMachine(DoE.InitDoE(optimum=optimum))
+    mainSM = StateMachine.StateMachine(DoE.InitDoE(optimum=optimum, setXAMControl=XamControl.XamControlTestRun1RobustnessMock()))
     for state in mainSM: pass
 
 

@@ -163,8 +163,69 @@ class XamControlTestRun1Mock(XamControlBase):
             if dataSet.size == 0: 
                 raise Exception("Data not found in dataset :/ - Note: only defined exp. r allowed (Idx:" + str(index) + ")")
 
-        # Conversion not in test data set
+        # Conversion not in test data set and Sty and Conv switched
         return XamControlExperimentResult(np.mean(dataSet[0, 5]), np.mean(dataSet[:, 4]), 0, request=experiment)
+
+
+class XamControlTestRun1RobustnessMock(XamControlBase):
+
+    def __init__(self):
+        super().__init__("Xam control - TestRun 1 Robustness Mock")
+
+    def startExperiment(self, experiment : XamControlExperimentRequest, simulateExperimentTime = 0) -> XamControlExperimentResult:
+
+        self._startExperimentRequest(experiment)
+        
+        if simulateExperimentTime > 0: time.sleep(simulateExperimentTime)
+
+        experimentResult = self._wrapXamControlExperimentResult(experiment)
+
+        self._receivedExperimentResult(experimentResult)
+        return experimentResult
+
+    def _wrapXamControlExperimentResult(self, experiment) -> XamControlExperimentResult:
+        dataSet = np.array([
+            [157.0, 0.39, 2.895, 2.325, 1.50686373957754, 0.228764999825665, 12.8053439686205],
+            [157.0, 0.41, 2.895, 2.325, 1.61231090628216, 0.232833324619125, 11.9224581910588],
+            [157.0, 0.41, 3.105, 2.675, 1.5929374387514, 0.24676460146991, 10.3794055097971],
+            [157.0, 0.39, 3.105, 2.675, 1.49910704619314, 0.244138367148585, 11.0723781304237],
+            [160.0, 0.4, 3.0, 2.5, 1.59097225499565, 0.244358350012602, 11.1754681385396],
+            [160.0, 0.4, 3.0, 2.5, 1.59090852804596, 0.244348562153494, 11.1759558507065],
+            [163.0, 0.39, 2.895, 2.325, 1.58944846233698, 0.241302625883987, 12.0880445208794],
+            [163.0, 0.41, 2.895, 2.325, 1.90561645562109, 0.275189489249491, 9.9334804577077],
+            [163.0, 0.41, 3.105, 2.675, 1.65859488710968, 0.256935706551326, 9.92893822847714],
+            [163.0, 0.39, 3.105, 2.675, 1.54216579081013, 0.251150736031084, 10.7353057806574],
+            [163.0, 0.39, 2.895, 2.675, 1.49992694342721, 0.261991096834528, 11.0545299009508],
+            [163.0, 0.41, 2.895, 2.675, 1.59176351661597, 0.264469578634774, 10.3766540499954],
+            [163.0, 0.41, 3.105, 2.325, 1.77964009785386, 0.239615823288188, 10.7189024792087],
+            [163.0, 0.39, 3.105, 2.325, 1.70179534213833, 0.240885074591057, 11.2354225946357],
+            [160.0, 0.4, 3.0, 2.5, 1.58001532161022, 0.242675468268527, 11.2599013661835],
+            [157.0, 0.39, 2.895, 2.675, 1.40040025992631, 0.244606846828909, 11.9112473813283],
+            [157.0, 0.41, 2.895, 2.675, 1.52605665254613, 0.253552462824189, 10.8664944893954],
+            [157.0, 0.41, 3.105, 2.325, 1.69417076417585, 0.228107988204091, 11.3101101706144],
+            [157.0, 0.39, 3.105, 2.325, 1.63454555905879, 0.231366028080451, 11.7388221547248],
+            [157.0, 0.4, 3.0, 2.5, 1.54508935415494, 0.237311168700658, 11.5370302681261],
+            [163.0, 0.4, 3.0, 2.5, 1.6620148243936, 0.255269819388783, 10.655029615676],
+            [160.0, 0.39, 3.0, 2.5, 1.51512534917782, 0.23867587674194, 11.7749200490265],
+            [160.0, 0.41, 3.0, 2.5, 1.64937568518964, 0.247149821150085, 10.7535737758684],
+            [160.0, 0.4, 3.105, 2.5, 1.61986472238924, 0.240382570832716, 10.9640178665136],
+            [160.0, 0.4, 2.895, 2.5, 1.54782986099746, 0.246354491952009, 11.5088512683965],
+            [160.0, 0.4, 3.0, 2.325, 1.67169220918139, 0.23878324230614, 11.4597407934938],
+            [160.0, 0.4, 3.0, 2.675, 1.51218296148285, 0.248515050768851, 10.9718193958877]
+        ])
+
+        for (index, value) in {
+                    0: experiment[XamControlExperimentRequest.TEMPERATURE],
+                    1: experiment[XamControlExperimentRequest.CONCENTRATION],
+                    2: experiment[XamControlExperimentRequest.REAGENTRATIO], 
+                    3: experiment[XamControlExperimentRequest.RESIDENCETIME]
+                }.items():
+            dataSet = dataSet[dataSet[:, index] == value]
+
+            if dataSet.size == 0: 
+                raise Exception("Data not found in dataset :/ - Note: only defined exp. r allowed (Idx:" + str(index) + ")")
+
+        return XamControlExperimentResult(np.mean(dataSet[:, 4]), np.mean(dataSet[:, 5]), np.mean(dataSet[:, 6]), request=experiment)
 
 
 
