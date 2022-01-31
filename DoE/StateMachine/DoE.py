@@ -305,16 +305,14 @@ class StopDoE(State):
             lambda plt: plt.plot(selctedIndex, range(len(history)), scoreHistory, 'ro'),
             lambda plt: gP(plt, 0, pred), lambda plt: gP(plt, 1, pred), lambda plt: gP(plt, 2, pred),
             lambda plt: gP(plt, 3, pred), lambda plt: gP(plt, 4, pred), lambda plt: gP(plt, 5, pred),
-            lambda plt: gP(plt, 6, pred), lambda plt: gP(plt, 7, pred), lambda plt: gP(plt, 8, pred), 
-            lambda plt: gP(plt, 9, pred),
             is3D=False, title=title, figure=fig
         )
 
-        #Common.subplot(
-        #    lambda fig: plot3DHist(fig, predR2, r2ScoreHistory, "R2 History"),
-        #    lambda fig: plot3DHist(fig, predQ2, q2ScoreHistory, "Q2 Hsitory"),
-        #    is3D=True
-        #)
+        Common.subplot(
+            lambda fig: plot3DHist(fig, predR2, r2ScoreHistory, "R2 History"),
+            lambda fig: plot3DHist(fig, predQ2, q2ScoreHistory, "Q2 Hsitory"),
+            is3D=True, saveFigure=True
+        )
         
 
 

@@ -17,9 +17,6 @@ def main():
     Logger.logInfo("Find optimum")
     optimum = optimization(state.result())
     Logger.logInfo("Optimum @: {}".format(optimum))
-
-    #[160.0, 0.4, 3.0, 2.5] 
-    #optimum = [160.0, 0.4, 3.0, 2.5]
       
     Logger.logInfo("Start DoE around optimum")
     Logger.appendToLogFolder("DoE_Around_Optimum")
@@ -27,7 +24,7 @@ def main():
         DoE.InitDoE(
             optimum=optimum,
             previousResult=state.result(),
-            previousContext=state.result().context,
+            #previousContext=state.result().context,
             setXAMControl=XamControl.XamControlTestRun1RobustnessMock()
         )
     )
