@@ -33,6 +33,7 @@ class ContextDoE():
 
         self.excludedFactors = []
         self.deletedExperiments = []
+        self.predictedResponses = []
 
         self.returnAllExperimentsAtOnce = returnAllExperimentsAtOnce
         self.previousResult = previousResult
@@ -59,6 +60,10 @@ class ContextDoE():
 
         self._experimentValues = gAppend(self._experimentValues, newExperimentValues)
         self.Y = gAppend(self.Y, Y)
+
+    def addNewPredictedResponses(self, newPredictedResponses):
+        gAppend = lambda x_, n_: n_ if len(x_) <= 0 else np.append(x_, n_, axis=0)
+        self.predictedResponses = gAppend(self.predictedResponses, newPredictedResponses)
 
     def deleteExperiment(self, idx):
         self.deletedExperiments.append((self._experimentValues[idx, :], self.Y[idx, :]))

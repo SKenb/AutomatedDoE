@@ -12,7 +12,7 @@ import statsmodels.api as sm
 
 from StateMachine.Context import ContextDoE
 
-def plotObservedVsPredicted(prediction, observation, titleSuffix=None, X=None, figure=None):
+def plotObservedVsPredicted(prediction, observation, titleSuffix=None, X=None, figure=None, suppressR2=False):
 
     titleStr = "Observed vs. Predicted"
     if titleSuffix is not None: titleStr += " - " + titleSuffix
@@ -28,7 +28,7 @@ def plotObservedVsPredicted(prediction, observation, titleSuffix=None, X=None, f
         lambda plt: plt.plot([0, 0], [minVal, maxVal], 'k', linewidth=1),
         lambda plt: plt.plot([minVal, maxVal], [minVal, maxVal], 'k--', linewidth=2),
         lambda plt: plt.grid(), 
-        lambda plt: plt.text(.05*(maxVal - minVal), -.15*(maxVal - minVal), "R2: {}".format(round(R2(observation, prediction), 2))),
+        lambda plt: True if suppressR2 else plt.text(.05*(maxVal - minVal), -.15*(maxVal - minVal), "R2: {}".format(round(R2(observation, prediction), 2))),
         lambda plt: X is not None and plt.text(.4*(maxVal - minVal), -.15*(maxVal - minVal), "Q2: {}".format(round(Q2(X, observation), 2))),
         xLabel="Predicted", yLabel="Observed", title=titleStr, 
         figure=figure
@@ -43,8 +43,12 @@ def plotResiduals(residuals, bound=4, figure=None):
         lambda plt: plt.scatter(rng, residuals),
         lambda plt: plt.scatter(np.array(list(rng))[outlierIdx], residuals[outlierIdx], color='red'),
         lambda plt: plt.plot([0, len(residuals)], residuals.mean()*np.array([1, 1]), 'r--'),
-        lambda plt: plt.plot([0, len(residuals)], residuals.mean()+bound*np.array([1, 1]), 'k--'),
-        lambda plt: plt.plot([0, len(residuals)], residuals.mean()-1*bound*np.array([1, 1]), 'k--'),
+        lambda plt: True if bound is None else plt.plot([0, len(residuals)], residuals.mean()+bound*np.array([1, 1]), 'k--'),
+        lambda plt: True if bound is None else plt.plot([0, len(residuals)], residuals.mean()-1*bound*np.array([1, 1]), 'k--'),
+        lambda plt: plt.text(2, 1.2*residuals.mean(), "Std: {} ({}%)".format(
+                np.round(np.std(residuals), 4), 
+                np.round(np.std(residuals) / residuals.mean() * 100, 2)
+            )),
         #lambda plt: plt.xticks(rng, rng),
         title="Residuals",
         figure=figure

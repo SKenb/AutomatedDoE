@@ -51,6 +51,8 @@ class ExecuteExperiments(State):
             predictedY = context.predictResponse(context.newExperimentValues)
             measuredY = context.getResponse()[-len(predictedY):]
 
+            context.addNewPredictedResponses(predictedY)
+
             Logger.logInfo("Measured:   {}".format(measuredY))
             Logger.logInfo("Predicted:  {}".format(predictedY))
             Logger.logInfo("Difference: {}".format((predictedY - measuredY)))
@@ -220,6 +222,19 @@ class StopDoE(State):
     def onCall(self):
 
         Logger.logInfo("STOP due to: {}".format(self.stopReason))
+
+        ## Predicted vs. Measured
+        if context.canPredict():
+            predictedY, measuredY = context.predictedResponses, context.getResponse()
+            error = np.array(predictedY-measuredY)
+            Common.subplot(
+                lambda fig: Statistics.plotObservedVsPredicted(predictedY, measuredY, "Robustness", suppressR2=True, figure=fig),
+                lambda fig: Statistics.plotResiduals(error, bound=False, figure=fig),
+                title="Robustness Test",
+                saveFigure=True
+            )
+
+            Logger.logInfo("Predicted vs. Measured: std: {}".format(np.round(np.std(error), 2)))
 
         ## Experiments Factor/Response Hist.
         plotter = lambda i: lambda fig: Common.plot(lambda plt: plt.scatter(list(range(len(context._experimentValues[:, i]))), context._experimentValues[:, i]), title=context.factorSet[i], figure=fig)
