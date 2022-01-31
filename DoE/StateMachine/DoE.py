@@ -14,15 +14,21 @@ from sklearn.preprocessing import quantile_transform
 import numpy as np
 
 context = None
-history = History.History()
+history = None
 
 class InitDoE(State):
-    def __init__(self, optimum=None, optimumRange=10, returnAllExperimentsAtOnce=False, setXAMControl=None, previousResult=None): 
+    def __init__(self, optimum=None, optimumRange=10, returnAllExperimentsAtOnce=False, setXAMControl=None, previousResult=None, previousContext=None): 
         super().__init__("Initialize DoE")
 
         global context
         context = ContextDoE(optimum, optimumRange, returnAllExperimentsAtOnce, setXAMControl, previousResult)
-        
+
+        global history
+        history = History.History()
+
+        if previousContext is not None:
+            context.addNewExperiments(previousContext._experimentValues, previousContext.Y)
+
     def onCall(self):
 
         Logger.logStateInfo(str(context.factorSet))
