@@ -4,11 +4,13 @@ from Common import Transform
 from Common import History
 from Common import Factor
 
+from Common import LinearRegression as LR
+
 import numpy as np
 
 class ContextDoE():
 
-    def __init__(self, optimum=None, optimumRange=10, returnAllExperimentsAtOnce=False, setXAMControl=None):
+    def __init__(self, optimum=None, optimumRange=10, returnAllExperimentsAtOnce=False, setXAMControl=None, previousResult=None):
 
         self.xamControl = XamControl.XamControl() #
         if setXAMControl is not None: self.xamControl = setXAMControl
@@ -33,6 +35,7 @@ class ContextDoE():
         self.deletedExperiments = []
 
         self.returnAllExperimentsAtOnce = returnAllExperimentsAtOnce
+        self.previousResult = previousResult
 
     def getResponse(self, responseIdx=0, transformFlagOrTransformer = False):
         Y = self.Y[:, responseIdx]
@@ -62,6 +65,23 @@ class ContextDoE():
 
         self.Y = np.delete(self.Y, idx, axis=0)
         self._experimentValues = np.delete(self._experimentValues, idx, axis=0)
+
+    def canPredict(self):
+        return self.previousResult is not None
+
+    def predictResponse(self, newExperimentValues):
+        if not self.canPredict(): return None
+
+        newExperimentValues = np.delete(newExperimentValues,  self.previousResult.context.excludedFactors, axis=1) 
+
+        X = None
+        for exp in newExperimentValues:
+            if X is None:
+                X = np.append(exp, [func(exp) for func in self.previousResult.combinations.values()])
+            else:
+                X = np.vstack((X, np.append(exp, [func(exp) for func in self.previousResult.combinations.values()])))
+
+        return LR.predict(self.previousResult.model, X)
 
     def restoreDeletedExperiments(self):
         for deletedExperiment in self.deletedExperiments:

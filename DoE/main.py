@@ -4,6 +4,7 @@ from Common import Optimization
 from XamControl import XamControl
 from StateMachine import StateMachine
 from StateMachine import DoE
+from Common import LinearRegression as LR
 
 import numpy as np
 
@@ -18,11 +19,17 @@ def main():
     Logger.logInfo("Optimum @: {}".format(optimum))
 
     #[160.0, 0.4, 3.0, 2.5] 
-    optimum = [160.0, 0.4, 3.0, 2.5]
-
+    #optimum = [160.0, 0.4, 3.0, 2.5]
+      
     Logger.logInfo("Start DoE around optimum")
     Logger.appendToLogFolder("DoE_Around_Optimum")
-    mainSM = StateMachine.StateMachine(DoE.InitDoE(optimum=optimum, setXAMControl=XamControl.XamControlTestRun1RobustnessMock()))
+    mainSM = StateMachine.StateMachine(
+        DoE.InitDoE(
+            optimum=optimum,
+            previousResult=state.result(),
+            setXAMControl=XamControl.XamControlTestRun1RobustnessMock()
+        )
+    )
     for state in mainSM: pass
 
 

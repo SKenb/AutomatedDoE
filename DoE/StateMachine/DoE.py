@@ -17,21 +17,15 @@ context = None
 history = History.History()
 
 class InitDoE(State):
-    def __init__(self, optimum=None, optimumRange=10, returnAllExperimentsAtOnce=False, setXAMControl=None): 
+    def __init__(self, optimum=None, optimumRange=10, returnAllExperimentsAtOnce=False, setXAMControl=None, previousResult=None): 
         super().__init__("Initialize DoE")
 
-        self.returnAllExperimentsAtOnce = returnAllExperimentsAtOnce
-        self.optimum = optimum
-        self.optimumRange = optimumRange
-        self.setXAMControl = setXAMControl
+        global context
+        context = ContextDoE(optimum, optimumRange, returnAllExperimentsAtOnce, setXAMControl, previousResult)
         
     def onCall(self):
 
-        global context
-
-        context = ContextDoE(self.optimum, self.optimumRange, self.returnAllExperimentsAtOnce, self.setXAMControl)
         Logger.logStateInfo(str(context.factorSet))
-
         return FindNewExperiments()
 
 
@@ -52,6 +46,14 @@ class ExecuteExperiments(State):
 
         Y = np.array([x.getValueArray() for x in context.xamControl.workOffExperiments(context.newExperimentValues)])
         context.addNewExperiments(context.newExperimentValues, Y)
+
+        if context.canPredict():
+            predictedY = context.predictResponse(context.newExperimentValues)
+            measuredY = context.getResponse()[-len(predictedY):]
+
+            Logger.logInfo("Measured:   {}".format(measuredY))
+            Logger.logInfo("Predicted:  {}".format(predictedY))
+            Logger.logInfo("Difference: {}".format((predictedY - measuredY)))
 
         return EvaluateExperiments()
 
