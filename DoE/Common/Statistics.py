@@ -1,6 +1,6 @@
 from typing import Callable, Dict, Iterable
 
-from matplotlib.pyplot import title
+from matplotlib.pyplot import title, xlabel, ylabel
 from Common import Common
 from Common.Factor import FactorSet, getDefaultFactorSet
 from sklearn.metrics import r2_score
@@ -157,16 +157,25 @@ def plotContour(model : sm.OLS, factorSet : FactorSet, excludedFactors, combinat
 
     levels = np.linspace(zMin, zMax, 10)
 
+    def contourSubplot(figure, X, Y, Z, levels, xlabel="", ylabel="", title=""):
+        Common.plot(
+            lambda fig: fig.contourf(X, Y, Z, levels),
+            figure=figure,
+            xLabel=xlabel, yLabel=ylabel, title=title
+        )
+
+    xlabel = factorSet[indexX]
+    ylabel = factorSet[indexY]
+    titlesRed = ["{}".format(w_) for w_ in w]
+    titles = ["{} = {}".format(factorSet[indexZ], w_) for w_ in w]
+
+    def subplot_(idx, titles, xlabel="", ylabel=""):
+        return lambda fig: contourSubplot(fig, X, Y, z[idx].reshape(X.shape), levels, xlabel, ylabel, titles[idx])
+
     Common.subplot(
-        lambda ax: ax.contourf(X, Y, z[0].reshape(X.shape), levels),
-        lambda ax: ax.contourf(X, Y, z[1].reshape(X.shape), levels),
-        lambda ax: ax.contourf(X, Y, z[2].reshape(X.shape), levels),
-        lambda ax: ax.contourf(X, Y, z[3].reshape(X.shape), levels),
-        lambda ax: ax.contourf(X, Y, z[4].reshape(X.shape), levels),
-        lambda ax: ax.contourf(X, Y, z[5].reshape(X.shape), levels),
-        lambda ax: ax.contourf(X, Y, z[6].reshape(X.shape), levels),
-        lambda ax: ax.contourf(X, Y, z[7].reshape(X.shape), levels),
-        lambda ax: ax.contourf(X, Y, z[8].reshape(X.shape), levels),
+        subplot_(0, titlesRed), subplot_(1, titles), subplot_(2, titlesRed),
+        subplot_(3, titlesRed, ylabel=ylabel), subplot_(4, titlesRed), subplot_(5, titlesRed),
+        subplot_(6, titlesRed), subplot_(7, titlesRed, xlabel=xlabel), subplot_(8, titlesRed),
         title="Contour", saveFigure=True
     )
 

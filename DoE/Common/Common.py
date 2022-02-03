@@ -55,7 +55,7 @@ def subplot(*plotFunctions, is3D=False, saveFigure=False, title="", showPlot=Tru
 
     assert cols*rows >= len(plotFunctions), "We r unable to fit all plots :/"        
 
-    fig = plt.figure() #constrained_layout=True)
+    fig = plt.figure(constrained_layout=True)
     #fig.tight_layout()
 
     for index, plot_ in enumerate(plotFunctions): 
