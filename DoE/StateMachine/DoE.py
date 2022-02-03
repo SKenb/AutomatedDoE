@@ -1,4 +1,5 @@
 from matplotlib.pyplot import ylabel
+from matplotlib.transforms import Transform
 from StateMachine.StateMachine import State
 from StateMachine.Context import ContextDoE
 from Common import Common
@@ -211,7 +212,7 @@ class EvaluateExperiments(State):
                 saveFigure=True, title=f"{len(history)}", showPlot=False
             )
 
-        Logger.logEntireRun(history, context.factorSet, context.getExperimentValues(), context.Y, model.params, scaledModel.params)
+        Logger.logEntireRun(history, context.factorSet, context.getExperimentValues(), context.Y, model.params, scaledModel, context.transformer)
 
         return HandleOutliers()
 

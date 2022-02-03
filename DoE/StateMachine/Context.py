@@ -38,21 +38,13 @@ class ContextDoE():
         self.returnAllExperimentsAtOnce = returnAllExperimentsAtOnce
         self.previousResult = previousResult
 
-    def getResponse(self, responseIdx=0, transformFlagOrTransformer = False):
+        self.transformer = None #Transform.BoxCoxOffsetTransformer()
+
+    def getResponse(self, responseIdx=0):
         Y = self.Y[:, responseIdx]
 
-        if transformFlagOrTransformer is None: return Y
-
-        if isinstance(transformFlagOrTransformer, bool):
-            if not transformFlagOrTransformer: return Y
-            
-            transformer = Transform.getSuggestedTransformer(Y)
-        elif isinstance(transformFlagOrTransformer, Transform.Transformer):
-            transformer = transformFlagOrTransformer
-        else:
-            raise Exception("transformFlagOrTransformer can not be used as Flag and is no Transformer :0")
-
-        return transformer.transform(Y)
+        if self.transformer is None: return Y
+        return self.transformer.transform(Y)
 
 
     def addNewExperiments(self, newExperimentValues, Y):

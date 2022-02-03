@@ -1,3 +1,4 @@
+from pickle import TRUE
 import traceback
 import warnings
 import logging
@@ -88,7 +89,7 @@ def logStateInfo(stateInfo, predicate=logging.info):
     genericLog(predicate, "\t-", stateInfo)
 
 
-def logEntireRun(history, factorSet, experiments, responses, modelCoeffs, scaledModelCoeffs):
+def logEntireRun(history, factorSet, experiments, responses, modelCoeffs, scaledModel, transformer):
 
     runNumber = len(history)
 
@@ -104,12 +105,23 @@ def logEntireRun(history, factorSet, experiments, responses, modelCoeffs, scaled
         fileWriter.writerow(["Details"]) 
         fileWriter.writerow([
             "Run", runNumber, 
-            "DateTime", datetime.now().strftime("%d.%m.%Y %H:%M:%S"),
-            "Factor Set", str(factorSet)
+            "DateTime", datetime.now().strftime("%d.%m.%Y %H:%M:%S")
+        ]) 
+
+        fileWriter.writerow([
+            "Factor Set", 
+            factorSet.getFactorString(False) +  factorSet.getCombinationsString(False)
         ]) 
 
         fileWriter.writerow(["Model Coeffs"])
         fileWriter.writerow(modelCoeffs)
 
         fileWriter.writerow(["Scaled Model Coeffs"])
-        fileWriter.writerow(scaledModelCoeffs)
+        fileWriter.writerow(scaledModel.params)
+
+        
+        fileWriter.writerow(["Transformation"])
+        fileWriter.writerow(["NO TRANSFORMATION" if transformer is None else str(transformer)])
+
+        fileWriter.writerow(["Scaled Model - Summary"])
+        fileWriter.writerow([str(scaledModel.summary())]) 
