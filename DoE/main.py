@@ -1,10 +1,13 @@
+from tracemalloc import Statistic
 from Common import Logger
 from Common import History
+from Common import Statistics
 from Common import Optimization
+from Common.Factor import FactorSet, getDefaultFactorSet
 from XamControl import XamControl
 from StateMachine import StateMachine
 from StateMachine import DoE
-from Common import LinearRegression as LR
+import statsmodels.api as sm
 
 import numpy as np
 
@@ -18,8 +21,13 @@ def main():
     optimum = optimization(state.result())
     Logger.logInfo("Optimum @: {}".format(optimum))
 
-    #[160.0, 0.4, 3.0, 2.5] 
-    #optimum = [160.0, 0.4, 3.0, 2.5]
+    Statistics.plotContour(
+        state.result().scaledModel, 
+        getDefaultFactorSet(), 
+        state.result().excludedFactors, 
+        state.result().combinations
+    )
+    exit()
       
     Logger.logInfo("Start DoE around optimum")
     Logger.appendToLogFolder("DoE_Around_Optimum")
@@ -32,7 +40,6 @@ def main():
         )
     )
     for state in mainSM: pass
-
 
 
 def optimization(result:History.CombiScoreHistoryItem):

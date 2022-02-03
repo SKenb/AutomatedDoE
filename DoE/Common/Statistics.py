@@ -2,10 +2,12 @@ from typing import Callable, Dict, Iterable
 
 from matplotlib.pyplot import title
 from Common import Common
+from Common.Factor import FactorSet, getDefaultFactorSet
 from sklearn.metrics import r2_score
 from sklearn import preprocessing
 from sklearn.model_selection import cross_val_score
 from sklearn.base import BaseEstimator, RegressorMixin
+from Common import LinearRegression as LR
 
 import numpy as np
 import statsmodels.api as sm
@@ -118,6 +120,54 @@ def plotScoreHistory(scoreHistoryDict : Dict, selectedIndex=None, figure=False):
         xLabel="Iteration", yLabel="Score", 
         title=("" if len(scoreHistoryDict) > 1 else scoreHistoryDict[0].keys()[0]) + "Score",
         figure=figure
+    )
+
+def plotContour(model : sm.OLS, factorSet : FactorSet, excludedFactors, combinations):
+    delta = 0.025
+
+    indexX, indexY, indexZ = 0, 1, 2
+
+    x = np.arange(factorSet.factors[indexX].min, factorSet.factors[indexX].max, delta)
+    y = np.arange(factorSet.factors[indexY].min, factorSet.factors[indexY].max, delta)
+    X, Y = np.meshgrid(x, y)
+
+    x1, y1 = X.reshape(-1), Y.reshape(-1)
+
+    responses = np.array([factor.center() for factor in factorSet.factors])
+    responses = np.array([responses.T for i in range(len(x1))])
+
+    responses[:, indexX] = x1
+    responses[:, indexY] = y1
+
+    responses = np.delete(responses,  excludedFactors, axis=1) 
+
+    z, zMin, zMax = [], None, None
+    layers = 9
+    w = np.linspace(factorSet.factors[indexX].min, factorSet.factors[indexX].max, layers)
+    for index in range(layers):
+
+        responses[:, indexZ] = w[index]*np.ones(x1.shape)
+        RX = [np.append(r, [f(r) for f in combinations.values()]) for r in responses]
+
+        zNew = LR.predict(model, RX)
+        z.append(zNew)
+
+        if zMin is None or zMin > min(zNew): zMin = min(zNew)
+        if zMax is None or zMax < max(zNew): zMax = max(zNew)
+
+    levels = np.linspace(zMin, zMax, 10)
+
+    Common.subplot(
+        lambda ax: ax.contourf(X, Y, z[0].reshape(X.shape), levels),
+        lambda ax: ax.contourf(X, Y, z[1].reshape(X.shape), levels),
+        lambda ax: ax.contourf(X, Y, z[2].reshape(X.shape), levels),
+        lambda ax: ax.contourf(X, Y, z[3].reshape(X.shape), levels),
+        lambda ax: ax.contourf(X, Y, z[4].reshape(X.shape), levels),
+        lambda ax: ax.contourf(X, Y, z[5].reshape(X.shape), levels),
+        lambda ax: ax.contourf(X, Y, z[6].reshape(X.shape), levels),
+        lambda ax: ax.contourf(X, Y, z[7].reshape(X.shape), levels),
+        lambda ax: ax.contourf(X, Y, z[8].reshape(X.shape), levels),
+        title="Contour", saveFigure=True
     )
 
 def generateScaler(X):
