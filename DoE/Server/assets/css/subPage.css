@@ -18,6 +18,8 @@ table {
 section {
     width: 80%;
     margin: auto;
+
+    animation: fadeIn .25s ease-out normal backwards;
 }
 
 table th {
@@ -27,4 +29,15 @@ table th {
 th:nth-child(even) {
     text-align: left;
     font-family: 'Courier New', Courier, monospace;
+}
+
+.animation-delay1 { animation-delay: .25s; }
+.animation-delay2 { animation-delay: .5s; }
+.animation-delay3 { animation-delay: 1.25s; }
+.animation-delay4 { animation-delay: 1.5s; }
+
+@keyframes fadeIn {
+    0% { transform: scale(0); }
+    80% { transform: scale(1.1); }
+    100% { transform: scale(1); }
 }
