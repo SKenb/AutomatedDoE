@@ -1,0 +1,107 @@
+@import "defines.css";
+
+* {
+    font-family: sans-serif;
+}
+
+html, body {
+    margin: 0;
+}
+
+html {
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+}
+
+body {
+    background-color: var(--color-first);
+}
+
+#content {
+    background-color: var(--color-third);
+
+    max-width: 960px;
+    width: 80%;
+    min-height: 200px;
+    height: 80vh;
+
+    margin: 50px auto;
+
+    border-radius: 20px;
+    padding: 30px;
+
+    position: relative;
+}
+
+.text-centered {
+    text-align: center;
+}
+
+.menu {
+    text-align: center;
+}
+
+.menu > ul {
+    display: flex;
+    justify-content: center;
+    list-style-type: none;
+
+}
+
+.menu > ul > li {
+    margin: 20px;
+    cursor: pointer;
+
+    transition: all ease-in-out .3s;
+}
+
+.menu > ul > li:hover {
+    margin: 20px;
+    cursor: pointer;
+
+    text-decoration: underline;
+}
+
+fieldset {
+    position: absolute;
+    top: 170px;
+    bottom: 20px;
+    left: 20px;
+    right: 20px;
+    border: 0;
+}
+
+iframe {
+    width:100%;
+    height: 100%;
+    border: 0;
+}
+
+.vertical-listed {
+    margin: auto;
+    width: fit-content;
+}
+
+.vertical-listed > * {
+    display: inline-block;
+}
+
+a {
+    margin: 0 10px;
+}
+
+a::before { content: "🧭 "; }
+.defines::before { content: "📋 "; }
+.automatedDoE::before { content: "⚙ "; }
+.results::before { content: "📊 "; }
+.about::before { content: "🚩 "; }
+
+.variable {
+    transition: opacity ease-in-out .3s;
+    opacity: 0;
+}
+
+.variable.visible {
+    opacity: 100;
+}

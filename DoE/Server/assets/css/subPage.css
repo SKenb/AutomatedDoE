@@ -1,0 +1,30 @@
+@import "defines.css";
+
+body {
+    background-color: var(--color-third);
+    width: 100%;
+    height: 100%;
+    overflow-y: scroll;
+}
+
+table {
+    margin: auto;
+    width: 75%;
+    text-align: right;
+
+    border-spacing: 150px 10px;
+}
+
+section {
+    width: 80%;
+    margin: auto;
+}
+
+table th {
+    width: 50%;
+}
+
+th:nth-child(even) {
+    text-align: left;
+    font-family: 'Courier New', Courier, monospace;
+}
