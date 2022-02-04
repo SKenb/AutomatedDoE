@@ -52,20 +52,33 @@ function updateArrayElements(parent, identifier, array) {
     elements = parent.getElementsByClassName(identifier);
     [].forEach.call(elements, container => { 
 
-        template = container.getElementsByClassName('template')[0];
-    
         array.forEach(infos => {
-            clone = template.cloneNode(true);
-            clone.classList.remove("template");
-            container.appendChild(clone);
-    
-            console.log(infos)
-            updateDataFromObject(infos, clone);
+            clonedObj = clone(container);
+            updateDataFromObject(infos, clonedObj);
         });
 
     });
 
    
+}
+
+function cloneFactorTemplate() {
+    clonedObj = clone(document.getElementsByClassName('factors')[0]);
+    varElements = clonedObj.getElementsByClassName("variable");
+
+    [].forEach.call(varElements, vE => {
+        vE.classList.add("visible");
+    })
+}
+
+function clone(container) {
+    template = container.getElementsByClassName('template')[0];
+
+    clonedObj = template.cloneNode(true);
+    clonedObj.classList.remove("template");
+    container.appendChild(clonedObj);
+
+    return clonedObj
 }
 
 function updateElements(parent, identifier, value) {
@@ -123,4 +136,28 @@ function updatePaths() {
     }
 
     update("paths", dict)
+}
+
+function updateFactors() {
+
+    childs = Array.from(document.getElementsByClassName('factors')[0].children);
+    childs.shift()
+
+    dict = {
+        "factors":
+        childs.map(c => { 
+            return {
+                "name": c.children[0].children[0].value,
+                "symbol": c.children[1].children[0].value,
+                "unit": c.children[2].children[0].value,
+                "min": c.children[3].children[0].value,
+                "max": c.children[4].children[0].value,
+            }
+        })
+    }
+
+    var xmlhttp = new XMLHttpRequest();
+    xmlhttp.open("POST", "/update/factors");
+    xmlhttp.setRequestHeader("Content-Type", "application/json");
+    xmlhttp.send(JSON.stringify(dict));
 }

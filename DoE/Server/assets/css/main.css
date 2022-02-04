@@ -112,15 +112,11 @@ a::before { content: "🧭 "; }
 }
 
 .button-wrapper {
-    position: relative;
-    width: 100%;
+    display: flex;
+    margin: auto;
 }
 
 button {
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-
     font-weight: bold;
     font-size: 16px;
 
@@ -130,4 +126,21 @@ button {
 
 .template {
     visibility: collapse;
+}
+
+.bin {
+    transition: all ease-in-out .3s;
+    cursor: pointer;
+}
+
+.bin:hover {
+    transition: scale(1.1);
+}
+
+.bin::before {
+    content: "❌";
+}
+
+.input-small {
+    width: 95%;
 }

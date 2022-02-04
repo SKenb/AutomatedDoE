@@ -5,12 +5,34 @@ import json
 import html
 from urllib.parse import urlparse
 
-from Common.Factor import FactorSet, getDefaultFactorSet
+from Common.Factor import FactorSet, Factor, getDefaultFactorSet
 
 writePath = readPath = "??"
 factorSet = getDefaultFactorSet()
 
 class Server(http.server.SimpleHTTPRequestHandler):
+
+    def do_POST(self):
+        content_length = int(self.headers['Content-Length'])  # <--- Gets the size of data
+        post_data = self.rfile.read(content_length)  # <--- Gets the data itself
+
+        data = json.loads(post_data.decode('utf8').replace("'", '"'))
+        factors = data["factors"]
+
+        global factorSet
+        factorSet = FactorSet([
+            Factor(d["name"],d["min"], d["max"], d["unit"], d["symbol"]) 
+            for d in factors
+        ])
+
+        print(factorSet)
+
+        self.send_response(200)
+        self.send_header("Content-type", "text")
+        self.end_headers()
+        self.wfile.write(str(factorSet).encode())
+
+
 
     def do_GET(self):
         if self.path == "/":
@@ -55,6 +77,7 @@ class Server(http.server.SimpleHTTPRequestHandler):
             "factors": [
                 {
                     "name": f.name, 
+                    "symbol": f.symbol,
                     "unit": f.unit, 
                     "min": f.min, 
                     "max": f.max
