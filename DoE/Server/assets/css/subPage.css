@@ -11,8 +11,6 @@ table {
     margin: auto;
     width: 75%;
     text-align: right;
-
-    border-spacing: 150px 10px;
 }
 
 section {
@@ -22,14 +20,14 @@ section {
     animation: fadeIn .25s ease-out normal backwards;
 }
 
-table th {
+.half-width {
     width: 50%;
 }
 
 th:nth-child(even) {
     text-align: left;
-    font-family: 'Courier New', Courier, monospace;
 }
+
 
 .animation-delay1 { animation-delay: .25s; }
 .animation-delay2 { animation-delay: .5s; }

@@ -1,12 +1,74 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>📋 Defines</title>
-</head>
-<body style="background-color: green; height: 300px; width: 100%; margin: 0;">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        <link rel="stylesheet" href="./css/main.css">
+        <link rel="stylesheet" href="./css/subPage.css">
     
-</body>
+        <script src="./js/main.js"></script>
+    
+        <title>Defines</title>
+    
+        <script> updateDataFrom("./defines.json"); </script>
+    </head>
+    <body>
+        <h1 class="text-centered defines">Defines</h1>
+        <br/>
+        <hr>
+        <br/>
+        <section>
+            <h2 class="text-centered">🧾 Factors</h2>
+            <table style="text-align: left;" class="factors">
+                <tr class="ignore">
+                    <th>Name:</th>
+                    <th>Unit:</th>
+                    <th>Min:</th>
+                    <th>Max:</th>
+                </tr>
+                <tr class="template">
+                    <th><input type="text" class="name variable"/></th>
+                    <th><input type="text" class="unit variable"/></th>
+                    <th><input type="number" class="min variable"/></th>
+                    <th><input type="number" class="max variable"/></th>
+                </tr>
+            </table>
+
+            <br/>
+            <div class="button-wrapper">
+                <button name="Update">Update Factors</button>
+            </div>
+            <br/>
+            <br/>
+        </section>
+
+        <br/>
+        <hr>
+        <br/>
+        <section class="animation-delay1">
+            <h2 class="text-centered">📬 Folder Watch</h2>
+            <table style="border-spacing: 150px 10px;">
+                <tr>
+                    <th class="half-width">Write:</th>
+                    <th class="font2 half-width variable">
+                        <input type="text" class="writeXamControl font2" value="??">
+                    </th>
+                </tr>
+                <tr>
+                    <th>Read:</th>
+                    <th class="font2 half-width variable">
+                        <input type="text" class="readXamControl font2" value="??">
+                    </th>
+                </tr>
+            </table>
+            <br/>
+            <div class="button-wrapper">
+                <button onclick="updatePaths();" >Update Paths</button>
+            </div>
+            <br/>
+            <br/>
+        </section>
+    </body>
 </html>

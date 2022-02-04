@@ -18,6 +18,11 @@ body {
     background-color: var(--color-first);
 }
 
+
+.font2 { 
+    font-family: 'Courier New', Courier, monospace;
+}
+
 #content {
     background-color: var(--color-third);
 
@@ -104,4 +109,25 @@ a::before { content: "🧭 "; }
 
 .variable.visible {
     opacity: 100;
+}
+
+.button-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+button {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+
+    font-weight: bold;
+    font-size: 16px;
+
+    min-height: 40px;
+    margin: auto;
+}
+
+.template {
+    visibility: collapse;
 }
