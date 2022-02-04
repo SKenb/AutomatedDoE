@@ -24,21 +24,26 @@
             <table style="text-align: left;" class="factors">
                 <tr class="ignore">
                     <th>Name:</th>
+                    <th>Symbol:</th>
                     <th>Unit:</th>
                     <th>Min:</th>
                     <th>Max:</th>
+                    <th></th>
                 </tr>
                 <tr class="template">
-                    <th><input type="text" class="name variable"/></th>
-                    <th><input type="text" class="unit variable"/></th>
-                    <th><input type="number" class="min variable"/></th>
-                    <th><input type="number" class="max variable"/></th>
+                    <th><input name="name[]" type="text" class="name variable input-small"/></th>
+                    <th><input name="symbol[]" type="text" class="symbol variable input-small"/></th>
+                    <th><input name="unit[]" type="text" class="unit variable input-small"/></th>
+                    <th><input name="min[]" type="number" class="min variable input-small"/></th>
+                    <th><input name="max[]" type="number" class="max variable input-small"/></th>
+                    <th><a class="bin" onclick="this.parentElement.parentElement.remove();"></a></th>
                 </tr>
             </table>
 
             <br/>
             <div class="button-wrapper">
-                <button name="Update">Update Factors</button>
+                <button onclick="cloneFactorTemplate();">Add Factors</button>
+                <button onclick="updateFactors();">Update Factors</button>
             </div>
             <br/>
             <br/>
@@ -65,7 +70,7 @@
             </table>
             <br/>
             <div class="button-wrapper">
-                <button onclick="updatePaths();" >Update Paths</button>
+                <button onclick="updatePaths();">Update Paths</button>
             </div>
             <br/>
             <br/>
