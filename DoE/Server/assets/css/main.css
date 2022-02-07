@@ -144,3 +144,64 @@ button {
 .input-small {
     width: 95%;
 }
+
+.load-wrapp {
+    width: 100px;
+    height: 100px;
+    margin: 50px auto;
+    padding: 20px 20px 20px;
+    border-radius: 5px;
+    text-align: center;
+    background-color: #d8d8d8;
+  }
+  
+.load-wrapp p {
+    padding: 0 0 20px;
+}
+.load-wrapp:last-child {
+    margin-right: 0;
+}
+
+.bubble-1,
+.bubble-2 {
+    position: absolute;
+    top: 0;
+    width: 25px;
+    height: 25px;
+    border-radius: 100%;
+    background-color: #4b9cdb;
+    }
+
+.bubble-2 {
+    top: auto;
+    bottom: 0;
+}
+
+.load .spinner {
+    animation: loadingI 2s linear infinite;
+}
+.load .bubble-1,
+.load .bubble-2 {
+    animation: bounce 2s ease-in-out infinite;
+}
+.load .bubble-2 {
+    animation-delay: -1s;
+}
+
+@keyframes loadingI {
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+  
+@keyframes bounce {
+    0%,
+    100% {
+        transform: scale(0);
+    }
+    50% {
+        transform: scale(1);
+    }
+}
+  
+  

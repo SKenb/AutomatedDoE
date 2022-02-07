@@ -3,12 +3,19 @@ from pickle import TRUE
 import socketserver
 import json
 import html
+from tkinter.tix import Tree
 from urllib.parse import urlparse
+import threading
+import time
 
 from Common.Factor import FactorSet, Factor, getDefaultFactorSet
 
 writePath = readPath = "??"
 factorSet = getDefaultFactorSet()
+processRunningFlag = False
+processThread = None
+processStopRequest = False
+processPauseRequest = False
 
 class Server(http.server.SimpleHTTPRequestHandler):
 
@@ -42,6 +49,8 @@ class Server(http.server.SimpleHTTPRequestHandler):
             return self.handleJSONRequest(self.path)
         elif "update" in self.path:
             return self.updateData(self.path)
+        elif "action" in self.path:
+            return self.action(self.path)
         else:   
             return http.server.SimpleHTTPRequestHandler.do_GET(self)
 
@@ -105,16 +114,88 @@ class Server(http.server.SimpleHTTPRequestHandler):
         successFlag, writePath = update_("write", writePath)
         successFlag, readPath = update_("read", readPath)
 
+        self.genericResponse({"success": successFlag })
+       
+        
+    def action(self, path):
+        global processRunningFlag, processThread, processStopRequest, processPauseRequest
+        
+        if "start" in path:
+            # Start DoE
+            
+            if processStopRequest:
+                self.genericResponse({"state": "Just stopping - then we can start again" })
+                return False
 
+            if processRunningFlag: 
+                self.genericResponse({"state": "Process already running" })
+                return False
+            else:
+                processRunningFlag = True
+                print("Start DoE")
+                
+                processThread = threading.Thread(target=process)
+                processThread.start()
+                
+                self.genericResponse({"state": "Process started" })
+                
+        if "stop" in path:
+            # Stop DoE (@ l request it)
+            
+            if processThread is None:
+                self.genericResponse({"state": "Nothing to stop :)" })
+                return False
+            
+            if processStopRequest:
+                self.genericResponse({"state": "Stop request already set" })
+            else:
+                processStopRequest = True
+                self.genericResponse({"state": "Stop request sent" })
+                
+            
+            return True
+        
+        if "pause" in path:            
+            self.genericResponse({"state": "Already requested to pause" if processPauseRequest else "Pause request sent" })
+            processPauseRequest = True
+            
+            return processPauseRequest
+         
+        if "resume" in path:
+            
+            self.genericResponse({"state": "Already requested to resume" if not processPauseRequest else "Resume request sent" })
+            processPauseRequest = False
+            
+            return processPauseRequest   
+
+    def genericResponse(self, dataset):
         self.send_response(200)
         self.send_header("Content-type", "application/json")
         self.end_headers()
-        dataset = {"success": successFlag }
+        
         self.wfile.write(json.dumps(dataset).encode("utf-8"))
 
+def process():
+    global processStopRequest, processPauseRequest
+    
+    while not processStopRequest:
+        print("THREAD >> HEY :D " + "WORKING" if not processPauseRequest else "PAUSING")
+        time.sleep(2)
+    
+    onDone()
+        
+def onDone():
+    global processRunningFlag, processStopRequest, processThread
+    
+    processStopRequest = processRunningFlag = False
+    processThread = None
+    print("Process finished")  
+    
 
 if __name__ == "__main__":
-
-    server = socketserver.TCPServer(('localhost', 8080), Server)
+    hostname, port = 'localhost', 8080
+    server = socketserver.TCPServer((hostname, port), Server)
+    
+    print("Start DoE-Server @{}:{}".format(hostname, server))
     server.serve_forever()
     server.server_close()
