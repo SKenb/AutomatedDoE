@@ -7,6 +7,7 @@ from tkinter.tix import Tree
 from urllib.parse import urlparse
 import threading
 import time
+import numpy as np
 
 from Common import Logger
 from Common import History
@@ -20,11 +21,11 @@ from mainDoE import optimization
 
 from Common.Factor import FactorSet, Factor, getDefaultFactorSet
 
-writePath = readPath = "??"
+writePath = readPath = "//TMP/TODO"
 factorSet = getDefaultFactorSet()
 processRunningFlag = processStopRequest = processPauseRequest =False
 processThread = None
-processState = "N/A"
+processState = "Ready"
 processProgess = (0, 100)
 
 class Server(http.server.SimpleHTTPRequestHandler):
@@ -207,14 +208,40 @@ class Server(http.server.SimpleHTTPRequestHandler):
 def process():
     global processStopRequest, processPauseRequest, processState, processProgess, factorSet
     
-    Logger.logInfo("Start main DoE")
-    processState = "Start main DoE"
+
+    def endProcess():
+        onDone()
+        return True
+
+    def log(msg):
+        global processState
+        Logger.logInfo(msg)
+        processState = msg
+
+    def possibillityToPause():
+        global processPauseRequest
+        while(processPauseRequest):
+            log("Pausing")
+            time.sleep(2)
+
+
+    Logger.initLogging()
+    Logger.logInfo("Start main DoE program")
+    np.set_printoptions(suppress=True)
+
+    log("Start main DoE")
+    possibillityToPause()
+    if processStopRequest: return endProcess()
     
     mainSM = StateMachine.StateMachine(DoE.InitDoE(setFactorSet=factorSet,setXAMControl=XamControl.XamControlTestRun1Mock()))
-    for state in mainSM: processState = str(state)
+    for state in mainSM: 
+        processState = str(state)  
+        possibillityToPause()
+        if processStopRequest: return endProcess()
 
-    Logger.logInfo("Find optimum")
-    processState = "Find optimum"
+    log("Find optimum")
+    possibillityToPause()
+    if processStopRequest: return endProcess()
     
     optimum = optimization(state.result())
     Logger.logInfo("Optimum @: {}".format(optimum))
@@ -226,8 +253,9 @@ def process():
         state.result().combinations
     )
       
-    Logger.logInfo("Start DoE around optimum")
-    processState = "Start DoE around optimum"
+    log("Start DoE around optimum")
+    possibillityToPause()
+    if processStopRequest: return endProcess()
     
     Logger.appendToLogFolder("DoE_Around_Optimum")
     mainSM = StateMachine.StateMachine(
@@ -238,16 +266,20 @@ def process():
             setXAMControl=XamControl.XamControlTestRun1RobustnessMock()
         )
     )
-    for state in mainSM: processState = str(state)
+    for state in mainSM: 
+        processState = str(state)
+        possibillityToPause()
+        if processStopRequest: return endProcess()
+        
     
-    processState = "Ready"
     onDone()
         
 def onDone():
-    global processRunningFlag, processStopRequest, processThread
+    global processRunningFlag, processStopRequest, processThread, processState
     
     processStopRequest = processRunningFlag = False
     processThread = None
+    processState = "Ready"
     print("Process finished")  
     
 
