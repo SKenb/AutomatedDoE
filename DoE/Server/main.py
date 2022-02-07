@@ -8,6 +8,16 @@ from urllib.parse import urlparse
 import threading
 import time
 
+from Common import Logger
+from Common import History
+from Common import Statistics
+from Common import Optimization
+from XamControl import XamControl
+from StateMachine import StateMachine
+from StateMachine import DoE
+
+from mainDoE import optimization
+
 from Common.Factor import FactorSet, Factor, getDefaultFactorSet
 
 writePath = readPath = "??"
@@ -67,8 +77,13 @@ class Server(http.server.SimpleHTTPRequestHandler):
         if "info" in requestURL: return self.getJSONInfo()
         if "defines" in requestURL: return self.getJSONDefines()
         if "process" in requestURL: return self.getJSONProcessInfo()
+        if "server" in requestURL: return self.getServerInfo()
 
         return self.getJSONDefault()
+    
+    
+    def getServerInfo(self):
+        return {"serverRunningFlag": True}
 
     def getJSONDefault(self):
         return {"Error": "What do u need? 0.o"}
@@ -190,16 +205,42 @@ class Server(http.server.SimpleHTTPRequestHandler):
         self.wfile.write(json.dumps(dataset).encode("utf-8"))
 
 def process():
-    global processStopRequest, processPauseRequest, processState, processProgess
+    global processStopRequest, processPauseRequest, processState, processProgess, factorSet
     
-    index = 1
-    while not processStopRequest:
-        index+=1
-        processProgess = (index, 1000)
-        processState = "THREAD >> HEY :D {} ".format(index) + ("WORKING" if not processPauseRequest else "PAUSING")
-        print(processState)
-        time.sleep(2)
+    Logger.logInfo("Start main DoE")
+    processState = "Start main DoE"
     
+    mainSM = StateMachine.StateMachine(DoE.InitDoE(setFactorSet=factorSet,setXAMControl=XamControl.XamControlTestRun1Mock()))
+    for state in mainSM: processState = str(state)
+
+    Logger.logInfo("Find optimum")
+    processState = "Find optimum"
+    
+    optimum = optimization(state.result())
+    Logger.logInfo("Optimum @: {}".format(optimum))
+
+    Statistics.plotContour(
+        state.result().scaledModel, 
+        getDefaultFactorSet(), 
+        state.result().excludedFactors, 
+        state.result().combinations
+    )
+      
+    Logger.logInfo("Start DoE around optimum")
+    processState = "Start DoE around optimum"
+    
+    Logger.appendToLogFolder("DoE_Around_Optimum")
+    mainSM = StateMachine.StateMachine(
+        DoE.InitDoE(
+            optimum=optimum,
+            previousResult=state.result(),
+            previousContext=state.result().context,
+            setXAMControl=XamControl.XamControlTestRun1RobustnessMock()
+        )
+    )
+    for state in mainSM: processState = str(state)
+    
+    processState = "Ready"
     onDone()
         
 def onDone():

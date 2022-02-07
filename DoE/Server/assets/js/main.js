@@ -17,11 +17,13 @@ function tryThis(predicate, onError=null) {
 
 
 function updateDataFrom(endpoint) {
+    
     var xmlHttp = new XMLHttpRequest();
     xmlHttp.onreadystatechange = function() { 
         if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
             updateData(xmlHttp.responseText);
     }
+
     xmlHttp.open("GET", endpoint, true);
     xmlHttp.send(null);
 }

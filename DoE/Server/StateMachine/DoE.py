@@ -18,11 +18,11 @@ context = None
 history = None
 
 class InitDoE(State):
-    def __init__(self, optimum=None, optimumRange=10, returnAllExperimentsAtOnce=False, setXAMControl=None, previousResult=None, previousContext=None): 
+    def __init__(self, setFactorSet=None, optimum=None, optimumRange=10, returnAllExperimentsAtOnce=False, setXAMControl=None, previousResult=None, previousContext=None): 
         super().__init__("Initialize DoE")
 
         global context
-        context = ContextDoE(optimum, optimumRange, returnAllExperimentsAtOnce, setXAMControl, previousResult)
+        context = ContextDoE(setFactorSet, optimum, optimumRange, returnAllExperimentsAtOnce, setXAMControl, previousResult)
 
         global history
         history = History.History()

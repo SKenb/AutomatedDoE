@@ -10,7 +10,7 @@ import numpy as np
 
 class ContextDoE():
 
-    def __init__(self, optimum=None, optimumRange=10, returnAllExperimentsAtOnce=False, setXAMControl=None, previousResult=None):
+    def __init__(self, setFactorSet=None, optimum=None, optimumRange=10, returnAllExperimentsAtOnce=False, setXAMControl=None, previousResult=None):
 
         self.xamControl = XamControl.XamControl() #
         if setXAMControl is not None: self.xamControl = setXAMControl
@@ -18,6 +18,9 @@ class ContextDoE():
         self.experimentFactory = ExperimentFactory.ExperimentFactory()
 
         self.factorSet = Factor.getDefaultFactorSet()
+        if setFactorSet is not None:
+            self.factorSet = setFactorSet
+            
         if optimum is not None:
             self.factorSet = Factor.getFactorSetAroundOptimum(self.factorSet, optimum, optimumRange)
         
