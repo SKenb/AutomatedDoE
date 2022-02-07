@@ -86,7 +86,19 @@ function updateElements(parent, identifier, value) {
     elements = parent.getElementsByClassName(identifier);
     [].forEach.call(elements, el => { 
         
-        if(el instanceof HTMLInputElement) {
+        if(el.classList.contains('changeVisibility')) {
+            boolValue = Boolean(value);
+            if(el.classList.contains('inverse')) boolValue = !boolValue;
+
+            el.style.visibility = boolValue ? 'visible' : 'collapse';
+        }        
+        else if(el.classList.contains('changeDisplay')) {
+            boolValue = Boolean(value);
+            if(el.classList.contains('inverse')) boolValue = !boolValue;
+
+            el.style.display = boolValue ? 'inherit' : 'none';
+        }
+        else if(el instanceof HTMLInputElement) {
             el.setAttribute('value', value);
         }
         else {
@@ -94,7 +106,6 @@ function updateElements(parent, identifier, value) {
         }
 
         variableHandling(el);
-        console.log(el.parentElement)
         if(el.parentElement) variableHandling(el.parentElement);
     }); 
 }
@@ -160,4 +171,14 @@ function updateFactors() {
     xmlhttp.open("POST", "/update/factors");
     xmlhttp.setRequestHeader("Content-Type", "application/json");
     xmlhttp.send(JSON.stringify(dict));
+}
+
+function sendAction(action, callback) {
+    var xmlHttp = new XMLHttpRequest();
+    xmlHttp.onreadystatechange = function() { 
+        if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
+            if(callback) callback(xmlHttp.responseText);
+    }
+    xmlHttp.open("GET", "/action/" + action, true);
+    xmlHttp.send(null);
 }

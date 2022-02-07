@@ -147,12 +147,9 @@ button {
 
 .load-wrapp {
     width: 100px;
-    height: 100px;
-    margin: 50px auto;
-    padding: 20px 20px 20px;
-    border-radius: 5px;
+    margin: 0px auto;
     text-align: center;
-    background-color: #d8d8d8;
+    display: flex;
   }
   
 .load-wrapp p {
@@ -162,46 +159,49 @@ button {
     margin-right: 0;
 }
 
-.bubble-1,
-.bubble-2 {
+.bar {
+    float: left;
+    width: 15px;
+    height: 6px;
+    border-radius: 2px;
+    background-color: #4b9cdb;
+}
+
+.load .bar {
+    animation: loadingJ 2s cubic-bezier(0.17, 0.37, 0.43, 0.67) infinite;
+}
+  
+
+.overlay {
     position: absolute;
     top: 0;
-    width: 25px;
-    height: 25px;
-    border-radius: 100%;
-    background-color: #4b9cdb;
-    }
-
-.bubble-2 {
-    top: auto;
+    left: 0;
+    right: 0;
     bottom: 0;
+
+    background-color: black;
+    opacity: .75;
 }
 
-.load .spinner {
-    animation: loadingI 2s linear infinite;
-}
-.load .bubble-1,
-.load .bubble-2 {
-    animation: bounce 2s ease-in-out infinite;
-}
-.load .bubble-2 {
-    animation-delay: -1s;
+.overlay h1 {
+    position: relative;
+    top: 50%;
+    left: 50%;
+    color: white;
+    transform: translate(-50%, -50%);
+    display: inline-block;
 }
 
-@keyframes loadingI {
-    100% {
-      transform: rotate(360deg);
-    }
-  }
-  
-@keyframes bounce {
+@keyframes loadingJ {
     0%,
     100% {
-        transform: scale(0);
+      transform: translate(0, 0);
     }
+  
     50% {
-        transform: scale(1);
+      transform: translate(80px, 0);
+      background-color: #f5634a;
+      width: 25px;
     }
 }
-  
   

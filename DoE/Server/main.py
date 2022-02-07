@@ -12,10 +12,10 @@ from Common.Factor import FactorSet, Factor, getDefaultFactorSet
 
 writePath = readPath = "??"
 factorSet = getDefaultFactorSet()
-processRunningFlag = False
+processRunningFlag = processStopRequest = processPauseRequest =False
 processThread = None
-processStopRequest = False
-processPauseRequest = False
+processState = "N/A"
+processProgess = (0, 100)
 
 class Server(http.server.SimpleHTTPRequestHandler):
 
@@ -66,6 +66,7 @@ class Server(http.server.SimpleHTTPRequestHandler):
     def getJSONDataset(self, requestURL):
         if "info" in requestURL: return self.getJSONInfo()
         if "defines" in requestURL: return self.getJSONDefines()
+        if "process" in requestURL: return self.getJSONProcessInfo()
 
         return self.getJSONDefault()
 
@@ -77,6 +78,19 @@ class Server(http.server.SimpleHTTPRequestHandler):
                 "name": "TODO",
                 "version": "1.0.0.0",
                 "notes": "main/stable"
+            }
+        
+    def getJSONProcessInfo(self):
+        global processPauseRequest, processRunningFlag, processStopRequest, processThread
+        
+        return { 
+                "processRunningFlag": processRunningFlag,
+                "processPauseRequest": processPauseRequest,
+                "processStopRequest": processStopRequest,
+                "processThread":  processThread is not None,
+                "processState": processState,
+                "processProgess": processProgess[0],
+                "processProgessMax": processProgess[1],
             }
 
     def getJSONDefines(self):
@@ -176,10 +190,14 @@ class Server(http.server.SimpleHTTPRequestHandler):
         self.wfile.write(json.dumps(dataset).encode("utf-8"))
 
 def process():
-    global processStopRequest, processPauseRequest
+    global processStopRequest, processPauseRequest, processState, processProgess
     
+    index = 1
     while not processStopRequest:
-        print("THREAD >> HEY :D " + "WORKING" if not processPauseRequest else "PAUSING")
+        index+=1
+        processProgess = (index, 1000)
+        processState = "THREAD >> HEY :D {} ".format(index) + ("WORKING" if not processPauseRequest else "PAUSING")
+        print(processState)
         time.sleep(2)
     
     onDone()

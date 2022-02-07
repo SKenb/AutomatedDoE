@@ -12,9 +12,17 @@
     
         <title>Defines</title>
     
-        <script> updateDataFrom("./defines.json"); </script>
+        <script> 
+            updateDataFrom("./process.json"); 
+            updateDataFrom("./defines.json"); 
+
+            setInterval(() => { updateDataFrom("./process.json"); }, 1000); 
+        </script>
     </head>
     <body>
+        <div class="overlay processRunningFlag changeVisibility" style="visibility: collapse;">
+            <h1>❌ DoE Running</h1>
+        </div>
         <h1 class="text-centered defines">Defines</h1>
         <br/>
         <hr>
