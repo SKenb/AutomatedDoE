@@ -78,16 +78,23 @@ class Server(http.server.SimpleHTTPRequestHandler):
         if "info" in requestURL: return self.getJSONInfo()
         if "defines" in requestURL: return self.getJSONDefines()
         if "process" in requestURL: return self.getJSONProcessInfo()
-        if "server" in requestURL: return self.getServerInfo()
+        if "server" in requestURL: return self.getJSONServerInfo()
+        if "experiments" in requestURL: return self.getJSONExperiments()
 
         return self.getJSONDefault()
     
     
-    def getServerInfo(self):
+    def getJSONServerInfo(self):
         return {"serverRunningFlag": True}
 
     def getJSONDefault(self):
         return {"Error": "What do u need? 0.o"}
+
+
+    def getJSONExperiments(self):
+        return { 
+                "experiments": [{"experiment": f} for f in Logger.getSubfoldersInLogFolder()[::-1]]
+            }   
 
     def getJSONInfo(self):
         return { 

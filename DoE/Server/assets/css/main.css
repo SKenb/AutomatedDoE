@@ -125,7 +125,7 @@ button {
 }
 
 .template {
-    visibility: collapse;
+    display: none;
 }
 
 .bin {
@@ -190,6 +190,15 @@ button {
     color: white;
     transform: translate(-50%, -50%);
     display: inline-block;
+}
+
+select {
+    font-size: 20px;
+    padding: 5px 25px;
+    margin: auto;
+    display: block;
+    width: 100%;
+    
 }
 
 @keyframes loadingJ {

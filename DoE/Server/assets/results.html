@@ -4,9 +4,79 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Automated DoE</title>
+            
+    <link rel="stylesheet" href="./css/main.css">
+    <link rel="stylesheet" href="./css/subPage.css">
+
+    <script src="./js/main.js"></script>
+
+    <title>Results</title>
+
+    <script>
+        updateDataFrom("./experiments.json");
+    </script>
 </head>
-<body style="background-color: blue; height: 300px; width: 100%; margin: 0;">
+<body>
+
+    <h1 class="text-centered results">Results</h1>
+    <br/>
+    <hr>
+    <br/>
+    <section>
+        <h2 class="text-centered">📂 Experiments</h2>
+        <br/>
+        <select class="experiments font2" id="selectedExperiment">
+            <option class="template experiment font2" value="">-- select an experiment --</option>
+        </select>
+        <br/>
+        <br/>
+    </section>
     
+    <br/>
+    <hr>
+    <br/>
+    <section>
+        <h2 class="text-centered">📂 Experiments</h2>
+        <br/>
+        <select class="experiments font2">
+            <option class="template experiment font2" value="">-- select an experiment --</option>
+        </select>
+        <br/>
+        <br/>
+    </section>
+
+    <br/>
+    <hr>
+    <br/>
+    <section>
+        <h2 class="text-centered">🗑 Clean</h2>
+        <br/>
+        <script>
+            function getSelectedExperiment() {
+                selectElement = document.getElementById('selectedExperiment');
+
+                if(selectElement.selectedIndex <= 0) return null;
+                return selectElement.options[selectElement.selectedIndex].text 
+            }
+
+            function removeExperiment() {
+                selectedExperiment = getSelectedExperiment();
+
+                if(selectedExperiment) {
+                    if(confirm('Are you sure you want to remove (' + selectedExperiment + ')')) {
+                        if(sendAction('remove')) {
+                            location.reload();
+                        }
+                    }
+                }   
+                else {
+                    alert("Nothing selected :D");
+                }      
+            }
+        </script>
+        <button style="display: block;" onclick="removeExperiment();"><span class="bin">Delete selected experiment</span></button>
+        <br/>
+        <br/>
+    </section>
 </body>
 </html>

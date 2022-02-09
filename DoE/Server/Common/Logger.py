@@ -4,6 +4,7 @@ import warnings
 import logging
 import sys
 import csv
+import os
 
 from datetime import datetime
 from pathlib import Path
@@ -48,6 +49,24 @@ def initLogging():
 
 def getCurrentLogFolder():
     return logFolder
+
+def getSubfoldersInLogFolder():
+
+    def folderNameToString(walkStuff):
+        folder = walkStuff.replace("Logs\\", "")
+        
+        if "\\" in folder: return None
+        if "Logs" in folder: return None
+
+        print(folder)
+        parts = folder.split("_")
+        date = parts[1]
+        date = "{}.{}.{}".format(date[0:2], date[2:4], date[4:])
+        time = parts[2].replace(".", ":")
+
+        return "Exp - {} - {}".format(date, time)
+        
+    return [folderNameToString(x[0]) for x in os.walk(logFolder) if folderNameToString(x[0]) is not None]
 
 def appendToLogFolder(newSubfolder:str):
     global logFolder

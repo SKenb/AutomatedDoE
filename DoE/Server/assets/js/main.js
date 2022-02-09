@@ -85,8 +85,12 @@ function clone(container) {
 
 function updateElements(parent, identifier, value) {
 
-    elements = parent.getElementsByClassName(identifier);
-    [].forEach.call(elements, el => { 
+    elements = Array.from(parent.getElementsByClassName(identifier));
+
+    if(typeof parent.classList !== "undefined" && parent.classList.contains(identifier)) 
+        elements.push(parent);
+
+    elements.forEach(el => { 
         
         if(el.classList.contains('changeVisibility')) {
             boolValue = Boolean(value);
