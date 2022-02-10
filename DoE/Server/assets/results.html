@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="./css/subPage.css">
 
     <script src="./js/main.js"></script>
+    <script src="./js/results.js"></script>
 
     <title>Results</title>
 
@@ -18,6 +19,10 @@
 </head>
 <body>
 
+    <div class="overlay experimentsAvailable inverse changeVisibility" style="visibility: collapse;">
+        <h1>🙇 No Experiemnts</h1>
+    </div>
+
     <h1 class="text-centered results">Results</h1>
     <br/>
     <hr>
@@ -25,8 +30,8 @@
     <section>
         <h2 class="text-centered">📂 Experiments</h2>
         <br/>
-        <select class="experiments font2" id="selectedExperiment">
-            <option class="template experiment font2" value="">-- select an experiment --</option>
+        <select class="experiments font2 text-centered" id="selectedExperiment" onchange="selectedExperimentChanged();">
+            <option class="template experiment font2">-- select an experiment --</option>
         </select>
         <br/>
         <br/>
@@ -36,11 +41,27 @@
     <hr>
     <br/>
     <section>
-        <h2 class="text-centered">📂 Experiments</h2>
+        <h2 class="text-centered selectedExperiment experimentIcon">Experiment</h2>
         <br/>
-        <select class="experiments font2">
-            <option class="template experiment font2" value="">-- select an experiment --</option>
-        </select>
+        <div class="selectedExperiment changeDisplay" style="display: none;">
+            
+            <select id="plots" class="plots font2 text-centered" onchange="plotChanged();">
+                <option class="template cleanName font2 path" data-info="path">-- select an plot --</option>
+            </select>
+            <br/>
+            <br/>
+        
+            <picture>
+                <img id="plot" src="">
+            </picture>
+        </div>
+        <div class="selectedExperiment changeDisplay inverse" style="min-height: 200px;">
+            
+            <br/>
+            <br/>
+            <p class="font2 text-centered">📂 Select one of the experiments</h1>
+        
+        </div>
         <br/>
         <br/>
     </section>
@@ -51,30 +72,7 @@
     <section>
         <h2 class="text-centered">🗑 Clean</h2>
         <br/>
-        <script>
-            function getSelectedExperiment() {
-                selectElement = document.getElementById('selectedExperiment');
-
-                if(selectElement.selectedIndex <= 0) return null;
-                return selectElement.options[selectElement.selectedIndex].text 
-            }
-
-            function removeExperiment() {
-                selectedExperiment = getSelectedExperiment();
-
-                if(selectedExperiment) {
-                    if(confirm('Are you sure you want to remove (' + selectedExperiment + ')')) {
-                        if(sendAction('remove')) {
-                            location.reload();
-                        }
-                    }
-                }   
-                else {
-                    alert("Nothing selected :D");
-                }      
-            }
-        </script>
-        <button style="display: block;" onclick="removeExperiment();"><span class="bin">Delete selected experiment</span></button>
+        <button style="display: block;" onclick="removeExperiment();"><span class="bin">Delete selected experiment</span> (<span class="selectedExperiment font2">SELECT ONE</span>)</button>
         <br/>
         <br/>
     </section>

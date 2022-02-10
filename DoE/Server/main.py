@@ -80,10 +80,18 @@ class Server(http.server.SimpleHTTPRequestHandler):
         if "process" in requestURL: return self.getJSONProcessInfo()
         if "server" in requestURL: return self.getJSONServerInfo()
         if "experiments" in requestURL: return self.getJSONExperiments()
+        if "plots" in requestURL: return self.getJSONPlotInfo()
 
         return self.getJSONDefault()
     
-    
+    def getJSONPlotInfo(self):
+        plots = Logger.getAvailablePlots(self.getLogFolderFromURL())
+
+        return {
+            "plots": plots,
+            "hasPlots": len(plots) > 0
+        }
+
     def getJSONServerInfo(self):
         return {"serverRunningFlag": True}
 
@@ -92,8 +100,10 @@ class Server(http.server.SimpleHTTPRequestHandler):
 
 
     def getJSONExperiments(self):
+        s = [{"experiment": f} for f in Logger.getSubfoldersInLogFolder()][::-1]
         return { 
-                "experiments": [{"experiment": f} for f in Logger.getSubfoldersInLogFolder()[::-1]]
+                "experiments": s,
+                "experimentsAvailable": len(s) > 0
             }   
 
     def getJSONInfo(self):
@@ -205,6 +215,20 @@ class Server(http.server.SimpleHTTPRequestHandler):
             
             return processPauseRequest   
 
+        if "remove" in path:
+            Logger.deleteLogFolder(self.getLogFolderFromURL())
+            self.genericResponse({"state": "should be done" })
+            return True
+
+    def getLogFolderFromURL(self):
+        logInfo = self.path.split("/")[-1]
+        folderParts = logInfo.split("%20")
+
+        return "Experiment_{}_{}".format(
+                folderParts[2].replace(".", ""),
+                folderParts[4].replace(":", ".")
+            )
+
     def genericResponse(self, dataset):
         self.send_response(200)
         self.send_header("Content-type", "application/json")
@@ -284,6 +308,8 @@ def process():
 def onDone():
     global processRunningFlag, processStopRequest, processThread, processState
     
+    Logger.closeLogging()
+
     processStopRequest = processRunningFlag = False
     processThread = None
     processState = "Ready"

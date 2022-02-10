@@ -101,6 +101,7 @@ a::before { content: "🧭 "; }
 .automatedDoE::before { content: "⚙ "; }
 .results::before { content: "📊 "; }
 .about::before { content: "🚩 "; }
+.experimentIcon::before { content: "📄 "; }
 
 .variable {
     transition: opacity ease-in-out .3s;

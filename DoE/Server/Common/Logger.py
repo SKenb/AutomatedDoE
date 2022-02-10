@@ -2,6 +2,7 @@ from pickle import TRUE
 import traceback
 import warnings
 import logging
+import shutil
 import sys
 import csv
 import os
@@ -13,7 +14,8 @@ from typing import Callable
 import numpy as np
 
 
-logFolder = Path("./Logs")
+logBasePath = Path("./Logs")
+logFolder = logBasePath
 
 # Initialize logging in one defines place
 # import logging in all other files
@@ -25,7 +27,8 @@ logFolder = Path("./Logs")
 #   - logging.error('...')
 #
 def initLogging():
-    global logFolder
+    global logFolder, logBasePath
+    logFolder = logBasePath
 
     dateString = datetime.now().strftime("%d%m%Y_%H.%M.%S")
     #hashString = str(random.getrandbits(32))
@@ -50,6 +53,33 @@ def initLogging():
 def getCurrentLogFolder():
     return logFolder
 
+def getAvailablePlots(logFolder):
+    folder = logBasePath / Path(logFolder)
+
+    filelist = getFiles(folder)
+
+    def getFiles(folder):
+        filelist=os.listdir(folder)
+
+        for fichier in filelist[:]:
+            if not(fichier.endswith(".png")):
+                filelist.remove(fichier)
+
+        return filelist
+
+    def cleanName(name):
+        name = name.replace(".png", "")
+        name = name.replace("Plot_", "Result ")
+        name = name.replace("Score_", "Result ")
+        return name
+
+    return [
+        {
+            "path": str(folder / Path(f)), 
+            "name": str(f),
+            "cleanName": cleanName(str(f))
+        } for f in filelist]
+
 def getSubfoldersInLogFolder():
 
     def folderNameToString(walkStuff):
@@ -66,7 +96,12 @@ def getSubfoldersInLogFolder():
 
         return "Exp - {} - {}".format(date, time)
         
-    return [folderNameToString(x[0]) for x in os.walk(logFolder) if folderNameToString(x[0]) is not None]
+    return [folderNameToString(x[0]) for x in os.walk(logBasePath) if folderNameToString(x[0]) is not None]
+
+def closeLogging():
+    #logging.shutdown()
+    for h in logging.getLogger().handlers[:]:
+        logging.getLogger().removeHandler(h)
 
 def appendToLogFolder(newSubfolder:str):
     global logFolder
@@ -75,6 +110,11 @@ def appendToLogFolder(newSubfolder:str):
 
     logFolder = logFolder / newSubfolder
     logFolder.mkdir(parents=False, exist_ok=True)
+
+def deleteLogFolder(folderName:str):
+    global logBasePath
+    print(logBasePath / Path(folderName))
+    shutil.rmtree(logBasePath / Path(folderName))
 
 
 def genericLog(predicate : Callable, prefix : str, msg : str, suffix : str = "", stringBase : str = "{} {} {}"):

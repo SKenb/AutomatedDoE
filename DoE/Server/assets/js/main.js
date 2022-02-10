@@ -107,6 +107,9 @@ function updateElements(parent, identifier, value) {
         else if(el instanceof HTMLInputElement) {
             el.setAttribute('value', value);
         }
+        else if(el instanceof HTMLOptionElement && el.getAttribute('data-info')?.includes(identifier)) {
+            el.setAttribute('data-info', value);
+        }
         else {
             el.innerHTML = value; 
         }
