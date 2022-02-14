@@ -143,7 +143,8 @@ def plotContour(model : sm.OLS, factorSet : FactorSet, excludedFactors, combinat
 
     z, zMin, zMax = [], None, None
     layers = 9
-    w = np.linspace(factorSet.factors[indexX].min, factorSet.factors[indexX].max, layers)
+    w = np.linspace(factorSet.factors[indexZ].min, factorSet.factors[indexZ].max, layers)
+
     for index in range(layers):
 
         responses[:, indexZ] = w[index]*np.ones(x1.shape)
@@ -166,8 +167,8 @@ def plotContour(model : sm.OLS, factorSet : FactorSet, excludedFactors, combinat
 
     xlabel = factorSet[indexX]
     ylabel = factorSet[indexY]
-    titlesRed = ["{}".format(w_) for w_ in w]
-    titles = ["{} = {}".format(factorSet[indexZ], w_) for w_ in w]
+    titlesRed = ["{}".format(round(w_, 2)) for w_ in w]
+    titles = ["{} = {}".format(factorSet[indexZ], round(w_, 2)) for w_ in w]
 
     def subplot_(idx, titles, xlabel="", ylabel=""):
         return lambda fig: contourSubplot(fig, X, Y, z[idx].reshape(X.shape), levels, xlabel, ylabel, titles[idx])

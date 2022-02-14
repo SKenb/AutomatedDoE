@@ -72,10 +72,16 @@ def getAvailablePlots(logFolder):
             } for f in filelist
         ]
 
-    def cleanName(name):
+    def cleanName(name, addIcons=True):
         name = name.replace(".png", "")
         name = name.replace("Plot_", "Result ")
         name = name.replace("Score_", "Result ")
+
+        if addIcons:
+            if "Exp_" in name: name = "📊 " + name
+            if "Resp_" in name: name = "🔬 " + name
+            if "Best" in name: name = "📍 " + name
+
         return name
 
 
