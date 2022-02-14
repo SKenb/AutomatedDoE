@@ -297,10 +297,12 @@ def process():
                 setXAMControl=XamControl.XamControlTestRun1RobustnessMock()
             )
         )
+
         for state in mainSM: 
             processState = str(state)
             possibillityToPause()
             if processStopRequest: return endProcess()
+    
     except Exception as e:
         Logger.logError(str(e))
         time.sleep(2)
@@ -321,6 +323,9 @@ def onDone():
 if __name__ == "__main__":
     hostname, port = 'localhost', 8080
     server = socketserver.TCPServer((hostname, port), Server)
+
+    process()
+    exit()
     
     print("Start DoE-Server @{}:{}".format(hostname, server))
     server.serve_forever()

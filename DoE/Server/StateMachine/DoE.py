@@ -30,6 +30,11 @@ class InitDoE(State):
         if previousContext is not None:
             context.addNewExperiments(previousContext._experimentValues, previousContext.Y)
 
+            if context.canPredict():
+                predictedY = context.predictResponse(previousContext._experimentValues)
+                context.addNewPredictedResponses(predictedY)
+
+
     def onCall(self):
 
         Logger.logStateInfo(str(context.factorSet))
@@ -63,6 +68,8 @@ class ExecuteExperiments(State):
             Logger.logInfo("Measured:   {}".format(measuredY))
             Logger.logInfo("Predicted:  {}".format(predictedY))
             Logger.logInfo("Difference: {}".format((predictedY - measuredY)))
+
+            assert context.getResponse().shape == context.predictedResponses.shape, "Upps"
 
         return EvaluateExperiments()
 
@@ -224,6 +231,10 @@ class StopDoE(State):
         ## Predicted vs. Measured
         if context.canPredict():
             predictedY, measuredY = context.predictedResponses, context.getResponse()
+
+            print(predictedY.shape)
+            print(measuredY.shape)
+
             error = np.array(predictedY-measuredY)
             Common.subplot(
                 lambda fig: Statistics.plotObservedVsPredicted(predictedY, measuredY, "Robustness", suppressR2=True, figure=fig),
