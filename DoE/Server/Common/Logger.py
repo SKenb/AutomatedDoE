@@ -56,16 +56,21 @@ def getCurrentLogFolder():
 def getAvailablePlots(logFolder):
     folder = logBasePath / Path(logFolder)
 
-    filelist = getFiles(folder)
 
-    def getFiles(folder):
+    def getFileInfos(folder, aroundOptimumFlag = False):
         filelist=os.listdir(folder)
 
         for fichier in filelist[:]:
             if not(fichier.endswith(".png")):
                 filelist.remove(fichier)
 
-        return filelist
+        return [{
+                "path": str(folder / Path(f)), 
+                "name": str(f),
+                "cleanName": ("🌟 " if aroundOptimumFlag else "") + cleanName(str(f)),
+                "optimum": aroundOptimumFlag,
+            } for f in filelist
+        ]
 
     def cleanName(name):
         name = name.replace(".png", "")
@@ -73,12 +78,11 @@ def getAvailablePlots(logFolder):
         name = name.replace("Score_", "Result ")
         return name
 
-    return [
-        {
-            "path": str(folder / Path(f)), 
-            "name": str(f),
-            "cleanName": cleanName(str(f))
-        } for f in filelist]
+
+    filelist = getFileInfos(folder)
+    filelist.extend(getFileInfos(folder / Path('DoE_Around_Optimum'), True))
+
+    return filelist
 
 def getSubfoldersInLogFolder():
 

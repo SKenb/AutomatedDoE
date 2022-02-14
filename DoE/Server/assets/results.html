@@ -51,9 +51,17 @@
             <br/>
             <br/>
         
-            <picture>
-                <img id="plot" src="">
-            </picture>
+            <div>
+                <script>
+                    function openInNewTab(sender) {
+                        if(!sender) return false;
+                        if(!sender?.src) return false;
+
+                        window.open(sender.src, '_blank').focus();
+                    }
+                </script>
+                <img id="plot" src="" ondblclick="openInNewTab(this)">
+            </div>
         </div>
         <div class="selectedExperiment changeDisplay inverse" style="min-height: 200px;">
             
@@ -70,10 +78,9 @@
     <hr>
     <br/>
     <section>
-        <h2 class="text-centered">🗑 Clean</h2>
+        <h2 class="text-centered">🔦 Clean</h2>
         <br/>
-        <button style="display: block;" onclick="removeExperiment();"><span class="bin">Delete selected experiment</span> (<span class="selectedExperiment font2">SELECT ONE</span>)</button>
-        <br/>
+        <button style="display: block;" onclick="removeExperiment();"><span class="bin">🗑 Delete selected experiment</span> (<span class="selectedExperiment font2">SELECT ONE</span>)</button>
         <br/>
     </section>
 </body>

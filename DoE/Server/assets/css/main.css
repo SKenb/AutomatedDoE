@@ -202,6 +202,12 @@ select {
     
 }
 
+img {
+    width: 75%;
+    display: block;
+    margin: auto;
+}
+
 @keyframes loadingJ {
     0%,
     100% {
