@@ -267,6 +267,7 @@ def process():
         mainSM = StateMachine.StateMachine(DoE.InitDoE(setFactorSet=factorSet,setXAMControl=XamControl.XamControlTestRun1Mock()))
         for state in mainSM: 
             processState = str(state)  
+
             possibillityToPause()
             if processStopRequest: return endProcess()
 
@@ -293,13 +294,14 @@ def process():
             DoE.InitDoE(
                 optimum=optimum,
                 previousResult=state.result(),
-                previousContext=state.result().context,
+                #previousContext=state.result().context,
                 setXAMControl=XamControl.XamControlTestRun1RobustnessMock()
             )
         )
 
         for state in mainSM: 
             processState = str(state)
+
             possibillityToPause()
             if processStopRequest: return endProcess()
     
@@ -324,8 +326,8 @@ if __name__ == "__main__":
     hostname, port = 'localhost', 8080
     server = socketserver.TCPServer((hostname, port), Server)
 
-    #process()
-    #exit()
+    process()
+    exit()
     
     print("Start DoE-Server @{}:{}".format(hostname, server))
     server.serve_forever()

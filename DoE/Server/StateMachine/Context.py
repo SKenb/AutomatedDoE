@@ -81,6 +81,7 @@ class ContextDoE():
             else:
                 X = np.vstack((X, np.append(exp, [func(exp) for func in self.previousResult.combinations.values()])))
 
+        if X.ndim <= 1: X = np.array([X])
         return LR.predict(self.previousResult.model, X)
 
     def restoreDeletedExperiments(self):

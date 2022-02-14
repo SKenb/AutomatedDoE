@@ -56,11 +56,20 @@ class ExecuteExperiments(State):
     def __init__(self): super().__init__("Execute experiments")
     def onCall(self):
 
-        Y = np.array([x.getValueArray() for x in context.xamControl.workOffExperiments(context.newExperimentValues)])
-        context.addNewExperiments(context.newExperimentValues, Y)
+
+        if len(context.newExperimentValues) <= 0: 
+            return EvaluateExperiments() 
+
+        experiment = context.newExperimentValues[0]
+        context.newExperimentValues = context.newExperimentValues[1:]
+        
+        Y = np.array([context.xamControl.startExperimentFromvalues(experiment).getValueArray()])
+
+        experiment = np.array([experiment])
+        context.addNewExperiments(experiment, Y)
 
         if context.canPredict():
-            predictedY = context.predictResponse(context.newExperimentValues)
+            predictedY = context.predictResponse(experiment)
             measuredY = context.getResponse()[-len(predictedY):]
 
             context.addNewPredictedResponses(predictedY)
@@ -71,7 +80,7 @@ class ExecuteExperiments(State):
 
             assert context.getResponse().shape == context.predictedResponses.shape, "Upps"
 
-        return EvaluateExperiments()
+        return ExecuteExperiments()
 
 
 class EvaluateExperiments(State):
@@ -274,7 +283,7 @@ class StopDoE(State):
             xLabel="Experiment", yLabel="Value",
             figure=fig
         )
-        
+
         Common.subplot(
             plotter(0), 
             saveFigure=True, title="Resp_History"
