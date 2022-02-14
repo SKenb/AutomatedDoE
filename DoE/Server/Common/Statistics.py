@@ -30,8 +30,8 @@ def plotObservedVsPredicted(prediction, observation, titleSuffix=None, X=None, f
         lambda plt: plt.plot([0, 0], [minVal, maxVal], 'k', linewidth=1),
         lambda plt: plt.plot([minVal, maxVal], [minVal, maxVal], 'k--', linewidth=2),
         lambda plt: plt.grid(), 
-        lambda plt: True if suppressR2 else plt.text(.05*(maxVal - minVal), -.15*(maxVal - minVal), "R2: {}".format(round(R2(observation, prediction), 2))),
-        lambda plt: X is not None and plt.text(.4*(maxVal - minVal), -.15*(maxVal - minVal), "Q2: {}".format(round(Q2(X, observation), 2))),
+        #lambda plt: True if suppressR2 else plt.text(.05*(maxVal - minVal), -.15*(maxVal - minVal), "R2: {}".format(round(R2(observation, prediction), 2))),
+        #lambda plt: X is not None and plt.text(.4*(maxVal - minVal), -.15*(maxVal - minVal), "Q2: {}".format(round(Q2(X, observation), 2))),
         xLabel="Predicted", yLabel="Observed", title=titleStr, 
         figure=figure
     )
@@ -52,7 +52,7 @@ def plotResiduals(residuals, bound=4, figure=None):
                 np.round(np.std(residuals) / residuals.mean() * 100, 2)
             )),
         #lambda plt: plt.xticks(rng, rng),
-        title="Residuals",
+        title="Residuals", xLabel="Experiment", yLabel="\Delta",
         figure=figure
     )
 
@@ -74,8 +74,10 @@ def plotCoefficients(coefficientValues, context:ContextDoE=None, confidenceInter
     if context is not None and combinations is not None and l == context.activeFactorCount() + len(combinations) + 1:
         char = lambda index: chr(65 + index % 26)
 
-        labels = ["Constant"]
-        labels.extend(["{} ({})".format(context.factorSet[index], char(index)) for index in range(len(context.factorSet)) if not context.isFactorExcluded(index)])
+        #labels = ["Constant"]
+        #labels.extend(["{} ({})".format(context.factorSet[index], char(index)) for index in range(len(context.factorSet)) if not context.isFactorExcluded(index)])
+        labels = ["0"]
+        labels.extend(["{}".format(char(index)) for index in range(len(context.factorSet)) if not context.isFactorExcluded(index)])
         labels.extend(combinations.keys())
 
 
@@ -118,7 +120,8 @@ def plotScoreHistory(scoreHistoryDict : Dict, selectedIndex=None, figure=False):
         plotAllScores,
         showLegend= len(scoreHistoryDict) > 1,
         xLabel="Iteration", yLabel="Score", 
-        title=("" if len(scoreHistoryDict) > 1 else scoreHistoryDict[0].keys()[0]) + "Score",
+        #title=("" if len(scoreHistoryDict) > 1 else scoreHistoryDict[0].keys()[0]) + "Score",
+        title="R2 and Q2",
         figure=figure
     )
 

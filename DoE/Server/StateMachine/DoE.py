@@ -135,14 +135,8 @@ class EvaluateExperiments(State):
 
             r2Score = Statistics.R2(trainingY, predictionY)
             q2Score = Statistics.Q2(X, trainingY)
-
-            # Used as different scores so far
-            scoreCombis = {
-                "R2*Q2": r2Score*q2Score, 
-                "1-(R2-Q2)": (1-(r2Score-q2Score))
-            }
-            
-            combiScoreHistory.add(History.CombiScoreHistoryItem(iterationIndex, combinations, model, scaledModel, context, r2Score, q2Score, context.excludedFactors, scoreCombis))
+               
+            combiScoreHistory.add(History.CombiScoreHistoryItem(iterationIndex, combinations, model, scaledModel, context, r2Score, q2Score, context.excludedFactors, None))
             
             isSignificant, _ = Statistics.getModelTermSignificance(scaledModel.conf_int())
 
@@ -193,9 +187,6 @@ class EvaluateExperiments(State):
         if len(history) >= 40: return StopDoE("Exp. Iteration reached maximum")
 
         X = Common.getXWithCombinations(context.getExperimentValues(), combinations, Statistics.orthogonalScaling)
-
-        combis = list(combiScoreHistory[0].scoreCombis.keys())
-
 
         if True:
             Common.subplot(
@@ -269,7 +260,6 @@ class StopDoE(State):
         ## Stats
         r2ScoreHistory = history.choose(lambda item: item.bestCombiScoreItem.r2)
         q2ScoreHistory = history.choose(lambda item: item.bestCombiScoreItem.q2)
-        combiScoreHistory = history.choose(lambda item: item.bestCombiScoreItem.scoreCombis["1-(R2-Q2)"])
         selctedIndex = history.choose(lambda item: item.bestCombiScoreItem.index)
 
         bestScoreOverall = len(q2ScoreHistory) - np.argmax(q2ScoreHistory[::-1]) - 1 #Reverse

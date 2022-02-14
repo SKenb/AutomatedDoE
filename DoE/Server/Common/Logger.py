@@ -98,7 +98,6 @@ def getSubfoldersInLogFolder():
         if "\\" in folder: return None
         if "Logs" in folder: return None
 
-        print(folder)
         parts = folder.split("_")
         date = parts[1]
         date = "{}.{}.{}".format(date[0:2], date[2:4], date[4:])
@@ -123,7 +122,6 @@ def appendToLogFolder(newSubfolder:str):
 
 def deleteLogFolder(folderName:str):
     global logBasePath
-    print(logBasePath / Path(folderName))
     shutil.rmtree(logBasePath / Path(folderName))
 
 

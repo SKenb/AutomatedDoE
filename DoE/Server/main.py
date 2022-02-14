@@ -43,7 +43,6 @@ class Server(http.server.SimpleHTTPRequestHandler):
             for d in factors
         ])
 
-        print(factorSet)
 
         self.send_response(200)
         self.send_header("Content-type", "text")
@@ -256,52 +255,55 @@ def process():
             time.sleep(2)
 
 
-    Logger.initLogging()
-    Logger.logInfo("Start main DoE program")
-    np.set_printoptions(suppress=True)
+    try:
+        Logger.initLogging()
+        Logger.logInfo("Start main DoE program")
+        np.set_printoptions(suppress=True)
 
-    log("Start main DoE")
-    possibillityToPause()
-    if processStopRequest: return endProcess()
-    
-    mainSM = StateMachine.StateMachine(DoE.InitDoE(setFactorSet=factorSet,setXAMControl=XamControl.XamControlTestRun1Mock()))
-    for state in mainSM: 
-        processState = str(state)  
-        possibillityToPause()
-        if processStopRequest: return endProcess()
-
-    log("Find optimum")
-    possibillityToPause()
-    if processStopRequest: return endProcess()
-    
-    optimum = optimization(state.result())
-    Logger.logInfo("Optimum @: {}".format(optimum))
-
-    Statistics.plotContour(
-        state.result().scaledModel, 
-        getDefaultFactorSet(), 
-        state.result().excludedFactors, 
-        state.result().combinations
-    )
-      
-    log("Start DoE around optimum")
-    possibillityToPause()
-    if processStopRequest: return endProcess()
-    
-    Logger.appendToLogFolder("DoE_Around_Optimum")
-    mainSM = StateMachine.StateMachine(
-        DoE.InitDoE(
-            optimum=optimum,
-            previousResult=state.result(),
-            previousContext=state.result().context,
-            setXAMControl=XamControl.XamControlTestRun1RobustnessMock()
-        )
-    )
-    for state in mainSM: 
-        processState = str(state)
+        log("Start main DoE")
         possibillityToPause()
         if processStopRequest: return endProcess()
         
+        mainSM = StateMachine.StateMachine(DoE.InitDoE(setFactorSet=factorSet,setXAMControl=XamControl.XamControlTestRun1Mock()))
+        for state in mainSM: 
+            processState = str(state)  
+            possibillityToPause()
+            if processStopRequest: return endProcess()
+
+        log("Find optimum")
+        possibillityToPause()
+        if processStopRequest: return endProcess()
+        
+        optimum = optimization(state.result())
+        Logger.logInfo("Optimum @: {}".format(optimum))
+
+        Statistics.plotContour(
+            state.result().scaledModel, 
+            getDefaultFactorSet(), 
+            state.result().excludedFactors, 
+            state.result().combinations
+        )
+        
+        log("Start DoE around optimum")
+        possibillityToPause()
+        if processStopRequest: return endProcess()
+        
+        Logger.appendToLogFolder("DoE_Around_Optimum")
+        mainSM = StateMachine.StateMachine(
+            DoE.InitDoE(
+                optimum=optimum,
+                previousResult=state.result(),
+                previousContext=state.result().context,
+                setXAMControl=XamControl.XamControlTestRun1RobustnessMock()
+            )
+        )
+        for state in mainSM: 
+            processState = str(state)
+            possibillityToPause()
+            if processStopRequest: return endProcess()
+    except Exception as e:
+        Logger.logError(str(e))
+        time.sleep(2)
     
     onDone()
         
