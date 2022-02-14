@@ -219,7 +219,7 @@ class EvaluateExperiments(State):
                 saveFigure=True, title=f"{len(history)}", showPlot=False
             )
 
-        Logger.logEntireRun(history, context.factorSet, context.getExperimentValues(), context.Y, model.params, scaledModel, context.transformer)
+        Logger.logEntireRun(history, context.factorSet, context.excludedFactors, context.getExperimentValues(), context.Y, model.params, scaledModel, context.transformer)
 
         return HandleOutliers()
 

@@ -71,7 +71,7 @@ class FactorSet:
 
     def getCombinationsString(self, multiLine=True):
         separatorString = "\n\r\t\t" if multiLine else "\t\t"
-        return "{}+ Combis:{}".format(separatorString, separatorString) + separatorString.join(map(str, self.factors))
+        return "{}+ Combis:{}".format(separatorString, separatorString) + separatorString.join(map(str, self.experimentValueCombinations))
 
     def __len__(self):
         return len(self.factors)

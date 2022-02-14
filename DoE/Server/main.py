@@ -326,7 +326,7 @@ if __name__ == "__main__":
     hostname, port = 'localhost', 8080
     server = socketserver.TCPServer((hostname, port), Server)
 
-    if False:
+    if True:
         process()
         exit()
     

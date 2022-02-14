@@ -1,3 +1,4 @@
+from itertools import combinations
 from pickle import TRUE
 import traceback
 import warnings
@@ -59,7 +60,7 @@ def getAvailablePlots(logFolder):
 
     def getFileInfos(folder, aroundOptimumFlag = False):
         if not os.path.isdir(folder): return []
-        
+
         filelist=os.listdir(folder)
 
         for fichier in filelist[:]:
@@ -160,7 +161,7 @@ def logStateInfo(stateInfo, predicate=logging.info):
     genericLog(predicate, "\t-", stateInfo)
 
 
-def logEntireRun(history, factorSet, experiments, responses, modelCoeffs, scaledModel, transformer):
+def logEntireRun(history, factorSet, excludedFactors, experiments, responses, modelCoeffs, scaledModel, transformer):
 
     runNumber = len(history)
 
@@ -173,26 +174,63 @@ def logEntireRun(history, factorSet, experiments, responses, modelCoeffs, scaled
     with open(logFolder / "experiment_model_{}.csv".format(runNumber), 'w', newline='') as csvfile:
         fileWriter = csv.writer(csvfile, delimiter=';', quotechar='|', quoting=csv.QUOTE_MINIMAL)
 
-        fileWriter.writerow(["Details"]) 
-        fileWriter.writerow([
-            "Run", runNumber, 
-            "DateTime", datetime.now().strftime("%d.%m.%Y %H:%M:%S")
-        ]) 
+        def insertNewLine(cnt=1):
+            for _ in range(cnt): fileWriter.writerow([]) 
 
         fileWriter.writerow([
-            "Factor Set", 
-            factorSet.getFactorString(False) +  factorSet.getCombinationsString(False)
+            "Experiment-Iteration: {} on the {}".format(runNumber, datetime.now().strftime("%d.%m.%Y %H:%M:%S"))
         ]) 
 
-        fileWriter.writerow(["Model Coeffs"])
-        fileWriter.writerow(modelCoeffs)
+        insertNewLine(2)
 
-        fileWriter.writerow(["Scaled Model Coeffs"])
-        fileWriter.writerow(scaledModel.params)
+        fileWriter.writerow(["Factor Set"]) 
+        insertNewLine()
+        fileWriter.writerow(["0", "Contant", "", "", "", ""]) 
+        for index, factor in enumerate(factorSet.factors):
+            fileWriter.writerow([chr(65 + (index % 26)), factor.name, str(factor.min), str(factor.max), factor.unit, factor.symbol]) 
+
+        insertNewLine(2)
+
+        fileWriter.writerow(["Excluded factors"]) 
+        insertNewLine()
+        if len(excludedFactors) <= 0: fileWriter.writerow(["-"]) 
+        for index in excludedFactors:
+            fileWriter.writerow([chr(65 + (index % 26))]) 
+
+        insertNewLine(2)
+
+        fileWriter.writerow(["Combinations"]) 
+        insertNewLine()
+        if len(factorSet.experimentValueCombinations) <= 0: fileWriter.writerow(["-"]) 
+        for combi in factorSet.experimentValueCombinations.keys():
+            fileWriter.writerow([combi]) 
 
         
+        insertNewLine(2)
+
+        abcList = ["0"]
+        abcList.extend([chr(65 + (index % 26)) for index in range(len(factorSet)) if index not in excludedFactors])
+        abcList.extend(factorSet.experimentValueCombinations.keys())
+
+        fileWriter.writerow(["Model Coeffs"])
+        fileWriter.writerow(abcList)
+        fileWriter.writerow(modelCoeffs)
+
+        
+        insertNewLine()
+
+        fileWriter.writerow(["Scaled Model Coeffs"])
+        fileWriter.writerow(abcList)
+        fileWriter.writerow(scaledModel.params)
+
+
+        insertNewLine(2)
+
         fileWriter.writerow(["Transformation"])
         fileWriter.writerow(["NO TRANSFORMATION" if transformer is None else str(transformer)])
+
+
+        insertNewLine(2)
 
         fileWriter.writerow(["Scaled Model - Summary"])
         fileWriter.writerow([str(scaledModel.summary())]) 
