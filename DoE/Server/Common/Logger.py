@@ -58,6 +58,8 @@ def getAvailablePlots(logFolder):
 
 
     def getFileInfos(folder, aroundOptimumFlag = False):
+        if not os.path.isdir(folder): return []
+        
         filelist=os.listdir(folder)
 
         for fichier in filelist[:]:
@@ -81,6 +83,8 @@ def getAvailablePlots(logFolder):
             if "Exp_" in name: name = "📊 " + name
             if "Resp_" in name: name = "🔬 " + name
             if "Best" in name: name = "📍 " + name
+            if "Robustness" in name: name = "🎯 " + name
+            if "Contour" in name: name = "💠 " + name
 
         return name
 

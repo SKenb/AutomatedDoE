@@ -246,22 +246,35 @@ class StopDoE(State):
             Logger.logInfo("Predicted vs. Measured: std: {}".format(np.round(np.std(error), 2)))
 
         ## Experiments Factor/Response Hist.
-        plotter = lambda i: lambda fig: Common.plot(lambda plt: plt.scatter(list(range(len(context._experimentValues[:, i]))), context._experimentValues[:, i]), title=context.factorSet[i], figure=fig)
+        plotter = lambda i: lambda fig: Common.plot(lambda plt: 
+                        plt.scatter(list(range(len(context._experimentValues[:, i]))), 
+                        context._experimentValues[:, i]), 
+                        title=context.factorSet[i], 
+                        xLabel="Experiment", yLabel="Value", 
+                        figure=fig
+                    )
+                
         Common.subplot(
             plotter(0), plotter(1), plotter(2), 
             plotter(3),
             saveFigure=True, title="Exp_History"
         )
 
-        indexTemperature = 3
-        Common.plot(
-            lambda plt: plt.plot(list(range(len(context._experimentValues[:, indexTemperature]))), context._experimentValues[:, indexTemperature]),
-            lambda plt: plt.scatter(list(range(len(context._experimentValues[:, indexTemperature]))), context._experimentValues[:, indexTemperature]),
-            saveFigure=True, title="Temperature"
-        )
+        #indexTemperature = 3
+        #Common.plot(
+        #    lambda plt: plt.plot(list(range(len(context._experimentValues[:, indexTemperature]))), context._experimentValues[:, indexTemperature]),
+        #    lambda plt: plt.scatter(list(range(len(context._experimentValues[:, indexTemperature]))), context._experimentValues[:, indexTemperature]),
+        #    saveFigure=True, title="Temperature"
+        #)
 
         responseStr = ["Space-time yield"]
-        plotter = lambda i: lambda fig: Common.plot(lambda plt: plt.scatter(list(range(len(context.Y[:, i]))), context.Y[:, i]), title=responseStr[i], figure=fig)
+        plotter = lambda i: lambda fig: Common.plot(
+            lambda plt: plt.scatter(list(range(len(context.Y[:, i]))), context.Y[:, i]), 
+            title=responseStr[i], 
+            xLabel="Experiment", yLabel="Value",
+            figure=fig
+        )
+        
         Common.subplot(
             plotter(0), 
             saveFigure=True, title="Resp_History"
@@ -278,9 +291,6 @@ class StopDoE(State):
 
 
         z = lambda pred: np.array(history.choose(lambda item: item.combiScoreHistory.choose(pred)))
-
-        predR2 = lambda item: item.r2
-        predQ2 = lambda item: item.q2
 
         gP = lambda plt, idx, pred: plt.plot(range(len(z(pred)[idx])), idx*np.ones(len(z(pred)[idx])), z(pred)[idx])
         #plotRO = lambda yValues: lambda plt: plt.plot(bestCombiScoreItemOverall.index, yValues[bestCombiScoreItemOverall.index], 'ro')
@@ -300,7 +310,7 @@ class StopDoE(State):
                             combinations=self.bestCombiScoreItemOverall.combinations, 
                             figure=fig
                         ),
-            saveFigure=True, title="Score_Best", rows=2, cols=2
+            saveFigure=True, title="Score_Best"
         )
 
         plot3DHist = lambda fig, pred, scoreHistory, title: Common.plot(

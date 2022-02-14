@@ -47,12 +47,12 @@ def plotResiduals(residuals, bound=4, figure=None):
         lambda plt: plt.plot([0, len(residuals)], residuals.mean()*np.array([1, 1]), 'r--'),
         lambda plt: True if bound is None else plt.plot([0, len(residuals)], residuals.mean()+bound*np.array([1, 1]), 'k--'),
         lambda plt: True if bound is None else plt.plot([0, len(residuals)], residuals.mean()-1*bound*np.array([1, 1]), 'k--'),
-        lambda plt: plt.text(2, 1.2*residuals.mean(), "Std: {} ({}%)".format(
-                np.round(np.std(residuals), 4), 
-                np.round(np.std(residuals) / residuals.mean() * 100, 2)
-            )),
+        #lambda plt: plt.text(2, 1.2*residuals.mean(), "Std: {} ({}%)".format(
+        #        np.round(np.std(residuals), 4), 
+        #        np.round(np.std(residuals) / residuals.mean() * 100, 2)
+        #    )),
         #lambda plt: plt.xticks(rng, rng),
-        title="Residuals", xLabel="Experiment", yLabel="\Delta",
+        title="Residuals", xLabel="Experiment", yLabel="Residual",
         figure=figure
     )
 
