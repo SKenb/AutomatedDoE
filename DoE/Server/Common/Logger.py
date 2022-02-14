@@ -2,8 +2,10 @@ from pickle import TRUE
 import traceback
 import warnings
 import logging
+import shutil
 import sys
 import csv
+import os
 
 from datetime import datetime
 from pathlib import Path
@@ -12,7 +14,8 @@ from typing import Callable
 import numpy as np
 
 
-logFolder = Path("./Logs")
+logBasePath = Path("./Logs")
+logFolder = logBasePath
 
 # Initialize logging in one defines place
 # import logging in all other files
@@ -24,7 +27,8 @@ logFolder = Path("./Logs")
 #   - logging.error('...')
 #
 def initLogging():
-    global logFolder
+    global logFolder, logBasePath
+    logFolder = logBasePath
 
     dateString = datetime.now().strftime("%d%m%Y_%H.%M.%S")
     #hashString = str(random.getrandbits(32))
@@ -49,6 +53,69 @@ def initLogging():
 def getCurrentLogFolder():
     return logFolder
 
+def getAvailablePlots(logFolder):
+    folder = logBasePath / Path(logFolder)
+
+
+    def getFileInfos(folder, aroundOptimumFlag = False):
+        if not os.path.isdir(folder): return []
+        
+        filelist=os.listdir(folder)
+
+        for fichier in filelist[:]:
+            if not(fichier.endswith(".png")):
+                filelist.remove(fichier)
+
+        return [{
+                "path": str(folder / Path(f)), 
+                "name": str(f),
+                "cleanName": ("🌟 " if aroundOptimumFlag else "") + cleanName(str(f)),
+                "optimum": aroundOptimumFlag,
+            } for f in filelist
+        ]
+
+    def cleanName(name, addIcons=True):
+        name = name.replace(".png", "")
+        name = name.replace("Plot_", "Result ")
+        name = name.replace("Score_", "Result ")
+
+        if addIcons:
+            if "Exp_" in name: name = "📊 " + name
+            if "Resp_" in name: name = "🔬 " + name
+            if "Best" in name: name = "📍 " + name
+            if "Robustness" in name: name = "🎯 " + name
+            if "Contour" in name: name = "💠 " + name
+
+        return name
+
+
+    filelist = getFileInfos(folder)
+    filelist.extend(getFileInfos(folder / Path('DoE_Around_Optimum'), True))
+
+    return filelist
+
+def getSubfoldersInLogFolder():
+
+    def folderNameToString(walkStuff):
+        folder = walkStuff.replace("Logs\\", "")
+        
+        if "\\" in folder: return None
+        if "Logs" in folder: return None
+
+        parts = folder.split("_")
+        date = parts[1]
+        date = "{}.{}.{}".format(date[0:2], date[2:4], date[4:])
+        time = parts[2].replace(".", ":")
+
+        return "Exp - {} - {}".format(date, time)
+        
+    return [folderNameToString(x[0]) for x in os.walk(logBasePath) if folderNameToString(x[0]) is not None]
+
+def closeLogging():
+    #logging.shutdown()
+    for h in logging.getLogger().handlers[:]:
+        logging.getLogger().removeHandler(h)
+
 def appendToLogFolder(newSubfolder:str):
     global logFolder
 
@@ -56,6 +123,10 @@ def appendToLogFolder(newSubfolder:str):
 
     logFolder = logFolder / newSubfolder
     logFolder.mkdir(parents=False, exist_ok=True)
+
+def deleteLogFolder(folderName:str):
+    global logBasePath
+    shutil.rmtree(logBasePath / Path(folderName))
 
 
 def genericLog(predicate : Callable, prefix : str, msg : str, suffix : str = "", stringBase : str = "{} {} {}"):

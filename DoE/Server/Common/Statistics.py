@@ -30,8 +30,8 @@ def plotObservedVsPredicted(prediction, observation, titleSuffix=None, X=None, f
         lambda plt: plt.plot([0, 0], [minVal, maxVal], 'k', linewidth=1),
         lambda plt: plt.plot([minVal, maxVal], [minVal, maxVal], 'k--', linewidth=2),
         lambda plt: plt.grid(), 
-        lambda plt: True if suppressR2 else plt.text(.05*(maxVal - minVal), -.15*(maxVal - minVal), "R2: {}".format(round(R2(observation, prediction), 2))),
-        lambda plt: X is not None and plt.text(.4*(maxVal - minVal), -.15*(maxVal - minVal), "Q2: {}".format(round(Q2(X, observation), 2))),
+        #lambda plt: True if suppressR2 else plt.text(.05*(maxVal - minVal), -.15*(maxVal - minVal), "R2: {}".format(round(R2(observation, prediction), 2))),
+        #lambda plt: X is not None and plt.text(.4*(maxVal - minVal), -.15*(maxVal - minVal), "Q2: {}".format(round(Q2(X, observation), 2))),
         xLabel="Predicted", yLabel="Observed", title=titleStr, 
         figure=figure
     )
@@ -47,12 +47,12 @@ def plotResiduals(residuals, bound=4, figure=None):
         lambda plt: plt.plot([0, len(residuals)], residuals.mean()*np.array([1, 1]), 'r--'),
         lambda plt: True if bound is None else plt.plot([0, len(residuals)], residuals.mean()+bound*np.array([1, 1]), 'k--'),
         lambda plt: True if bound is None else plt.plot([0, len(residuals)], residuals.mean()-1*bound*np.array([1, 1]), 'k--'),
-        lambda plt: plt.text(2, 1.2*residuals.mean(), "Std: {} ({}%)".format(
-                np.round(np.std(residuals), 4), 
-                np.round(np.std(residuals) / residuals.mean() * 100, 2)
-            )),
+        #lambda plt: plt.text(2, 1.2*residuals.mean(), "Std: {} ({}%)".format(
+        #        np.round(np.std(residuals), 4), 
+        #        np.round(np.std(residuals) / residuals.mean() * 100, 2)
+        #    )),
         #lambda plt: plt.xticks(rng, rng),
-        title="Residuals",
+        title="Residuals", xLabel="Experiment", yLabel="Residual",
         figure=figure
     )
 
@@ -74,8 +74,10 @@ def plotCoefficients(coefficientValues, context:ContextDoE=None, confidenceInter
     if context is not None and combinations is not None and l == context.activeFactorCount() + len(combinations) + 1:
         char = lambda index: chr(65 + index % 26)
 
-        labels = ["Constant"]
-        labels.extend(["{} ({})".format(context.factorSet[index], char(index)) for index in range(len(context.factorSet)) if not context.isFactorExcluded(index)])
+        #labels = ["Constant"]
+        #labels.extend(["{} ({})".format(context.factorSet[index], char(index)) for index in range(len(context.factorSet)) if not context.isFactorExcluded(index)])
+        labels = ["0"]
+        labels.extend(["{}".format(char(index)) for index in range(len(context.factorSet)) if not context.isFactorExcluded(index)])
         labels.extend(combinations.keys())
 
 
@@ -118,7 +120,8 @@ def plotScoreHistory(scoreHistoryDict : Dict, selectedIndex=None, figure=False):
         plotAllScores,
         showLegend= len(scoreHistoryDict) > 1,
         xLabel="Iteration", yLabel="Score", 
-        title=("" if len(scoreHistoryDict) > 1 else scoreHistoryDict[0].keys()[0]) + "Score",
+        #title=("" if len(scoreHistoryDict) > 1 else scoreHistoryDict[0].keys()[0]) + "Score",
+        title="R2 and Q2",
         figure=figure
     )
 
@@ -143,7 +146,8 @@ def plotContour(model : sm.OLS, factorSet : FactorSet, excludedFactors, combinat
 
     z, zMin, zMax = [], None, None
     layers = 9
-    w = np.linspace(factorSet.factors[indexX].min, factorSet.factors[indexX].max, layers)
+    w = np.linspace(factorSet.factors[indexZ].min, factorSet.factors[indexZ].max, layers)
+
     for index in range(layers):
 
         responses[:, indexZ] = w[index]*np.ones(x1.shape)
@@ -166,8 +170,8 @@ def plotContour(model : sm.OLS, factorSet : FactorSet, excludedFactors, combinat
 
     xlabel = factorSet[indexX]
     ylabel = factorSet[indexY]
-    titlesRed = ["{}".format(w_) for w_ in w]
-    titles = ["{} = {}".format(factorSet[indexZ], w_) for w_ in w]
+    titlesRed = ["{}".format(round(w_, 2)) for w_ in w]
+    titles = ["{} = {}".format(factorSet[indexZ], round(w_, 2)) for w_ in w]
 
     def subplot_(idx, titles, xlabel="", ylabel=""):
         return lambda fig: contourSubplot(fig, X, Y, z[idx].reshape(X.shape), levels, xlabel, ylabel, titles[idx])

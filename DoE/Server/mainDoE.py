@@ -27,7 +27,6 @@ def main():
         state.result().excludedFactors, 
         state.result().combinations
     )
-    exit()
       
     Logger.logInfo("Start DoE around optimum")
     Logger.appendToLogFolder("DoE_Around_Optimum")
