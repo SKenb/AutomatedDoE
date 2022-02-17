@@ -34,7 +34,7 @@ def main():
         DoE.InitDoE(
             optimum=optimum,
             previousResult=state.result(),
-            previousContext=state.result().context,
+            #previousContext=state.result().context,
             setXAMControl=XamControl.XamControlTestRun1RobustnessMock()
         )
     )
