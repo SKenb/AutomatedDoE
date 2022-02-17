@@ -48,7 +48,11 @@
         <br>
         <hr>
         <br>
-        <div class="processIsPausing changeDisplay" style="display: none;">
+        <div class="processRunningFlag changeDisplay" style="display: none; position: relative; padding: 50px;">
+            <div class="overlay processIsPausing inverse changeVisibility" style="visibility: collapse;">
+                <h1>🔀 NOT pausing</h1>
+            </div>
+
             <button class="" style="display: block;" onclick="sendAction('export', exportCallback);">💾 Export current state</button>
         </div>
 
