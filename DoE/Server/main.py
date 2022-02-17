@@ -249,8 +249,8 @@ def process():
         processState = msg
 
     def possibillityToPause():
-        global processPauseRequest
-        while(processPauseRequest):
+        global processPauseRequest, processStopRequest
+        while(processPauseRequest and (not processStopRequest)):
             log("Pausing")
             time.sleep(2)
 
