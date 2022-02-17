@@ -200,3 +200,24 @@ function exportCallback(result) {
         }
     });
 }
+
+function loadFileContent(hanlder=null) {
+    var file = document.getElementById("fileForImport")?.files[0];
+
+    if (file) {
+        var reader = new FileReader();
+        reader.readAsText(file, "UTF-8");
+        reader.onload = (evt) => { if(hanlder) hanlder(evt.target.result) };
+        reader.onerror = (evt) => alert("Failed import file :/");    
+    }
+    else {
+        alert("No file 0.o");
+    }
+}
+
+function contentImport(content) {
+    var xmlhttp = new XMLHttpRequest();
+    xmlhttp.open("POST", "/import/");
+    xmlhttp.setRequestHeader("Content-Type", "application/json");
+    xmlhttp.send(JSON.stringify(content));
+}

@@ -6,7 +6,7 @@ import html
 from tkinter.tix import Tree
 from urllib.parse import urlparse
 import threading
-import time
+import time, os
 import numpy as np
 
 from Common import Logger
@@ -34,20 +34,34 @@ class Server(http.server.SimpleHTTPRequestHandler):
         content_length = int(self.headers['Content-Length'])  # <--- Gets the size of data
         post_data = self.rfile.read(content_length)  # <--- Gets the data itself
 
-        data = json.loads(post_data.decode('utf8').replace("'", '"'))
-        factors = data["factors"]
+        if "factors" in self.path:
+            data = json.loads(post_data.decode('utf8').replace("'", '"'))
+            factors = data["factors"]
 
-        global factorSet
-        factorSet = FactorSet([
-            Factor(d["name"],d["min"], d["max"], d["unit"], d["symbol"]) 
-            for d in factors
-        ])
+            global factorSet
+            factorSet = FactorSet([
+                Factor(d["name"],d["min"], d["max"], d["unit"], d["symbol"]) 
+                for d in factors
+            ])
 
 
-        self.send_response(200)
-        self.send_header("Content-type", "text")
-        self.end_headers()
-        self.wfile.write(str(factorSet).encode())
+            self.send_response(200)
+            self.send_header("Content-type", "text")
+            self.end_headers()
+            self.wfile.write(str(factorSet).encode())
+
+        if "import" in self.path:
+            prepData = post_data.decode('utf8')
+            prepData = prepData.replace("\\n", "\n")
+            prepData = prepData.replace("\\r", "")
+            prepData = prepData.replace("\"", "")
+
+            Logger.importData(prepData)
+            
+            self.send_response(200)
+            self.send_header("Content-type", "text")
+            self.end_headers()
+            self.wfile.write("Imported".encode())
 
 
 
@@ -165,7 +179,7 @@ class Server(http.server.SimpleHTTPRequestHandler):
        
         
     def action(self, path):
-        global processRunningFlag, processThread, processStopRequest, processPauseRequest
+        global processRunningFlag, processThread, processStopRequest, processPauseRequest, processIsPausingFlag
         
         if "start" in path:
             # Start DoE
@@ -178,6 +192,8 @@ class Server(http.server.SimpleHTTPRequestHandler):
                 self.genericResponse({"state": "Process already running" })
                 return False
             else:
+                processPauseRequest = False
+                processIsPausingFlag = False
                 processRunningFlag = True
                 print("Start DoE")
                 

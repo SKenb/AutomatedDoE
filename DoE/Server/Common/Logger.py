@@ -54,6 +54,14 @@ def initLogging():
 def getCurrentLogFolder():
     return logFolder
 
+def importData(fileContent):
+    folder = logBasePath / Path("../Upload/import/")
+    folder.mkdir(parents=True, exist_ok=True)
+
+    f = open(folder / "importFile.csv", "w")
+    f.write(fileContent)
+    f.close()
+
 def getAvailablePlots(logFolder):
     folder = logBasePath / Path(logFolder)
 
