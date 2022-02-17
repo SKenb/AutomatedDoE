@@ -10,7 +10,7 @@ import os
 
 from datetime import datetime
 from pathlib import Path
-from typing import Callable
+from typing import Callable, Iterable, List
 
 import numpy as np
 
@@ -129,6 +129,28 @@ def deleteLogFolder(folderName:str):
     global logBasePath
     shutil.rmtree(logBasePath / Path(folderName))
 
+def exportCurrentState(factorNames:list, experiments:np.array, responses:np.array):
+    try:
+        exportFolder = logFolder / Path("Export_{}".format(datetime.now().strftime("%d%m%Y_%H")))
+        exportFolder.mkdir(parents=False, exist_ok=True)
+        exportFileName = "Export.csv"
+
+        with open(exportFolder / exportFileName, 'w', newline='') as csvfile:
+            fileWriter = csv.writer(csvfile, delimiter=';', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+
+            factorNames.extend(["Response"])
+            factorNames.extend(["Additional" for _ in range(np.size(responses, 1)-1)])
+            fileWriter.writerow(factorNames)
+
+            for expRespRow in np.append(experiments, responses, axis=1): fileWriter.writerow(expRespRow)
+
+        return exportFolder / exportFileName
+    
+    except Exception as e:
+        logException(e)
+
+    return None
+
 
 def genericLog(predicate : Callable, prefix : str, msg : str, suffix : str = "", stringBase : str = "{} {} {}"):
     predicate(stringBase.format(prefix, msg, suffix))
@@ -137,7 +159,6 @@ def logException(exceptionOrMsg):
     if isinstance(exceptionOrMsg, Exception): exceptionOrMsg = str(exceptionOrMsg)
 
     genericLog(logging.error, "[EXCEPTION]", exceptionOrMsg, "\n" + traceback.format_exc())
-
 
 def logError(errorMSG):
     genericLog(logging.debug, "[ERR]", errorMSG)

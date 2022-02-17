@@ -23,7 +23,7 @@ from Common.Factor import FactorSet, Factor, getDefaultFactorSet
 
 writePath = readPath = "//TMP/TODO"
 factorSet = getDefaultFactorSet()
-processRunningFlag = processStopRequest = processPauseRequest =False
+processRunningFlag = processStopRequest = processPauseRequest = processIsPausingFlag = False
 processThread = None
 processState = "Ready"
 processProgess = (0, 100)
@@ -118,6 +118,7 @@ class Server(http.server.SimpleHTTPRequestHandler):
         return { 
                 "processRunningFlag": processRunningFlag,
                 "processPauseRequest": processPauseRequest,
+                "processIsPausing": processIsPausingFlag,
                 "processStopRequest": processStopRequest,
                 "processThread":  processThread is not None,
                 "processState": processState,
@@ -219,6 +220,27 @@ class Server(http.server.SimpleHTTPRequestHandler):
             self.genericResponse({"state": "should be done" })
             return True
 
+        if "export" in path:
+
+            if DoE.context is None:
+                self.genericResponse({"state": "fatal 0.o", "exportPath": None })
+                return False
+
+            path = Logger.exportCurrentState(
+                [f.name for f in DoE.context.factorSet.factors], 
+                DoE.context._experimentValues, 
+                DoE.context.Y
+            )
+            
+            self.genericResponse({
+                "state": "exported" if path is not None else "failed",
+                "exportPath": str(path)
+            })
+
+            return path is not None
+
+        self.genericResponse({"state": "Yep - I don't know what u want from me"})
+
     def getLogFolderFromURL(self):
         logInfo = self.path.split("/")[-1]
         folderParts = logInfo.split("%20")
@@ -249,10 +271,14 @@ def process():
         processState = msg
 
     def possibillityToPause():
-        global processPauseRequest, processStopRequest
+        global processPauseRequest, processStopRequest, processIsPausingFlag
+
         while(processPauseRequest and (not processStopRequest)):
+            processIsPausingFlag = True
             log("Pausing")
             time.sleep(2)
+
+        processIsPausingFlag = False
 
 
     try:

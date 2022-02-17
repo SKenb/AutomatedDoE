@@ -45,7 +45,12 @@
             <button class="processPauseRequest changeDisplay inverse" onclick="sendAction('pause');">⏸ Pause DoE</button>
             <button class="processPauseRequest changeDisplay" onclick="sendAction('resume');">🔁 Resume DoE</button>
         </div>
-        </table>
+        <br>
+        <hr>
+        <br>
+        <div class="processIsPausing changeDisplay" style="display: none;">
+            <button class="" style="display: block;" onclick="sendAction('export', exportCallback);">💾 Export current state</button>
+        </div>
 
         
         <br><br>

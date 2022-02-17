@@ -191,3 +191,12 @@ function sendAction(action, callback) {
     xmlHttp.open("GET", "/action/" + action, true);
     xmlHttp.send(null);
 }
+
+function exportCallback(result) {
+    tryThis(() => {
+        obj = JSON.parse(result);
+        if(obj.exportPath) {
+            window.open("../" + obj.exportPath.replace("\\", "/"), '_blank').focus();
+        }
+    });
+}
