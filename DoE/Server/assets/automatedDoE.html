@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="./css/main.css">
+    <link rel="stylesheet" href="./css/subPage.css">
+
+    <script src="./js/main.js"></script>
+
+    <title>Automated DoE</title>
+
+    <script> setInterval(() => { updateDataFrom("./process.json"); }, 500); </script>
+</head>
+<body>
+    <h1 class="text-centered automatedDoE">Automated DoE</h1>
+    <br/>
+    <hr>
+    <br/>
+    <section>
+        <h2 class="text-centered">🎮 Control Center</h2>
+        
+        <br><br>
+
+        <div class="load-wrapp processRunningFlag changeVisibility" style="visibility: collapse;">
+            <div class="load">
+              <div class="bar"></div>
+            </div>
+        </div>
+        
+        <p style="font-weight: bold;" class="text-centered">State:</p>
+        <p class="font2 text-centered">
+            <span class="font2 processState variable"></span>(<span class="font2 processProgess variable"></span>/<span class="font2 processProgessMax variable"></span>)
+        </p>
+
+        <br><br>
+
+        <button class="processRunningFlag changeDisplay inverse" style="display: none;" onclick="sendAction('start');">⏩ Start DoE</button>
+        <button class="processRunningFlag changeDisplay" style="display: none;"  onclick="confirm('Are you sure you want to stop the DoE?') && sendAction('stop');">⏹ Stop DoE</button>
+        
+        <br>
+        <div class="processRunningFlag changeDisplay" style="display: none;">
+            <button class="processPauseRequest changeDisplay inverse" onclick="sendAction('pause');">⏸ Pause DoE</button>
+            <button class="processPauseRequest changeDisplay" onclick="sendAction('resume');">🔁 Resume DoE</button>
+        </div>
+        </table>
+
+        
+        <br><br>
+        <br><br>
+    </section>   
+</body>
+</html>

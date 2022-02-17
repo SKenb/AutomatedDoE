@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            
+    <link rel="stylesheet" href="./css/main.css">
+    <link rel="stylesheet" href="./css/subPage.css">
+
+    <script src="./js/main.js"></script>
+    <script src="./js/results.js"></script>
+
+    <title>Results</title>
+
+    <script>
+        updateDataFrom("./experiments.json");
+    </script>
+</head>
+<body>
+
+    <div class="overlay experimentsAvailable inverse changeVisibility" style="visibility: collapse;">
+        <h1>🙇 No Experiemnts</h1>
+    </div>
+
+    <h1 class="text-centered results">Results</h1>
+    <br/>
+    <hr>
+    <br/>
+    <section>
+        <h2 class="text-centered">📂 Experiments</h2>
+        <br/>
+        <select class="experiments font2 text-centered" id="selectedExperiment" onchange="selectedExperimentChanged();">
+            <option class="template experiment font2">-- select an experiment --</option>
+        </select>
+        <br/>
+        <br/>
+    </section>
+    
+    <br/>
+    <hr>
+    <br/>
+    <section>
+        <h2 class="text-centered selectedExperiment experimentIcon">Experiment</h2>
+        <br/>
+        <div class="selectedExperiment changeDisplay" style="display: none;">
+            
+            <select id="plots" class="plots font2 text-centered" onchange="plotChanged();">
+                <option class="template cleanName font2 path" data-info="path">-- select an plot --</option>
+            </select>
+            <br/>
+            <br/>
+        
+            <div>
+                <script>
+                    function openInNewTab(sender) {
+                        if(!sender) return false;
+                        if(!sender?.src) return false;
+
+                        window.open(sender.src, '_blank').focus();
+                    }
+                </script>
+                <img id="plot" src="" ondblclick="openInNewTab(this)">
+            </div>
+        </div>
+        <div class="selectedExperiment changeDisplay inverse" style="min-height: 200px;">
+            
+            <br/>
+            <br/>
+            <p class="font2 text-centered">📂 Select one of the experiments</h1>
+        
+        </div>
+        <br/>
+        <br/>
+    </section>
+
+    <br/>
+    <hr>
+    <br/>
+    <section>
+        <h2 class="text-centered">🗑 Clean</h2>
+        <br/>
+        <button style="display: block;" onclick="removeExperiment();"><span class="bin">Delete selected experiment</span> (<span class="selectedExperiment font2">SELECT ONE</span>)</button>
+        <br/>
+    </section>
+</body>
+</html>

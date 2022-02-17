@@ -1,3 +1,4 @@
+from tkinter.ttk import Separator
 from typing import Callable, Dict, Iterable
 import numpy as np 
 
@@ -59,10 +60,18 @@ class FactorSet:
         self.factors.append(factor)
 
     def __str__(self):
-        resultStr = "Factor Set:\n\r\t" + "\n\r\t".join(map(str, self.factors))
+        resultStr = self.getFactorString()
         if self.experimentValueCombinations is None: return resultStr
 
-        return resultStr + "\n\r\t+ Combis:\n\r\t\t" + "\n\r\t\t".join(map(str, self.experimentValueCombinations.keys()))
+        return resultStr + self.getCombinationsString()
+
+    def getFactorString(self, multiLine=True):
+        separatorString = "\n\r\t" if multiLine else "\t"
+        return "Factor Set:{}".format(separatorString) + separatorString.join(map(str, self.factors))
+
+    def getCombinationsString(self, multiLine=True):
+        separatorString = "\n\r\t\t" if multiLine else "\t\t"
+        return "{}+ Combis:{}".format(separatorString, separatorString) + separatorString.join(map(str, self.experimentValueCombinations))
 
     def __len__(self):
         return len(self.factors)
@@ -162,7 +171,7 @@ def getDefaultFactorSet():
     return FactorSet([
         Factor("Temperature", 100, 160, "°C", "T_1"),
         Factor("Concentration", .2, .4, "M", "C_SM_1"),
-        Factor("Reagent ratio‘s", .9, 3, "", "R"),
+        Factor("Reagent ratio", .9, 3, "", "R"),
         Factor("Residence time", 2.5, 6, "min", "RT_1"),
         #Factor("Dummy factor 1", -100, 100, "knolls", "DF1"),
         #Factor("Dummy factor 2", -10, 10, "knolls", "DF2"),

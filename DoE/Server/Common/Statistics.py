@@ -1,11 +1,13 @@
 from typing import Callable, Dict, Iterable
 
-from matplotlib.pyplot import title
+from matplotlib.pyplot import title, xlabel, ylabel
 from Common import Common
+from Common.Factor import FactorSet, getDefaultFactorSet
 from sklearn.metrics import r2_score
 from sklearn import preprocessing
 from sklearn.model_selection import cross_val_score
 from sklearn.base import BaseEstimator, RegressorMixin
+from Common import LinearRegression as LR
 
 import numpy as np
 import statsmodels.api as sm
@@ -28,8 +30,8 @@ def plotObservedVsPredicted(prediction, observation, titleSuffix=None, X=None, f
         lambda plt: plt.plot([0, 0], [minVal, maxVal], 'k', linewidth=1),
         lambda plt: plt.plot([minVal, maxVal], [minVal, maxVal], 'k--', linewidth=2),
         lambda plt: plt.grid(), 
-        lambda plt: True if suppressR2 else plt.text(.05*(maxVal - minVal), -.15*(maxVal - minVal), "R2: {}".format(round(R2(observation, prediction), 2))),
-        lambda plt: X is not None and plt.text(.4*(maxVal - minVal), -.15*(maxVal - minVal), "Q2: {}".format(round(Q2(X, observation), 2))),
+        #lambda plt: True if suppressR2 else plt.text(.05*(maxVal - minVal), -.15*(maxVal - minVal), "R2: {}".format(round(R2(observation, prediction), 2))),
+        #lambda plt: X is not None and plt.text(.4*(maxVal - minVal), -.15*(maxVal - minVal), "Q2: {}".format(round(Q2(X, observation), 2))),
         xLabel="Predicted", yLabel="Observed", title=titleStr, 
         figure=figure
     )
@@ -45,12 +47,12 @@ def plotResiduals(residuals, bound=4, figure=None):
         lambda plt: plt.plot([0, len(residuals)], residuals.mean()*np.array([1, 1]), 'r--'),
         lambda plt: True if bound is None else plt.plot([0, len(residuals)], residuals.mean()+bound*np.array([1, 1]), 'k--'),
         lambda plt: True if bound is None else plt.plot([0, len(residuals)], residuals.mean()-1*bound*np.array([1, 1]), 'k--'),
-        lambda plt: plt.text(2, 1.2*residuals.mean(), "Std: {} ({}%)".format(
-                np.round(np.std(residuals), 4), 
-                np.round(np.std(residuals) / residuals.mean() * 100, 2)
-            )),
+        #lambda plt: plt.text(2, 1.2*residuals.mean(), "Std: {} ({}%)".format(
+        #        np.round(np.std(residuals), 4), 
+        #        np.round(np.std(residuals) / residuals.mean() * 100, 2)
+        #    )),
         #lambda plt: plt.xticks(rng, rng),
-        title="Residuals",
+        title="Residuals", xLabel="Experiment", yLabel="Residual",
         figure=figure
     )
 
@@ -72,8 +74,10 @@ def plotCoefficients(coefficientValues, context:ContextDoE=None, confidenceInter
     if context is not None and combinations is not None and l == context.activeFactorCount() + len(combinations) + 1:
         char = lambda index: chr(65 + index % 26)
 
-        labels = ["Constant"]
-        labels.extend(["{} ({})".format(context.factorSet[index], char(index)) for index in range(len(context.factorSet)) if not context.isFactorExcluded(index)])
+        #labels = ["Constant"]
+        #labels.extend(["{} ({})".format(context.factorSet[index], char(index)) for index in range(len(context.factorSet)) if not context.isFactorExcluded(index)])
+        labels = ["0"]
+        labels.extend(["{}".format(char(index)) for index in range(len(context.factorSet)) if not context.isFactorExcluded(index)])
         labels.extend(combinations.keys())
 
 
@@ -116,8 +120,67 @@ def plotScoreHistory(scoreHistoryDict : Dict, selectedIndex=None, figure=False):
         plotAllScores,
         showLegend= len(scoreHistoryDict) > 1,
         xLabel="Iteration", yLabel="Score", 
-        title=("" if len(scoreHistoryDict) > 1 else scoreHistoryDict[0].keys()[0]) + "Score",
+        #title=("" if len(scoreHistoryDict) > 1 else scoreHistoryDict[0].keys()[0]) + "Score",
+        title="R2 and Q2",
         figure=figure
+    )
+
+def plotContour(model : sm.OLS, factorSet : FactorSet, excludedFactors, combinations):
+    delta = 0.025
+
+    indexX, indexY, indexZ = 0, 1, 2
+
+    x = np.arange(factorSet.factors[indexX].min, factorSet.factors[indexX].max, delta)
+    y = np.arange(factorSet.factors[indexY].min, factorSet.factors[indexY].max, delta)
+    X, Y = np.meshgrid(x, y)
+
+    x1, y1 = X.reshape(-1), Y.reshape(-1)
+
+    responses = np.array([factor.center() for factor in factorSet.factors])
+    responses = np.array([responses.T for i in range(len(x1))])
+
+    responses[:, indexX] = x1
+    responses[:, indexY] = y1
+
+    responses = np.delete(responses,  excludedFactors, axis=1) 
+
+    z, zMin, zMax = [], None, None
+    layers = 9
+    w = np.linspace(factorSet.factors[indexZ].min, factorSet.factors[indexZ].max, layers)
+
+    for index in range(layers):
+
+        responses[:, indexZ] = w[index]*np.ones(x1.shape)
+        RX = [np.append(r, [f(r) for f in combinations.values()]) for r in responses]
+
+        zNew = LR.predict(model, RX)
+        z.append(zNew)
+
+        if zMin is None or zMin > min(zNew): zMin = min(zNew)
+        if zMax is None or zMax < max(zNew): zMax = max(zNew)
+
+    levels = np.linspace(zMin, zMax, 10)
+
+    def contourSubplot(figure, X, Y, Z, levels, xlabel="", ylabel="", title=""):
+        Common.plot(
+            lambda fig: fig.contourf(X, Y, Z, levels),
+            figure=figure,
+            xLabel=xlabel, yLabel=ylabel, title=title
+        )
+
+    xlabel = factorSet[indexX]
+    ylabel = factorSet[indexY]
+    titlesRed = ["{}".format(round(w_, 2)) for w_ in w]
+    titles = ["{} = {}".format(factorSet[indexZ], round(w_, 2)) for w_ in w]
+
+    def subplot_(idx, titles, xlabel="", ylabel=""):
+        return lambda fig: contourSubplot(fig, X, Y, z[idx].reshape(X.shape), levels, xlabel, ylabel, titles[idx])
+
+    Common.subplot(
+        subplot_(0, titlesRed), subplot_(1, titles), subplot_(2, titlesRed),
+        subplot_(3, titlesRed, ylabel=ylabel), subplot_(4, titlesRed), subplot_(5, titlesRed),
+        subplot_(6, titlesRed), subplot_(7, titlesRed, xlabel=xlabel), subplot_(8, titlesRed),
+        title="Contour", saveFigure=True
     )
 
 def generateScaler(X):

@@ -1,4 +1,5 @@
 from matplotlib.pyplot import ylabel
+from matplotlib.transforms import Transform
 from StateMachine.StateMachine import State
 from StateMachine.Context import ContextDoE
 from Common import Common
@@ -17,17 +18,22 @@ context = None
 history = None
 
 class InitDoE(State):
-    def __init__(self, optimum=None, optimumRange=10, returnAllExperimentsAtOnce=False, setXAMControl=None, previousResult=None, previousContext=None): 
+    def __init__(self, setFactorSet=None, optimum=None, optimumRange=10, returnAllExperimentsAtOnce=False, setXAMControl=None, previousResult=None, previousContext=None): 
         super().__init__("Initialize DoE")
 
         global context
-        context = ContextDoE(optimum, optimumRange, returnAllExperimentsAtOnce, setXAMControl, previousResult)
+        context = ContextDoE(setFactorSet, optimum, optimumRange, returnAllExperimentsAtOnce, setXAMControl, previousResult)
 
         global history
         history = History.History()
 
         if previousContext is not None:
             context.addNewExperiments(previousContext._experimentValues, previousContext.Y)
+
+            if context.canPredict():
+                predictedY = context.predictResponse(previousContext._experimentValues)
+                context.addNewPredictedResponses(predictedY)
+
 
     def onCall(self):
 
@@ -50,11 +56,20 @@ class ExecuteExperiments(State):
     def __init__(self): super().__init__("Execute experiments")
     def onCall(self):
 
-        Y = np.array([x.getValueArray() for x in context.xamControl.workOffExperiments(context.newExperimentValues)])
-        context.addNewExperiments(context.newExperimentValues, Y)
+
+        if len(context.newExperimentValues) <= 0: 
+            return EvaluateExperiments() 
+
+        experiment = context.newExperimentValues[0]
+        context.newExperimentValues = context.newExperimentValues[1:]
+        
+        Y = np.array([context.xamControl.startExperimentFromvalues(experiment).getValueArray()])
+
+        experiment = np.array([experiment])
+        context.addNewExperiments(experiment, Y)
 
         if context.canPredict():
-            predictedY = context.predictResponse(context.newExperimentValues)
+            predictedY = context.predictResponse(experiment)
             measuredY = context.getResponse()[-len(predictedY):]
 
             context.addNewPredictedResponses(predictedY)
@@ -63,7 +78,9 @@ class ExecuteExperiments(State):
             Logger.logInfo("Predicted:  {}".format(predictedY))
             Logger.logInfo("Difference: {}".format((predictedY - measuredY)))
 
-        return EvaluateExperiments()
+            assert context.getResponse().shape == context.predictedResponses.shape, "Upps"
+
+        return ExecuteExperiments()
 
 
 class EvaluateExperiments(State):
@@ -134,14 +151,8 @@ class EvaluateExperiments(State):
 
             r2Score = Statistics.R2(trainingY, predictionY)
             q2Score = Statistics.Q2(X, trainingY)
-
-            # Used as different scores so far
-            scoreCombis = {
-                "R2*Q2": r2Score*q2Score, 
-                "1-(R2-Q2)": (1-(r2Score-q2Score))
-            }
-            
-            combiScoreHistory.add(History.CombiScoreHistoryItem(iterationIndex, combinations, model, scaledModel, context, r2Score, q2Score, context.excludedFactors, scoreCombis))
+               
+            combiScoreHistory.add(History.CombiScoreHistoryItem(iterationIndex, combinations, model, scaledModel, context, r2Score, q2Score, context.excludedFactors, None))
             
             isSignificant, _ = Statistics.getModelTermSignificance(scaledModel.conf_int())
 
@@ -193,9 +204,6 @@ class EvaluateExperiments(State):
 
         X = Common.getXWithCombinations(context.getExperimentValues(), combinations, Statistics.orthogonalScaling)
 
-        combis = list(combiScoreHistory[0].scoreCombis.keys())
-
-
         if True:
             Common.subplot(
                 lambda fig: Statistics.plotScoreHistory(
@@ -211,7 +219,7 @@ class EvaluateExperiments(State):
                 saveFigure=True, title=f"{len(history)}", showPlot=False
             )
 
-        Logger.logEntireRun(history, context.factorSet, context.getExperimentValues(), context.Y, model.params, scaledModel.params)
+        Logger.logEntireRun(history, context.factorSet, context.excludedFactors, context.getExperimentValues(), context.Y, model.params, scaledModel, context.transformer)
 
         return HandleOutliers()
 
@@ -232,6 +240,10 @@ class StopDoE(State):
         ## Predicted vs. Measured
         if context.canPredict():
             predictedY, measuredY = context.predictedResponses, context.getResponse()
+
+            print(predictedY.shape)
+            print(measuredY.shape)
+
             error = np.array(predictedY-measuredY)
             Common.subplot(
                 lambda fig: Statistics.plotObservedVsPredicted(predictedY, measuredY, "Robustness", suppressR2=True, figure=fig),
@@ -243,22 +255,35 @@ class StopDoE(State):
             Logger.logInfo("Predicted vs. Measured: std: {}".format(np.round(np.std(error), 2)))
 
         ## Experiments Factor/Response Hist.
-        plotter = lambda i: lambda fig: Common.plot(lambda plt: plt.scatter(list(range(len(context._experimentValues[:, i]))), context._experimentValues[:, i]), title=context.factorSet[i], figure=fig)
+        plotter = lambda i: lambda fig: Common.plot(lambda plt: 
+                        plt.scatter(list(range(len(context._experimentValues[:, i]))), 
+                        context._experimentValues[:, i]), 
+                        title=context.factorSet[i], 
+                        xLabel="Experiment", yLabel="Value", 
+                        figure=fig
+                    )
+                
         Common.subplot(
             plotter(0), plotter(1), plotter(2), 
             plotter(3),
             saveFigure=True, title="Exp_History"
         )
 
-        indexTemperature = 3
-        Common.plot(
-            lambda plt: plt.plot(list(range(len(context._experimentValues[:, indexTemperature]))), context._experimentValues[:, indexTemperature]),
-            lambda plt: plt.scatter(list(range(len(context._experimentValues[:, indexTemperature]))), context._experimentValues[:, indexTemperature]),
-            saveFigure=True, title="Temperature"
-        )
+        #indexTemperature = 3
+        #Common.plot(
+        #    lambda plt: plt.plot(list(range(len(context._experimentValues[:, indexTemperature]))), context._experimentValues[:, indexTemperature]),
+        #    lambda plt: plt.scatter(list(range(len(context._experimentValues[:, indexTemperature]))), context._experimentValues[:, indexTemperature]),
+        #    saveFigure=True, title="Temperature"
+        #)
 
         responseStr = ["Space-time yield"]
-        plotter = lambda i: lambda fig: Common.plot(lambda plt: plt.scatter(list(range(len(context.Y[:, i]))), context.Y[:, i]), title=responseStr[i], figure=fig)
+        plotter = lambda i: lambda fig: Common.plot(
+            lambda plt: plt.scatter(list(range(len(context.Y[:, i]))), context.Y[:, i]), 
+            title=responseStr[i], 
+            xLabel="Experiment", yLabel="Value",
+            figure=fig
+        )
+
         Common.subplot(
             plotter(0), 
             saveFigure=True, title="Resp_History"
@@ -268,7 +293,6 @@ class StopDoE(State):
         ## Stats
         r2ScoreHistory = history.choose(lambda item: item.bestCombiScoreItem.r2)
         q2ScoreHistory = history.choose(lambda item: item.bestCombiScoreItem.q2)
-        combiScoreHistory = history.choose(lambda item: item.bestCombiScoreItem.scoreCombis["1-(R2-Q2)"])
         selctedIndex = history.choose(lambda item: item.bestCombiScoreItem.index)
 
         bestScoreOverall = len(q2ScoreHistory) - np.argmax(q2ScoreHistory[::-1]) - 1 #Reverse
@@ -276,9 +300,6 @@ class StopDoE(State):
 
 
         z = lambda pred: np.array(history.choose(lambda item: item.combiScoreHistory.choose(pred)))
-
-        predR2 = lambda item: item.r2
-        predQ2 = lambda item: item.q2
 
         gP = lambda plt, idx, pred: plt.plot(range(len(z(pred)[idx])), idx*np.ones(len(z(pred)[idx])), z(pred)[idx])
         #plotRO = lambda yValues: lambda plt: plt.plot(bestCombiScoreItemOverall.index, yValues[bestCombiScoreItemOverall.index], 'ro')
@@ -298,7 +319,7 @@ class StopDoE(State):
                             combinations=self.bestCombiScoreItemOverall.combinations, 
                             figure=fig
                         ),
-            saveFigure=True, title="Score_Best", rows=2, cols=2
+            saveFigure=True, title="Score_Best"
         )
 
         plot3DHist = lambda fig, pred, scoreHistory, title: Common.plot(
