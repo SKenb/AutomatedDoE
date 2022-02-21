@@ -265,6 +265,22 @@ class Server(http.server.SimpleHTTPRequestHandler):
             ImportExport.deleteCurrentImportFile()
             self.genericResponse({"state": "Yep - Should be done"})
 
+        
+        if "import" in self.path:
+            infos = ImportExport.importInfos()
+
+            if not infos["isAvailable"]:
+                self.genericResponse({"state": "Error - No import infos are available"})
+                return False
+
+            global factorSet
+
+            factorSet = FactorSet([
+                Factor(f["name"], f["min"], f["max"], f["unit"], f["symbol"]) 
+                for f in infos["factors"]]
+            )
+
+
         self.genericResponse({"state": "Yep - I don't know what u want from me"})
 
 
