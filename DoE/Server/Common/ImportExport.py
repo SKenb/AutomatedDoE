@@ -62,6 +62,9 @@ def importData(fileContent):
     f.write(fileContent)
     f.close()
 
+def deleteCurrentImportFile():
+    os.remove(importExportFile)
+
 def exportCurrentState(factorSet:list, experiments:np.array, responses:np.array):
     try:
         exportFolder = Logger.getCurrentLogFolder() / Path("Export_{}".format(datetime.now().strftime("%d%m%Y_%H")))

@@ -201,6 +201,16 @@ function exportCallback(result) {
     });
 }
 
+function downloadImportedData() {
+    window.open("../Upload/import/importFile.csv", '_blank').focus();
+}
+
+function deleteImportedData() {
+    if(confirm("Are you sure, that you want to delete the imported data?")) {
+        sendAction('deleteImport', (d) => window.location.reload());
+    }
+}
+
 function loadFileContent(hanlder=null) {
     var file = document.getElementById("fileForImport")?.files[0];
 
@@ -219,5 +229,11 @@ function contentImport(content) {
     var xmlhttp = new XMLHttpRequest();
     xmlhttp.open("POST", "/import/data");
     xmlhttp.setRequestHeader("Content-Type", "application/json");
+
+    xmlhttp.onreadystatechange = function() { 
+        if (xmlhttp.readyState == 4 && xmlhttp.status == 200)
+            window.location.reload()
+    }
+
     xmlhttp.send(JSON.stringify(content));
 }

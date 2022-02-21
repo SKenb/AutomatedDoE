@@ -261,7 +261,13 @@ class Server(http.server.SimpleHTTPRequestHandler):
 
             return path is not None
 
+        if "deleteImport" in self.path:
+            ImportExport.deleteCurrentImportFile()
+            self.genericResponse({"state": "Yep - Should be done"})
+
         self.genericResponse({"state": "Yep - I don't know what u want from me"})
+
+
 
     def getLogFolderFromURL(self):
         logInfo = self.path.split("/")[-1]
