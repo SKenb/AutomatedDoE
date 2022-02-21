@@ -41,7 +41,7 @@ class Server(http.server.SimpleHTTPRequestHandler):
 
             global factorSet
             factorSet = FactorSet([
-                Factor(d["name"],d["min"], d["max"], d["unit"], d["symbol"]) 
+                Factor(d["name"], float(d["min"]), float(d["max"]), d["unit"], d["symbol"]) 
                 for d in factors
             ])
 

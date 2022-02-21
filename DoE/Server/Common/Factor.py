@@ -169,7 +169,7 @@ class FactorSet:
 def getDefaultFactorSet():
 
     return FactorSet([
-        Factor("Temperature", 100, 160, "°C", "T_1"),
+        Factor("Temperature", 100, 160, "C", "T_1"),
         Factor("Concentration", .2, .4, "M", "C_SM_1"),
         Factor("Reagent ratio", .9, 3, "", "R"),
         Factor("Residence time", 2.5, 6, "min", "RT_1"),
