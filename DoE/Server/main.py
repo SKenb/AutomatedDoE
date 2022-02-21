@@ -10,6 +10,7 @@ import time, os
 import numpy as np
 
 from Common import Logger
+from Common import ImportExport
 from Common import History
 from Common import Statistics
 from Common import Optimization
@@ -50,13 +51,13 @@ class Server(http.server.SimpleHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(str(factorSet).encode())
 
-        if "import" in self.path:
+        if "import/data" in self.path:
             prepData = post_data.decode('utf8')
             prepData = prepData.replace("\\n", "\n")
             prepData = prepData.replace("\\r", "")
             prepData = prepData.replace("\"", "")
 
-            Logger.importData(prepData)
+            ImportExport.importData(prepData)
             
             self.send_response(200)
             self.send_header("Content-type", "text")
@@ -94,9 +95,17 @@ class Server(http.server.SimpleHTTPRequestHandler):
         if "server" in requestURL: return self.getJSONServerInfo()
         if "experiments" in requestURL: return self.getJSONExperiments()
         if "plots" in requestURL: return self.getJSONPlotInfo()
+        if "import" in requestURL: return self.getJSONImportInfo()
 
         return self.getJSONDefault()
     
+    def getJSONImportInfo(self):
+
+        return {
+            "plots": 0,
+            "hasPlots": len(0) > 0
+        }
+
     def getJSONPlotInfo(self):
         plots = Logger.getAvailablePlots(self.getLogFolderFromURL())
 
@@ -242,7 +251,7 @@ class Server(http.server.SimpleHTTPRequestHandler):
                 self.genericResponse({"state": "fatal 0.o", "exportPath": None })
                 return False
 
-            path = Logger.exportCurrentState(
+            path = ImportExport.exportCurrentState(
                 [f.name for f in DoE.context.factorSet.factors], 
                 DoE.context._experimentValues, 
                 DoE.context.Y

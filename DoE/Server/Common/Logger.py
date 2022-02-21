@@ -54,14 +54,6 @@ def initLogging():
 def getCurrentLogFolder():
     return logFolder
 
-def importData(fileContent):
-    folder = logBasePath / Path("../Upload/import/")
-    folder.mkdir(parents=True, exist_ok=True)
-
-    f = open(folder / "importFile.csv", "w")
-    f.write(fileContent)
-    f.close()
-
 def getAvailablePlots(logFolder):
     folder = logBasePath / Path(logFolder)
 
@@ -136,28 +128,6 @@ def appendToLogFolder(newSubfolder:str):
 def deleteLogFolder(folderName:str):
     global logBasePath
     shutil.rmtree(logBasePath / Path(folderName))
-
-def exportCurrentState(factorNames:list, experiments:np.array, responses:np.array):
-    try:
-        exportFolder = logFolder / Path("Export_{}".format(datetime.now().strftime("%d%m%Y_%H")))
-        exportFolder.mkdir(parents=False, exist_ok=True)
-        exportFileName = "Export.csv"
-
-        with open(exportFolder / exportFileName, 'w', newline='') as csvfile:
-            fileWriter = csv.writer(csvfile, delimiter=';', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-
-            factorNames.extend(["Response"])
-            factorNames.extend(["Additional" for _ in range(np.size(responses, 1)-1)])
-            fileWriter.writerow(factorNames)
-
-            for expRespRow in np.append(experiments, responses, axis=1): fileWriter.writerow(expRespRow)
-
-        return exportFolder / exportFileName
-    
-    except Exception as e:
-        logException(e)
-
-    return None
 
 
 def genericLog(predicate : Callable, prefix : str, msg : str, suffix : str = "", stringBase : str = "{} {} {}"):

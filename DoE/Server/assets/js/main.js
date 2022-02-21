@@ -217,7 +217,7 @@ function loadFileContent(hanlder=null) {
 
 function contentImport(content) {
     var xmlhttp = new XMLHttpRequest();
-    xmlhttp.open("POST", "/import/");
+    xmlhttp.open("POST", "/import/data");
     xmlhttp.setRequestHeader("Content-Type", "application/json");
     xmlhttp.send(JSON.stringify(content));
 }

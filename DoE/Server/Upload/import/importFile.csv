@@ -1,3 +1,2 @@
-Temperature,Concentration,Reagent ratio,Residence time,Response,Additional,Additional
-100.0,0.2,0.9,2.5,0.000539177,0.0,0.0
-100.0,0.4,0.9,2.5,0.066285834,0.0,0.0
+Temperature;Concentration;Reagent ratio;Residence time;Response;Additional;Additional
+100.0;0.2;0.9;2.5;0.000539177;0.0;0.0
