@@ -101,10 +101,7 @@ class Server(http.server.SimpleHTTPRequestHandler):
     
     def getJSONImportInfo(self):
 
-        return {
-            "plots": 0,
-            "hasPlots": len(0) > 0
-        }
+        return ImportExport.importInfos()
 
     def getJSONPlotInfo(self):
         plots = Logger.getAvailablePlots(self.getLogFolderFromURL())
@@ -252,7 +249,7 @@ class Server(http.server.SimpleHTTPRequestHandler):
                 return False
 
             path = ImportExport.exportCurrentState(
-                [f.name for f in DoE.context.factorSet.factors], 
+                DoE.context.factorSet.factors, 
                 DoE.context._experimentValues, 
                 DoE.context.Y
             )
