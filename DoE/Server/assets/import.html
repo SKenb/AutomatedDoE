@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        <link rel="stylesheet" href="./css/main.css">
+        <link rel="stylesheet" href="./css/subPage.css">
+    
+        <script src="./js/main.js"></script>
+    
+        <title>Defines</title>
+    
+        <script>  
+            updateDataFrom("./import.json"); 
+        </script>
+    </head>
+    <body>
+        <section class="animation-delay1">
+            <h2 class="text-centered">📑 Available data</h2>
+            <br/>
+            <br/>
+            <div class="isAvailable changeDisplay inverse text-centered" style="display: none; padding: 50px 0; opacity: .3;">
+                <h1>🧩 nothing imported</h1>
+            </div>
+            
+            <div class="isAvailable changeDisplay" style="display: none; border: solid 1px black; padding: 20px;">
+                <table>
+                    <tr class="text-centered">
+                        <th>Factors:</th>
+                        <th style="text-align: center;">Responses:</th>
+                        <th>Experiments:</th>
+                    </tr>
+                    <tr class="text-centered">
+                        <th class="factorCount font2"></th>
+                        <th class="responseCount font2" style="text-align: center;"></th>
+                        <th class="dataCount font2"></th>
+                    </tr>
+                </table>
+
+                <br/>
+                <br/>
+                <table class="factors" style="text-align: left;">
+                    <tr class="ignore">
+                        <th>Name:</th>
+                        <th>Symbol:</th>
+                        <th>Unit:</th>
+                        <th>Min:</th>
+                        <th>Max:</th>
+                    </tr>
+                    <tr class="template">
+                        <th class="font2 name variable input-small" style="min-width: 100px;"></th>
+                        <th class="font2 symbol variable input-small" style="min-width: 80px;"></th>
+                        <th class="font2 unit variable input-small" style="min-width: 80px;"></th>
+                        <th class="font2 min variable input-small" style="min-width: 80px;"></th>
+                        <th class="font2 max variable input-small" style="min-width: 80px;"></th>
+                    </tr>
+                </table>
+
+                <br/>
+                <br/>
+
+                <div class="text-centered">
+                    <button onclick="sendAction('import');">🚀 Use data</button>
+                    <button onclick="deleteImportedData();">🗑 Remove imported data</button>
+                    <button onclick="downloadImportedData();">📥 Download imported data</button>
+                </div>
+            </div>
+        </section>
+        
+        <br/>
+        <hr>
+        <br/>
+
+        <section class="animation-delay1">
+            <h2 class="text-centered">📥 Import</h2>
+            <div style="display: block; margin: 20px auto; text-align: center;">
+                <input id="fileForImport" type="file">
+                <input onclick="loadFileContent(contentImport);" type="submit" value="Upload">
+            </div>
+            <br/>
+            <br/>
+        </section>
+    </body>
+</html>

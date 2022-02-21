@@ -10,7 +10,7 @@ import os
 
 from datetime import datetime
 from pathlib import Path
-from typing import Callable
+from typing import Callable, Iterable, List
 
 import numpy as np
 
@@ -137,7 +137,6 @@ def logException(exceptionOrMsg):
     if isinstance(exceptionOrMsg, Exception): exceptionOrMsg = str(exceptionOrMsg)
 
     genericLog(logging.error, "[EXCEPTION]", exceptionOrMsg, "\n" + traceback.format_exc())
-
 
 def logError(errorMSG):
     genericLog(logging.debug, "[ERR]", errorMSG)

@@ -106,7 +106,7 @@ class XamControlTestRun1Mock(XamControlBase):
     def __init__(self):
         super().__init__("Xam control - TestRun 2 Mock")
 
-    def startExperiment(self, experiment : XamControlExperimentRequest, simulateExperimentTime = 0) -> XamControlExperimentResult:
+    def startExperiment(self, experiment : XamControlExperimentRequest, simulateExperimentTime = 5) -> XamControlExperimentResult:
 
         self._startExperimentRequest(experiment)
         
@@ -172,7 +172,7 @@ class XamControlTestRun1RobustnessMock(XamControlBase):
     def __init__(self):
         super().__init__("Xam control - TestRun 1 Robustness Mock")
 
-    def startExperiment(self, experiment : XamControlExperimentRequest, simulateExperimentTime = 0) -> XamControlExperimentResult:
+    def startExperiment(self, experiment : XamControlExperimentRequest, simulateExperimentTime = 5) -> XamControlExperimentResult:
 
         self._startExperimentRequest(experiment)
         

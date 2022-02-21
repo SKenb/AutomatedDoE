@@ -98,6 +98,7 @@ a {
 
 a::before { content: "🧭 "; }
 .defines::before { content: "📋 "; }
+.import::before { content: "📥 "; }
 .automatedDoE::before { content: "⚙ "; }
 .results::before { content: "📊 "; }
 .about::before { content: "🚩 "; }

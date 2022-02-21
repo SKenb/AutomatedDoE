@@ -6,10 +6,11 @@ import html
 from tkinter.tix import Tree
 from urllib.parse import urlparse
 import threading
-import time
+import time, os
 import numpy as np
 
 from Common import Logger
+from Common import ImportExport
 from Common import History
 from Common import Statistics
 from Common import Optimization
@@ -23,7 +24,7 @@ from Common.Factor import FactorSet, Factor, getDefaultFactorSet
 
 writePath = readPath = "//TMP/TODO"
 factorSet = getDefaultFactorSet()
-processRunningFlag = processStopRequest = processPauseRequest =False
+processRunningFlag = processStopRequest = processPauseRequest = processIsPausingFlag = False
 processThread = None
 processState = "Ready"
 processProgess = (0, 100)
@@ -34,20 +35,34 @@ class Server(http.server.SimpleHTTPRequestHandler):
         content_length = int(self.headers['Content-Length'])  # <--- Gets the size of data
         post_data = self.rfile.read(content_length)  # <--- Gets the data itself
 
-        data = json.loads(post_data.decode('utf8').replace("'", '"'))
-        factors = data["factors"]
+        if "factors" in self.path:
+            data = json.loads(post_data.decode('utf8').replace("'", '"'))
+            factors = data["factors"]
 
-        global factorSet
-        factorSet = FactorSet([
-            Factor(d["name"],d["min"], d["max"], d["unit"], d["symbol"]) 
-            for d in factors
-        ])
+            global factorSet
+            factorSet = FactorSet([
+                Factor(d["name"], float(d["min"]), float(d["max"]), d["unit"], d["symbol"]) 
+                for d in factors
+            ])
 
 
-        self.send_response(200)
-        self.send_header("Content-type", "text")
-        self.end_headers()
-        self.wfile.write(str(factorSet).encode())
+            self.send_response(200)
+            self.send_header("Content-type", "text")
+            self.end_headers()
+            self.wfile.write(str(factorSet).encode())
+
+        if "import/data" in self.path:
+            prepData = post_data.decode('utf8')
+            prepData = prepData.replace("\\n", "\n")
+            prepData = prepData.replace("\\r", "")
+            prepData = prepData.replace("\"", "")
+
+            ImportExport.importData(prepData)
+            
+            self.send_response(200)
+            self.send_header("Content-type", "text")
+            self.end_headers()
+            self.wfile.write("Imported".encode())
 
 
 
@@ -80,9 +95,14 @@ class Server(http.server.SimpleHTTPRequestHandler):
         if "server" in requestURL: return self.getJSONServerInfo()
         if "experiments" in requestURL: return self.getJSONExperiments()
         if "plots" in requestURL: return self.getJSONPlotInfo()
+        if "import" in requestURL: return self.getJSONImportInfo()
 
         return self.getJSONDefault()
     
+    def getJSONImportInfo(self):
+
+        return ImportExport.importInfos()
+
     def getJSONPlotInfo(self):
         plots = Logger.getAvailablePlots(self.getLogFolderFromURL())
 
@@ -118,6 +138,7 @@ class Server(http.server.SimpleHTTPRequestHandler):
         return { 
                 "processRunningFlag": processRunningFlag,
                 "processPauseRequest": processPauseRequest,
+                "processIsPausing": processIsPausingFlag,
                 "processStopRequest": processStopRequest,
                 "processThread":  processThread is not None,
                 "processState": processState,
@@ -164,7 +185,7 @@ class Server(http.server.SimpleHTTPRequestHandler):
        
         
     def action(self, path):
-        global processRunningFlag, processThread, processStopRequest, processPauseRequest
+        global processRunningFlag, processThread, processStopRequest, processPauseRequest, processIsPausingFlag
         
         if "start" in path:
             # Start DoE
@@ -177,6 +198,8 @@ class Server(http.server.SimpleHTTPRequestHandler):
                 self.genericResponse({"state": "Process already running" })
                 return False
             else:
+                processPauseRequest = False
+                processIsPausingFlag = False
                 processRunningFlag = True
                 print("Start DoE")
                 
@@ -219,6 +242,49 @@ class Server(http.server.SimpleHTTPRequestHandler):
             self.genericResponse({"state": "should be done" })
             return True
 
+        if "export" in path:
+
+            if DoE.context is None:
+                self.genericResponse({"state": "fatal 0.o", "exportPath": None })
+                return False
+
+            path = ImportExport.exportCurrentState(
+                DoE.context.factorSet.factors, 
+                DoE.context._experimentValues, 
+                DoE.context.Y
+            )
+            
+            self.genericResponse({
+                "state": "exported" if path is not None else "failed",
+                "exportPath": str(path)
+            })
+
+            return path is not None
+
+        if "deleteImport" in self.path:
+            ImportExport.deleteCurrentImportFile()
+            self.genericResponse({"state": "Yep - Should be done"})
+
+        
+        if "import" in self.path:
+            infos = ImportExport.importInfos()
+
+            if not infos["isAvailable"]:
+                self.genericResponse({"state": "Error - No import infos are available"})
+                return False
+
+            global factorSet
+
+            factorSet = FactorSet([
+                Factor(f["name"], f["min"], f["max"], f["unit"], f["symbol"]) 
+                for f in infos["factors"]]
+            )
+
+
+        self.genericResponse({"state": "Yep - I don't know what u want from me"})
+
+
+
     def getLogFolderFromURL(self):
         logInfo = self.path.split("/")[-1]
         folderParts = logInfo.split("%20")
@@ -249,10 +315,14 @@ def process():
         processState = msg
 
     def possibillityToPause():
-        global processPauseRequest
-        while(processPauseRequest):
+        global processPauseRequest, processStopRequest, processIsPausingFlag
+
+        while(processPauseRequest and (not processStopRequest)):
+            processIsPausingFlag = True
             log("Pausing")
             time.sleep(2)
+
+        processIsPausingFlag = False
 
 
     try:
