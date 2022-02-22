@@ -1,6 +1,7 @@
 from typing import Iterable, Dict
 from pathlib import Path
 from Common import Logger
+from Common import Factor
 
 import numpy as np
 
@@ -36,32 +37,21 @@ class XamControlExperiment:
     
 
 class XamControlExperimentRequest(XamControlExperiment):
-    TEMPERATURE = "Temperature"
-    CONCENTRATION = "Concentration"
-    REAGENTRATIO = "ReagentRatio"
-    RESIDENCETIME = "ResidenceTime"
-
-    def __init__(self, temperature, concentration, reagentRatio, residenceTime):
-        super().__init__({
-            XamControlExperimentRequest.TEMPERATURE: temperature,  
-            XamControlExperimentRequest.CONCENTRATION: concentration,  
-            XamControlExperimentRequest.REAGENTRATIO: reagentRatio,  
-            XamControlExperimentRequest.RESIDENCETIME: residenceTime,  
-        })
+    def __init__(self, factorSet:Factor.FactorSet, factorValues:Iterable):
+        assert len(factorSet.factors) == len(factorValues), "No - we don't do this"
+        super().__init__({factor.name: factorValues[index] for index, factor in enumerate(factorSet.factors) })
 
 class XamControlExperimentResult(XamControlExperiment):
-    STY = "Space-time yield"
-    CONVERSION = "Conversion"
-    EFACTOR = "E-Factor"
+    def __init__(self, reponseValues:Iterable, request : XamControlExperimentRequest = True):
+        if len(reponseValues)<=0: return
 
-    def __init__(self, sty, conversion, efactor, request : XamControlExperimentRequest = True):
+        responseDict = {}
 
-        super().__init__({
-            XamControlExperimentResult.STY: sty,
-            XamControlExperimentResult.CONVERSION: conversion,
-            XamControlExperimentResult.EFACTOR: efactor
-        })
+        responseDict["Response"] = reponseValues[0]
+        for index, value in enumerate(reponseValues[1:]):
+            responseDict["Additional {}".format(index)] = value
 
+        super().__init__(responseDict)
         self.requestExperiment = request
 
     def getFactorResponseArray(self):
@@ -81,13 +71,8 @@ class XamControlBase:
     def startExperiment(self, experiment : XamControlExperimentRequest) -> XamControlExperimentResult:
         raise NotImplementedError("Use a derived class pls")
 
-    def startExperimentFromvalues(self, valueArray : Iterable) -> XamControlExperimentResult:
-        return self.startExperiment(XamControlExperimentRequest(
-            temperature=valueArray[0], 
-            concentration=valueArray[1],
-            reagentRatio=valueArray[2], 
-            residenceTime=valueArray[3]
-        ))
+    def startExperimentFromvalues(self, factorSet : Factor.FactorSet, valueArray : Iterable) -> XamControlExperimentResult:
+        return self.startExperiment(XamControlExperimentRequest(factorSet, valueArray))
 
     def workOffExperiments(self, valueArrays : Iterable) -> Iterable[XamControlExperimentResult]:
         for valueArray in valueArrays: yield self.startExperimentFromvalues(valueArray)
@@ -106,7 +91,7 @@ class XamControlTestRun1Mock(XamControlBase):
     def __init__(self):
         super().__init__("Xam control - TestRun 2 Mock")
 
-    def startExperiment(self, experiment : XamControlExperimentRequest, simulateExperimentTime = 5) -> XamControlExperimentResult:
+    def startExperiment(self, experiment : XamControlExperimentRequest, simulateExperimentTime = 0) -> XamControlExperimentResult:
 
         self._startExperimentRequest(experiment)
         
@@ -117,7 +102,7 @@ class XamControlTestRun1Mock(XamControlBase):
         self._receivedExperimentResult(experimentResult)
         return experimentResult
 
-    def _wrapXamControlExperimentResult(self, experiment) -> XamControlExperimentResult:
+    def _wrapXamControlExperimentResult(self, experiment:XamControlExperiment) -> XamControlExperimentResult:
         # TestRun1
         # Data from test run 1
         # Conv. was not rec. unf. but Sty
@@ -152,19 +137,14 @@ class XamControlTestRun1Mock(XamControlBase):
             [160.0, 0.4, 3.0, 2.5, 0, 1.34986653333749], #0.20732678630067]
         ])
 
-        for (index, value) in {
-                    0: experiment[XamControlExperimentRequest.TEMPERATURE],
-                    1: experiment[XamControlExperimentRequest.CONCENTRATION],
-                    2: experiment[XamControlExperimentRequest.REAGENTRATIO], 
-                    3: experiment[XamControlExperimentRequest.RESIDENCETIME]
-                }.items():
+        for (index, value) in { i: list(experiment.propertyDict.values())[i] for i in range(4) }.items():
             dataSet = dataSet[dataSet[:, index] == value]
 
             if dataSet.size == 0: 
                 raise Exception("Data not found in dataset :/ - Note: only defined exp. r allowed (Idx:" + str(index) + ")")
 
         # Conversion not in test data set and Sty and Conv switched
-        return XamControlExperimentResult(np.mean(dataSet[0, 5]), np.mean(dataSet[:, 4]), 0, request=experiment)
+        return XamControlExperimentResult([np.mean(dataSet[0, 5]), np.mean(dataSet[:, 4]), 0], request=experiment)
 
 
 class XamControlTestRun1RobustnessMock(XamControlBase):
@@ -172,7 +152,7 @@ class XamControlTestRun1RobustnessMock(XamControlBase):
     def __init__(self):
         super().__init__("Xam control - TestRun 1 Robustness Mock")
 
-    def startExperiment(self, experiment : XamControlExperimentRequest, simulateExperimentTime = 5) -> XamControlExperimentResult:
+    def startExperiment(self, experiment : XamControlExperimentRequest, simulateExperimentTime = 0) -> XamControlExperimentResult:
 
         self._startExperimentRequest(experiment)
         
@@ -183,7 +163,7 @@ class XamControlTestRun1RobustnessMock(XamControlBase):
         self._receivedExperimentResult(experimentResult)
         return experimentResult
 
-    def _wrapXamControlExperimentResult(self, experiment) -> XamControlExperimentResult:
+    def _wrapXamControlExperimentResult(self, experiment:XamControlExperiment) -> XamControlExperimentResult:
         dataSet = np.array([
             [157.0, 0.39, 2.895, 2.325, 1.50686373957754, 0.228764999825665, 12.8053439686205],
             [157.0, 0.41, 2.895, 2.325, 1.61231090628216, 0.232833324619125, 11.9224581910588],
@@ -214,18 +194,13 @@ class XamControlTestRun1RobustnessMock(XamControlBase):
             [160.0, 0.4, 3.0, 2.675, 1.51218296148285, 0.248515050768851, 10.9718193958877]
         ])
 
-        for (index, value) in {
-                    0: experiment[XamControlExperimentRequest.TEMPERATURE],
-                    1: experiment[XamControlExperimentRequest.CONCENTRATION],
-                    2: experiment[XamControlExperimentRequest.REAGENTRATIO], 
-                    3: experiment[XamControlExperimentRequest.RESIDENCETIME]
-                }.items():
+        for (index, value) in {i: list(experiment.propertyDict.values())[i] for i in range(4)}.items():
             dataSet = dataSet[dataSet[:, index] == value]
 
             if dataSet.size == 0: 
                 raise Exception("Data not found in dataset :/ - Note: only defined exp. r allowed (Idx:" + str(index) + ")")
 
-        return XamControlExperimentResult(np.mean(dataSet[:, 4]), np.mean(dataSet[:, 5]), np.mean(dataSet[:, 6]), request=experiment)
+        return XamControlExperimentResult([np.mean(dataSet[:, 4]), np.mean(dataSet[:, 5]), np.mean(dataSet[:, 6])], request=experiment)
 
 
 

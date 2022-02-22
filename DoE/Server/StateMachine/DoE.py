@@ -63,7 +63,7 @@ class ExecuteExperiments(State):
         experiment = context.newExperimentValues[0]
         context.newExperimentValues = context.newExperimentValues[1:]
         
-        Y = np.array([context.xamControl.startExperimentFromvalues(experiment).getValueArray()])
+        Y = np.array([context.xamControl.startExperimentFromvalues(context.factorSet, experiment).getValueArray()])
 
         experiment = np.array([experiment])
         context.addNewExperiments(experiment, Y)
@@ -301,6 +301,8 @@ class StopDoE(State):
 
         z = lambda pred: np.array(history.choose(lambda item: item.combiScoreHistory.choose(pred)))
 
+        predR2 = lambda item: item.r2
+        predQ2 = lambda item: item.q2
         gP = lambda plt, idx, pred: plt.plot(range(len(z(pred)[idx])), idx*np.ones(len(z(pred)[idx])), z(pred)[idx])
         #plotRO = lambda yValues: lambda plt: plt.plot(bestCombiScoreItemOverall.index, yValues[bestCombiScoreItemOverall.index], 'ro')
 
