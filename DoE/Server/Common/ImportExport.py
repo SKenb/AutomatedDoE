@@ -47,8 +47,7 @@ def importInfos():
             "responseCount": len(rows[0]) - factorCount,
             #"raw": rows,
             #"data": data,
-            "experiments": [[float(v) for v in d[0:factorCount]] for d in data],
-            "repsonse": [[float(v) for v in d[factorCount:]] for d in data],
+            "experiments": [[float(v) for v in d] for d in data],
             "dataCount": len(rows)-infoRowCount
         }
 
