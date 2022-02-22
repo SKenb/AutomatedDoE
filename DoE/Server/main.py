@@ -362,6 +362,7 @@ def process():
         Logger.appendToLogFolder("DoE_Around_Optimum")
         mainSM = StateMachine.StateMachine(
             DoE.InitDoE(
+                setFactorSet=factorSet,
                 optimum=optimum,
                 previousResult=state.result(),
                 #previousContext=state.result().context,
