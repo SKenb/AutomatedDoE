@@ -273,9 +273,6 @@ class Server(http.server.SimpleHTTPRequestHandler):
         
         if "import" in self.path:
 
-            xamControl.resetImport()
-            ImportExport.deleteCurrentImportFile()
-
             infos = ImportExport.importInfos()
 
             if not infos["isAvailable"]:
