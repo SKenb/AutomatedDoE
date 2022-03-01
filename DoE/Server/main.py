@@ -28,6 +28,7 @@ processRunningFlag = processStopRequest = processPauseRequest = processIsPausing
 processThread = None
 processState = "Ready"
 processProgess = (0, 100)
+xamControl = XamControl.XamControl()
 
 class Server(http.server.SimpleHTTPRequestHandler):
 
@@ -262,11 +263,19 @@ class Server(http.server.SimpleHTTPRequestHandler):
             return path is not None
 
         if "deleteImport" in self.path:
+            global xamControl
+
+            xamControl.resetImport()
             ImportExport.deleteCurrentImportFile()
+            
             self.genericResponse({"state": "Yep - Should be done"})
 
         
         if "import" in self.path:
+
+            xamControl.resetImport()
+            ImportExport.deleteCurrentImportFile()
+
             infos = ImportExport.importInfos()
 
             if not infos["isAvailable"]:
@@ -279,6 +288,8 @@ class Server(http.server.SimpleHTTPRequestHandler):
                 Factor(f["name"], f["min"], f["max"], f["unit"], f["symbol"]) 
                 for f in infos["factors"]]
             )
+
+            xamControl.importExperiments(infos["experiments"])
 
 
         self.genericResponse({"state": "Yep - I don't know what u want from me"})
@@ -302,7 +313,8 @@ class Server(http.server.SimpleHTTPRequestHandler):
         self.wfile.write(json.dumps(dataset).encode("utf-8"))
 
 def process():
-    global processStopRequest, processPauseRequest, processState, processProgess, factorSet
+    global processStopRequest, processPauseRequest, processState, processProgess
+    global factorSet, xamControl
     
 
     def endProcess():
@@ -334,7 +346,13 @@ def process():
         possibillityToPause()
         if processStopRequest: return endProcess()
         
-        mainSM = StateMachine.StateMachine(DoE.InitDoE(setFactorSet=factorSet,setXAMControl=XamControl.XamControlTestRun1Mock()))
+        mainSM = StateMachine.StateMachine(
+            DoE.InitDoE(
+                setFactorSet=factorSet,
+                setXAMControl=xamControl
+            )
+        )
+
         for state in mainSM: 
             processState = str(state)  
 
@@ -362,10 +380,11 @@ def process():
         Logger.appendToLogFolder("DoE_Around_Optimum")
         mainSM = StateMachine.StateMachine(
             DoE.InitDoE(
+                setFactorSet=factorSet,
                 optimum=optimum,
                 previousResult=state.result(),
                 #previousContext=state.result().context,
-                setXAMControl=XamControl.XamControlTestRun1RobustnessMock()
+                setXAMControl=xamControl
             )
         )
 
