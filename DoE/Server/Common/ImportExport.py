@@ -1,4 +1,5 @@
 from datetime import datetime
+from glob import glob
 from pathlib import Path
 import csv, os, codecs
 
@@ -7,13 +8,24 @@ from Common import Logger
 
 importExportBasePath = Path("./Upload/import/")
 importExportFile = importExportBasePath / "importFile.csv"
+importError = None
 
 
 def importIsAvailable():
     return importExportFile.exists()
 
 def importInfos():
-    if not importIsAvailable(): return { "isAvailable": False }
+    global importError
+
+    if not importIsAvailable(): return { "isAvailable": False, "hasImportError": False }
+    if importError is not None: return { "isAvailable": False, "hasImportError": True, "importError": importError }
+
+    def validate(predicate, info):
+        global importError
+        if predicate: return False
+        
+        importError = "Failed to parse imported data - {}".format(info)
+        raise Exception(importError)
 
     try:
         with open(importExportFile, newline='') as csvfile:
@@ -21,27 +33,30 @@ def importInfos():
             rows = [row for row in reader]
 
         infoRowCount = 5
+        validate('Response' in rows[0], "No response column")
         factorCount = rows[0].index('Response')
         
         factorData = [r[0:factorCount] for r in rows[0:infoRowCount]]
         data = rows[infoRowCount:]
 
         def parseFactorData(f):
-            try:
-                return {
-                    "name": f[0],
-                    "min": float(f[1]),
-                    "max": float(f[2]),
-                    "symbol": f[3],
-                    "unit": f[4]
-                }
-            except Exception as e:
-                Logger.logException(e)
-                return {"name": "Error parsing data"} 
+
+            validate(len(f[0]) > 0, "Factor name empty")
+            validate(len(f[1]) > 0, "Factor min empty")
+            validate(len(f[2]) > 0, "Factor max empty")
+
+            return {
+                "name": f[0],
+                "min": float(f[1]),
+                "max": float(f[2]),
+                "symbol": f[3],
+                "unit": f[4]
+            }
 
 
         return {
             "isAvailable": True,
+            "hasImportError": False,
             "factors": [parseFactorData(f) for f in list(map(list, zip(*factorData)))],
             "factorCount": factorCount,
             "responseCount": len(rows[0]) - factorCount,
@@ -53,15 +68,27 @@ def importInfos():
 
     except Exception as e:
         Logger.logException(e)
-        return None
+
+        if importError is None: importError = "Failed to parse imported data"
+        return { "isAvailable": False, "hasImportError": True, "importError": importError }
 
 def importData(fileContent):
-    folder = importExportBasePath
-    folder.mkdir(parents=True, exist_ok=True)
+    global importError
 
-    f = codecs.open(importExportFile, "w", "utf-8")
-    f.write(fileContent)
-    f.close()
+    try:
+        folder = importExportBasePath
+        folder.mkdir(parents=True, exist_ok=True)
+
+        f = codecs.open(importExportFile, "w", "utf-8")
+        f.write(fileContent)
+        f.close()
+
+        importError = None
+
+    except Exception as e:
+        Logger.logException(e)
+        importError = "Failed to read import/uploaded file"
+
 
 def deleteCurrentImportFile():
     os.remove(importExportFile)

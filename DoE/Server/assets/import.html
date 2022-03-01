@@ -21,10 +21,17 @@
             <h2 class="text-centered">📑 Available data</h2>
             <br/>
             <br/>
-            <div class="isAvailable changeDisplay inverse text-centered" style="display: none; padding: 50px 0; opacity: .3;">
-                <h1>🧩 nothing imported</h1>
+            <div class="hasImportError changeDisplay inverse">
+                <div class="isAvailable changeDisplay inverse text-centered" style="display: none; padding: 50px 0; opacity: .3;">
+                    <h1>🧩 nothing imported</h1>
+                </div>
             </div>
             
+            <div class="hasImportError changeDisplay text-centered" style="display: none; padding: 50px 0; opacity: .3;">
+                <h1>🚧 IMPORT ERROR</h1>
+                <span class="importError"></span>
+            </div>
+
             <div class="isAvailable changeDisplay" style="display: none; border: solid 1px black; padding: 20px;">
                 <table>
                     <tr class="text-centered">
