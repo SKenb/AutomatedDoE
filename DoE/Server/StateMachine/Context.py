@@ -7,6 +7,7 @@ from Common import Factor
 from Common import LinearRegression as LR
 
 import numpy as np
+import copy
 
 class ContextDoE():
 
@@ -19,7 +20,7 @@ class ContextDoE():
 
         self.factorSet = Factor.getDefaultFactorSet()
         if setFactorSet is not None:
-            self.factorSet = setFactorSet
+            self.factorSet = copy.deepcopy(setFactorSet)
             
         if optimum is not None:
             self.factorSet = Factor.getFactorSetAroundOptimum(self.factorSet, optimum, optimumRange)

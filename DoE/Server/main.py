@@ -7,6 +7,7 @@ from tkinter.tix import Tree
 from urllib.parse import urlparse
 import threading
 import time, os
+from xml.dom import xmlbuilder
 import numpy as np
 
 from Common import Logger
@@ -33,8 +34,8 @@ xamControl = XamControl.XamControl()
 class Server(http.server.SimpleHTTPRequestHandler):
 
     def do_POST(self):
-        content_length = int(self.headers['Content-Length'])  # <--- Gets the size of data
-        post_data = self.rfile.read(content_length)  # <--- Gets the data itself
+        content_length = int(self.headers['Content-Length'])
+        post_data = self.rfile.read(content_length)
 
         if "factors" in self.path:
             data = json.loads(post_data.decode('utf8').replace("'", '"'))
@@ -102,7 +103,9 @@ class Server(http.server.SimpleHTTPRequestHandler):
     
     def getJSONImportInfo(self):
 
-        return ImportExport.importInfos()
+        infos = ImportExport.importInfos()
+        infos["hasImportedData"] = xamControl.hasImportedData()
+        return infos
 
     def getJSONPlotInfo(self):
         plots = Logger.getAvailablePlots(self.getLogFolderFromURL())
@@ -134,7 +137,7 @@ class Server(http.server.SimpleHTTPRequestHandler):
             }
         
     def getJSONProcessInfo(self):
-        global processPauseRequest, processRunningFlag, processStopRequest, processThread
+        global processPauseRequest, processRunningFlag, processStopRequest, processThread, xamControl
         
         return { 
                 "processRunningFlag": processRunningFlag,
@@ -145,6 +148,7 @@ class Server(http.server.SimpleHTTPRequestHandler):
                 "processState": processState,
                 "processProgess": processProgess[0],
                 "processProgessMax": processProgess[1],
+                "hasImportedData": xamControl.hasImportedData()
             }
 
     def getJSONDefines(self):
@@ -186,7 +190,7 @@ class Server(http.server.SimpleHTTPRequestHandler):
        
         
     def action(self, path):
-        global processRunningFlag, processThread, processStopRequest, processPauseRequest, processIsPausingFlag
+        global processRunningFlag, processThread, processStopRequest, processPauseRequest, processIsPausingFlag, xamControl
         
         if "start" in path:
             # Start DoE
@@ -204,6 +208,8 @@ class Server(http.server.SimpleHTTPRequestHandler):
                 processRunningFlag = True
                 print("Start DoE")
                 
+                xamControl.resetImportedMultiples()
+
                 processThread = threading.Thread(target=process)
                 processThread.start()
                 
@@ -263,14 +269,15 @@ class Server(http.server.SimpleHTTPRequestHandler):
             return path is not None
 
         if "deleteImport" in self.path:
-            global xamControl
 
             xamControl.resetImport()
             ImportExport.deleteCurrentImportFile()
             
             self.genericResponse({"state": "Yep - Should be done"})
 
-        
+        if "resetImp" in self.path:
+            xamControl.resetImport()
+
         if "import" in self.path:
 
             infos = ImportExport.importInfos()
@@ -329,7 +336,7 @@ def process():
         while(processPauseRequest and (not processStopRequest)):
             processIsPausingFlag = True
             log("Pausing")
-            time.sleep(2)
+            time.sleep(1)
 
         processIsPausingFlag = False
 
@@ -365,7 +372,7 @@ def process():
 
         Statistics.plotContour(
             state.result().scaledModel, 
-            getDefaultFactorSet(), 
+            factorSet, 
             state.result().excludedFactors, 
             state.result().combinations
         )
