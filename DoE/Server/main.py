@@ -103,7 +103,9 @@ class Server(http.server.SimpleHTTPRequestHandler):
     
     def getJSONImportInfo(self):
 
-        return ImportExport.importInfos()
+        infos = ImportExport.importInfos()
+        infos["hasImportedData"] = xamControl.hasImportedData()
+        return infos
 
     def getJSONPlotInfo(self):
         plots = Logger.getAvailablePlots(self.getLogFolderFromURL())
@@ -135,7 +137,7 @@ class Server(http.server.SimpleHTTPRequestHandler):
             }
         
     def getJSONProcessInfo(self):
-        global processPauseRequest, processRunningFlag, processStopRequest, processThread
+        global processPauseRequest, processRunningFlag, processStopRequest, processThread, xamControl
         
         return { 
                 "processRunningFlag": processRunningFlag,
@@ -146,6 +148,7 @@ class Server(http.server.SimpleHTTPRequestHandler):
                 "processState": processState,
                 "processProgess": processProgess[0],
                 "processProgessMax": processProgess[1],
+                "hasImportedData": xamControl.hasImportedData()
             }
 
     def getJSONDefines(self):
@@ -272,7 +275,9 @@ class Server(http.server.SimpleHTTPRequestHandler):
             
             self.genericResponse({"state": "Yep - Should be done"})
 
-        
+        if "resetImp" in self.path:
+            xamControl.resetImport()
+
         if "import" in self.path:
 
             infos = ImportExport.importInfos()

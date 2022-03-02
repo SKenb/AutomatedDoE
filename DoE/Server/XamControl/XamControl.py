@@ -74,6 +74,9 @@ class XamControlBase:
     def importExperiments(self, importExperiments:Iterable):
         self.importedExperiments = importExperiments
 
+    def hasImportedData(self):
+        return self.importedExperiments is not None
+
     def resetImport(self):
         self.importedExperiments = None
         self.resetImportedMultiples()

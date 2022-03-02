@@ -182,11 +182,14 @@ function updateFactors() {
     xmlhttp.send(JSON.stringify(dict));
 }
 
-function sendAction(action, callback) {
+function sendAction(action, callback=null, refreshPage=false) {
     var xmlHttp = new XMLHttpRequest();
     xmlHttp.onreadystatechange = function() { 
-        if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
+        if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
+            console.log(callback)
             if(callback) callback(xmlHttp.responseText);
+            if(refreshPage) window.location.reload();
+        }
     }
     xmlHttp.open("GET", "/action/" + action, true);
     xmlHttp.send(null);

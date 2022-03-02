@@ -69,7 +69,10 @@
                 <br/>
 
                 <div class="text-centered">
-                    <button onclick="sendAction('import');">🚀 Use data</button>
+                    <div style="display: inline-block;">
+                        <button class="hasImportedData changeDisplay inverse" style="display: none;" onclick="sendAction('import', null, true);">🚀 Use data</button>
+                        <button class="hasImportedData changeDisplay bin" style="display: none;" onclick="sendAction('resetImp', null, true);"> Don't use data</button>
+                    </div>
                     <button onclick="deleteImportedData();">🗑 Remove imported data</button>
                     <button onclick="downloadImportedData();">📥 Download imported data</button>
                 </div>
