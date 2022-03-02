@@ -69,12 +69,17 @@ class XamControlBase:
     def __init__(self, name="Base class", importedExperiments:Iterable=None):
         self.name = name
         self.importedExperiments = importedExperiments
+        self.importedExperimentMultiples = None
 
     def importExperiments(self, importExperiments:Iterable):
         self.importedExperiments = importExperiments
 
     def resetImport(self):
         self.importedExperiments = None
+        self.resetImportedMultiples()
+
+    def resetImportedMultiples(self):
+        self.importedExperimentMultiples = None
 
     def startExperiment(self, experiment : XamControlExperimentRequest) -> XamControlExperimentResult:
         if self.importedExperiments is None: return None
@@ -86,9 +91,20 @@ class XamControlBase:
         if dataSet.size <= 0: return None 
         if dataSet.size <= len(experiment.propertyDict): return None
 
-        
+        outerIndex = 0
+        if len(dataSet) > 1:
+            experimentKey = "*".join([str(elm) for elm in experiment.getValueArray()])
+
+            if self.importedExperimentMultiples is None: self.importedExperimentMultiples = {}
+            if experimentKey not in self.importedExperimentMultiples: self.importedExperimentMultiples[experimentKey] = 0
+
+            outerIndex = self.importedExperimentMultiples[experimentKey]
+            self.importedExperimentMultiples[experimentKey] += 1
+
+        if outerIndex >= len(dataSet): return None
+                    
         Logger.logXamControl("Result IMPORTED")
-        return XamControlExperimentResult(dataSet[0,len(experiment.propertyDict):])
+        return XamControlExperimentResult(dataSet[outerIndex,len(experiment.propertyDict):])
 
     def startExperimentFromvalues(self, factorSet : Factor.FactorSet, valueArray : Iterable) -> XamControlExperimentResult:
         return self.startExperiment(XamControlExperimentRequest(factorSet, valueArray))
