@@ -418,10 +418,6 @@ def onDone():
 if __name__ == "__main__":
     hostname, port = 'localhost', 8080
     server = socketserver.TCPServer((hostname, port), Server)
-
-    if False:
-        process()
-        exit()
     
     print("Start DoE-Server @{}:{}".format(hostname, server))
     server.serve_forever()

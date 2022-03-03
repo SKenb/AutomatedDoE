@@ -235,7 +235,9 @@ def meanAbsolutePercentageError(clf, X, y, epsilon = 1e-6):
     return (1/len(y))*np.sum(np.abs(y - yPred)/y) / 100
 
 
-
+def reproducibility(Ypure, Ytotal):
+    MSpe, MStot = np.var(Ypure), np.var(Ytotal)
+    return (1 - (MSpe / MStot))
 
 def getModelTermSignificance(confidenceInterval):
     isSignificant = np.sign(confidenceInterval[:, 1] * confidenceInterval[:, 0]) >= 0

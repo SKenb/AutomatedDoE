@@ -1,5 +1,10 @@
 Logs/
 Tmp/
+Upload/
+
+Server/Upload/
+Server/Logs/
+Server/Tmp/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

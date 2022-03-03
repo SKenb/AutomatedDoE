@@ -148,11 +148,13 @@ class EvaluateExperiments(State):
 
             trainingY = context.getResponse()
             predictionY = LR.predict(scaledModel, X)
+            idxOfCenterPoints = np.linalg.norm(X, axis=1) <= 1e-6
 
             r2Score = Statistics.R2(trainingY, predictionY)
             q2Score = Statistics.Q2(X, trainingY)
+            repScore = Statistics.reproducibility(trainingY[idxOfCenterPoints], trainingY)
                
-            combiScoreHistory.add(History.CombiScoreHistoryItem(iterationIndex, combinations, model, scaledModel, context, r2Score, q2Score, context.excludedFactors, None))
+            combiScoreHistory.add(History.CombiScoreHistoryItem(iterationIndex, combinations, model, scaledModel, context, r2Score, q2Score, repScore, context.excludedFactors, None))
             
             isSignificant, _ = Statistics.getModelTermSignificance(scaledModel.conf_int())
 
@@ -293,6 +295,7 @@ class StopDoE(State):
         ## Stats
         r2ScoreHistory = history.choose(lambda item: item.bestCombiScoreItem.r2)
         q2ScoreHistory = history.choose(lambda item: item.bestCombiScoreItem.q2)
+        repScoreHistory = history.choose(lambda item: item.bestCombiScoreItem.repScore)
         selctedIndex = history.choose(lambda item: item.bestCombiScoreItem.index)
 
         bestScoreOverall = len(q2ScoreHistory) - np.argmax(q2ScoreHistory[::-1]) - 1 #Reverse
@@ -304,13 +307,12 @@ class StopDoE(State):
         predR2 = lambda item: item.r2
         predQ2 = lambda item: item.q2
         gP = lambda plt, idx, pred: plt.plot(range(len(z(pred)[idx])), idx*np.ones(len(z(pred)[idx])), z(pred)[idx])
-        #plotRO = lambda yValues: lambda plt: plt.plot(bestCombiScoreItemOverall.index, yValues[bestCombiScoreItemOverall.index], 'ro')
 
         Common.subplot(
             lambda fig: Common.plot(
                             lambda plt: plt.plot(r2ScoreHistory, label="R2"),
                             lambda plt: plt.plot(q2ScoreHistory, label="Q2"),
-                            #plotRO(r2ScoreHistory), plotRO(q2ScoreHistory),
+                            lambda plt: plt.plot(repScoreHistory, label="Reproducibility"),
                             xLabel="Exp. Iteration", yLabel="Score", title="Score over Exp.It.",
                             showLegend=True, figure=fig
                         ),
