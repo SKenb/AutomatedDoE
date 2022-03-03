@@ -16,7 +16,7 @@ import matplotlib
 MATPLOTLIB_SAVE_PLOT_ONLY = True
 
 
-def plot(*plotters, is3D=False, xLabel="x", yLabel="y", title="Plot", showLegend=False, figure=None, saveFigure=False):
+def plot(*plotters, is3D=False, xLabel="x", yLabel="y", title="Plot", showLegend=False, figure=None, saveFigure=False, savePath=None, setFilename=None):
      
     if figure is None: 
         figure = plt.figure()
@@ -38,13 +38,17 @@ def plot(*plotters, is3D=False, xLabel="x", yLabel="y", title="Plot", showLegend
 
     if saveFigure: 
         filename = Path("Plot_{}.png".format(title))
+        if setFilename is not None: filename = setFilename
+
         path = Logger.getCurrentLogFolder() / filename
+        if savePath is not None: path = savePath / filename
+
         plt.savefig(path)
 
     return figure
 
 
-def subplot(*plotFunctions, is3D=False, saveFigure=False, title="", showPlot=True, rows=None, cols=None):
+def subplot(*plotFunctions, is3D=False, saveFigure=False, title="", showPlot=True, rows=None, cols=None, savePath=None):
     
     if rows is None and cols is None:
         cols = np.ceil((np.sqrt(len(plotFunctions))))
@@ -68,6 +72,8 @@ def subplot(*plotFunctions, is3D=False, saveFigure=False, title="", showPlot=Tru
     if saveFigure: 
         filename = Path("Plot_{}.png".format(title))
         path = Logger.getCurrentLogFolder() / filename
+        if savePath is not None: path = savePath / filename
+
         plt.savefig(path)
 
     #plt.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=None, hspace=None)

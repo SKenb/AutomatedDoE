@@ -14,7 +14,7 @@ import statsmodels.api as sm
 
 from StateMachine.Context import ContextDoE
 
-def plotObservedVsPredicted(prediction, observation, titleSuffix=None, X=None, figure=None, suppressR2=False):
+def plotObservedVsPredicted(prediction, observation, titleSuffix=None, X=None, figure=None, suppressR2=False, savePath=None):
 
     titleStr = "Observed vs. Predicted"
     if titleSuffix is not None: titleStr += " - " + titleSuffix
@@ -26,13 +26,15 @@ def plotObservedVsPredicted(prediction, observation, titleSuffix=None, X=None, f
 
     Common.plot(
         lambda plt: plt.scatter(prediction, observation),
-        lambda plt: plt.plot([minVal, maxVal], [0, 0], 'k', linewidth=1),
-        lambda plt: plt.plot([0, 0], [minVal, maxVal], 'k', linewidth=1),
+        lambda plt: plt.plot([minVal, maxVal], [minVal, minVal], 'k', linewidth=1),
+        lambda plt: plt.plot([minVal, minVal], [minVal, maxVal], 'k', linewidth=1),
         lambda plt: plt.plot([minVal, maxVal], [minVal, maxVal], 'k--', linewidth=2),
         lambda plt: plt.grid(), 
         #lambda plt: True if suppressR2 else plt.text(.05*(maxVal - minVal), -.15*(maxVal - minVal), "R2: {}".format(round(R2(observation, prediction), 2))),
         #lambda plt: X is not None and plt.text(.4*(maxVal - minVal), -.15*(maxVal - minVal), "Q2: {}".format(round(Q2(X, observation), 2))),
         xLabel="Predicted", yLabel="Observed", title=titleStr, 
+        saveFigure=savePath is not None,
+        savePath=savePath,
         figure=figure
     )
 
