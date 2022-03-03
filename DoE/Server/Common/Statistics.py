@@ -239,6 +239,10 @@ def reproducibility(Ypure, Ytotal):
     MSpe, MStot = np.var(Ypure), np.var(Ytotal)
     return (1 - (MSpe / MStot))
 
+def coefficientOfVariation(Y):
+    return np.std(Y) / np.mean(Y)
+
+
 def getModelTermSignificance(confidenceInterval):
     isSignificant = np.sign(confidenceInterval[:, 1] * confidenceInterval[:, 0]) >= 0
     significanceInterval = np.abs(confidenceInterval[:, 1] - confidenceInterval[:, 0])
