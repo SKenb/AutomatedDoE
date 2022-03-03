@@ -152,9 +152,15 @@ class EvaluateExperiments(State):
 
             r2Score = Statistics.R2(trainingY, predictionY)
             q2Score = Statistics.Q2(X, trainingY)
-            repScore = Statistics.reproducibility(trainingY[idxOfCenterPoints], trainingY)
                
-            combiScoreHistory.add(History.CombiScoreHistoryItem(iterationIndex, combinations, model, scaledModel, context, r2Score, q2Score, repScore, context.excludedFactors, None))
+            combiScoreHistory.add(History.CombiScoreHistoryItem(
+                iterationIndex, combinations, model, 
+                scaledModel, context, r2Score, q2Score, context.excludedFactors, 
+                {
+                    "repScore": Statistics.reproducibility(trainingY[idxOfCenterPoints], trainingY),
+                    "CV": Statistics.coefficientOfVariation(trainingY[idxOfCenterPoints])
+                })
+            )
             
             isSignificant, _ = Statistics.getModelTermSignificance(scaledModel.conf_int())
 
@@ -295,7 +301,8 @@ class StopDoE(State):
         ## Stats
         r2ScoreHistory = history.choose(lambda item: item.bestCombiScoreItem.r2)
         q2ScoreHistory = history.choose(lambda item: item.bestCombiScoreItem.q2)
-        repScoreHistory = history.choose(lambda item: item.bestCombiScoreItem.repScore)
+        repScoreHistory = history.choose(lambda item: item.bestCombiScoreItem.scoreCombis["repScore"])
+        coefficientOfVariationHistory = history.choose(lambda item: item.bestCombiScoreItem.scoreCombis["CV"])
         selctedIndex = history.choose(lambda item: item.bestCombiScoreItem.index)
 
         bestScoreOverall = len(q2ScoreHistory) - np.argmax(q2ScoreHistory[::-1]) - 1 #Reverse
@@ -313,6 +320,7 @@ class StopDoE(State):
                             lambda plt: plt.plot(r2ScoreHistory, label="R2"),
                             lambda plt: plt.plot(q2ScoreHistory, label="Q2"),
                             lambda plt: plt.plot(repScoreHistory, label="Reproducibility"),
+                            lambda plt: plt.plot(coefficientOfVariationHistory, label="CV"),
                             xLabel="Exp. Iteration", yLabel="Score", title="Score over Exp.It.",
                             showLegend=True, figure=fig
                         ),
