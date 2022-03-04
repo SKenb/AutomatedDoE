@@ -1,8 +1,8 @@
 Logs/
 Tmp/
-Upload/
+Upload/import/
 
-Server/Upload/
+Server/Upload/import/
 Server/Logs/
 Server/Tmp/
 
