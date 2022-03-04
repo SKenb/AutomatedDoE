@@ -17,7 +17,7 @@ MATPLOTLIB_SAVE_PLOT_ONLY = True
 
 
 def plot(*plotters, is3D=False, xLabel="x", yLabel="y", title="Plot", showLegend=False, figure=None, saveFigure=False, savePath=None, setFilename=None):
-     
+
     if figure is None: 
         figure = plt.figure()
         showPlot = True
@@ -48,8 +48,8 @@ def plot(*plotters, is3D=False, xLabel="x", yLabel="y", title="Plot", showLegend
     return figure
 
 
-def subplot(*plotFunctions, is3D=False, saveFigure=False, title="", showPlot=True, rows=None, cols=None, savePath=None):
-    
+def subplot(*plotFunctions, is3D=False, saveFigure=False, title="", showPlot=True, rows=None, cols=None, rowColPlotIndexList=None, savePath=None, setFilename=None):
+
     if rows is None and cols is None:
         cols = np.ceil((np.sqrt(len(plotFunctions))))
         rows = np.ceil(len(plotFunctions) / cols)
@@ -64,13 +64,23 @@ def subplot(*plotFunctions, is3D=False, saveFigure=False, title="", showPlot=Tru
 
     for index, plot_ in enumerate(plotFunctions): 
         if is3D is False:
-            plt.subplot(int(rows), int(cols), int(index+1))
+            plotIndex = int(index+1)
+            plotRow, plotCol = int(rows), int(cols)
+
+            if rowColPlotIndexList is not None:
+                plotRow = rowColPlotIndexList[index][0]
+                plotCol = rowColPlotIndexList[index][1]
+                plotIndex = rowColPlotIndexList[index][2]
+
+            plt.subplot(plotRow, plotCol, plotIndex)
             plot_(plt)
         else:
             plot_(fig.add_subplot(int(rows), int(cols), int(index+1), projection='3d'))
 
     if saveFigure: 
         filename = Path("Plot_{}.png".format(title))
+        if setFilename is not None: filename = setFilename
+
         path = Logger.getCurrentLogFolder() / filename
         if savePath is not None: path = savePath / filename
 

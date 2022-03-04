@@ -230,12 +230,19 @@ class EvaluateExperiments(State):
             )
 
         title = "Titel Rob" if context.hasOptimum() else "Titel"
-        Paper.generatePlot2(LR.predict(scaledModel, X), context.getResponse(), title, filename=title+" (labeled)")
-        Paper.generatePlot2(LR.predict(scaledModel, X), context.getResponse(), title, useLabels=False)
-        Paper.generatePlot2(LR.predict(scaledModel, X), context.getResponse(), title, drawOrigin=False, filename=title+" (labeled, no Origin)")
-        Paper.generatePlot2(LR.predict(scaledModel, X), context.getResponse(), title, drawTicks=False, filename=title+" (labeled, no Ticks)")
+        #Paper.generatePlot2(LR.predict(scaledModel, X), context.getResponse(), title, filename=title+" (labeled)")
+        #Paper.generatePlot2(LR.predict(scaledModel, X), context.getResponse(), title, useLabels=False)
+        #Paper.generatePlot2(LR.predict(scaledModel, X), context.getResponse(), title, drawOrigin=False, filename=title+" (labeled, no Origin)")
+        #Paper.generatePlot2(LR.predict(scaledModel, X), context.getResponse(), title, drawTicks=False, filename=title+" (labeled, no Ticks)")
+        
+        Paper.generatePlot4(LR.predict(scaledModel, X), context.getResponse(), title, drawTicks=False, filename=title+" (labeled, no Ticks)")
 
-        Logger.logEntireRun(history, context.factorSet, context.excludedFactors, context.getExperimentValues(), context.Y, model.params, scaledModel, context.transformer)
+        Logger.logEntireRun(
+            history, context.factorSet, context.excludedFactors, context.getExperimentValues(), context.Y, 
+            model.params, scaledModel, context.transformer,
+            max(combiScoreHistory.choose(lambda i: i.r2)),
+            max(combiScoreHistory.choose(lambda i: i.q2))
+        )
 
         return HandleOutliers()
 

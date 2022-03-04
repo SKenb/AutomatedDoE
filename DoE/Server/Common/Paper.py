@@ -3,7 +3,9 @@ from Common import LinearRegression as LR
 from Common import Common
 from pathlib import Path
 
-def generatePlot2(prediction, observation, titleStr, useLabels=True, filename=None, drawOrigin=True, drawTicks=True):
+import matplotlib.pyplot as plt
+
+def generatePlot2(prediction, observation, titleStr, useLabels=True, filename=None, drawOrigin=True, drawTicks=True, figure=None):
 
     savePath=Path("./Paper/Plots/Plot2_ObsVsPred/")
 
@@ -29,7 +31,38 @@ def generatePlot2(prediction, observation, titleStr, useLabels=True, filename=No
         xLabel="Predicted" if useLabels else "", 
         yLabel="Observed" if useLabels else "", 
         title=titleStr, 
-        saveFigure=savePath is not None,
+        saveFigure=savePath is not None and figure is None,
         setFilename=filename,
-        savePath=savePath
+        savePath=savePath,
+        figure=figure
     )
+
+def generatePlot4(prediction, observation, titleStr, useLabels=True, filename=None, drawOrigin=True, drawTicks=True):
+    savePath=Path("./Paper/Plots/Plot4_Iter/")
+
+def generatePlot4C(prediction, observation, titleStr, useLabels=True, filename=None, drawOrigin=True, drawTicks=True):
+    
+    savePath=Path("./Paper/Plots/Plot4_Iter/")
+    
+    N = 3
+    pattern = []
+    for largeSection in ['ObsVsPred', 'Coeff', 'Scores']:
+        for index in range(N):
+            pattern.append(N*[largeSection])
+
+    for index in range(N):
+        pattern.append(['Contour_' + str(index*N+inner) for inner in range(N)])
+
+    fig, axd = plt.subplot_mosaic(pattern, constrained_layout=True)
+
+    generatePlot2(prediction, observation, "OvP", useLabels, drawOrigin, drawTicks, figure=axd['ObsVsPred'])
+    generatePlot2(prediction, observation, "C", useLabels, drawOrigin, True, figure=axd['Coeff'])
+    generatePlot2(prediction, observation, "Sc", True, True, drawTicks, figure=axd['Scores'])
+
+    #for index in range(N*N):
+    #    generatePlot2(prediction, observation, titleStr, useLabels, drawOrigin, drawTicks, figure=axd['Contour_'+str(index)])
+
+    plt.savefig(savePath / Path("Iter") if filename is None else Path(filename))
+    plt.show()
+
+    exit()
