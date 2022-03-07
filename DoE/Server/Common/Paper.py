@@ -5,8 +5,8 @@ from Common import Common
 from StateMachine.Context import ContextDoE
 from Common.Statistics import getModelTermSignificance
 from pathlib import Path
+from matplotlib import colors
 
-import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -169,8 +169,16 @@ def generatePlot1(experiments, factorSet, filename="ExpHist.png", useABC=True, u
 
     assert len(expLabels) == experiments.shape[1], "UPS 0.o - we have a different amount of labels compared to experiment variables..."
 
-    fig, ax = plt.subplots()
-    im = ax.imshow(experiments.T, cmap='jet', interpolation='nearest')
+    cmap = colors.ListedColormap(['royalblue', 'lightsteelblue', 'cornflowerblue'])
+    bounds=[-1.5,-.5, .5, 1.5]
+    norm = colors.BoundaryNorm(bounds, cmap.N)
+
+    fig = plt.figure()
+
+    sizeInCm = 5
+    fig.set_size_inches(cm2Inch(4*sizeInCm), cm2Inch(sizeInCm))
+
+    plt.imshow(experiments.T, cmap=cmap, origin='lower', norm=norm, interpolation='nearest')
 
     # Show all ticks and label them with the respective list entries
     if not drawTicks: plt.xticks([])
