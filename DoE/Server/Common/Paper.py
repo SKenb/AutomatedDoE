@@ -6,6 +6,7 @@ from StateMachine.Context import ContextDoE
 from Common.Statistics import getModelTermSignificance
 from pathlib import Path
 
+import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -158,3 +159,42 @@ def generatePlot4C(prediction, observation, titleStr, useLabels=True, filename=N
     plt.show()
 
     exit()
+
+def generatePlot1(experiments, factorSet, filename="ExpHist.png", useABC=True, useLabels=True, drawTicks=True):
+
+    savePath=Path("./Paper/Plots/Plot1_Hist/")
+
+    expLabels = [f.name for f in factorSet.factors]
+    if useABC: expLabels = [chr(65+(index % 26))for index in range(len(factorSet))]
+
+    assert len(expLabels) == experiments.shape[1], "UPS 0.o - we have a different amount of labels compared to experiment variables..."
+
+    fig, ax = plt.subplots()
+    im = ax.imshow(experiments.T, cmap='jet', interpolation='nearest')
+
+    # Show all ticks and label them with the respective list entries
+    if not drawTicks: plt.xticks([])
+    plt.yticks(np.arange(len(expLabels)), labels=expLabels)
+
+    if useLabels:
+        plt.xlabel("Experiments")
+        plt.ylabel("Factor")
+
+    # Rotate the tick labels and set their alignment.
+    plt.setp(ax.get_xticklabels(), rotation=45, ha="right",
+            rotation_mode="anchor")
+
+    def valueToString(val, tol=1e-3):
+        if val < -tol: return "-" 
+        if val > tol: return "+" 
+        return "0"
+
+    # Loop over data dimensions and create text annotations.
+    for i in range(len(expLabels)):
+        for j in range(experiments.shape[0]):
+            ax.text(j, i, valueToString(experiments[j, i]), ha="center", va="center", color="w")
+
+    ax.set_title("Titel 2")
+    fig.tight_layout()
+
+    plt.savefig(savePath / Path(filename))

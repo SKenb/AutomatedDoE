@@ -385,6 +385,11 @@ class StopDoE(State):
         Paper.generatePlot2(LR.predict(self.bestCombiScoreItemOverall.scaledModel, X), context.getResponse(), title, drawOrigin=False, filename=title+" (labeled, no Origin)")
         Paper.generatePlot2(LR.predict(self.bestCombiScoreItemOverall.scaledModel, X), context.getResponse(), title, drawTicks=False, filename=title+" (labeled, no Ticks)")
         
+        if not context.hasOptimum():
+            fn = "ExpHist_Rob"
+            Paper.generatePlot1(Statistics.orthogonalScaling(context._experimentValues), context.factorSet, filename=fn+"_label.png", useLabels=False)
+            Paper.generatePlot1(Statistics.orthogonalScaling(context._experimentValues), context.factorSet, filename=fn+"_fac.png", useABC=False)
+            Paper.generatePlot1(Statistics.orthogonalScaling(context._experimentValues), context.factorSet, filename=fn+".png")
 
 class HandleOutliers(State):
     def __init__(self): super().__init__("Handle outliers")
