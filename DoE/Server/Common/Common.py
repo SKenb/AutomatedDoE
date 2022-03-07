@@ -48,7 +48,7 @@ def plot(*plotters, is3D=False, xLabel="x", yLabel="y", title="Plot", showLegend
     return figure
 
 
-def subplot(*plotFunctions, is3D=False, saveFigure=False, title="", showPlot=True, rows=None, cols=None, rowColPlotIndexList=None, savePath=None, setFilename=None):
+def subplot(*plotFunctions, figHandler=None, is3D=False, saveFigure=False, title="", showPlot=True, rows=None, cols=None, rowColPlotIndexList=None, savePath=None, setFilename=None):
 
     if rows is None and cols is None:
         cols = np.ceil((np.sqrt(len(plotFunctions))))
@@ -60,6 +60,7 @@ def subplot(*plotFunctions, is3D=False, saveFigure=False, title="", showPlot=Tru
     assert cols*rows >= len(plotFunctions), "We r unable to fit all plots :/"        
 
     fig = plt.figure(constrained_layout=True)
+    if figHandler is not None: figHandler(fig)
     #fig.tight_layout()
 
     for index, plot_ in enumerate(plotFunctions): 

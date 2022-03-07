@@ -235,7 +235,26 @@ class EvaluateExperiments(State):
         #Paper.generatePlot2(LR.predict(scaledModel, X), context.getResponse(), title, drawOrigin=False, filename=title+" (labeled, no Origin)")
         #Paper.generatePlot2(LR.predict(scaledModel, X), context.getResponse(), title, drawTicks=False, filename=title+" (labeled, no Ticks)")
         
-        Paper.generatePlot4(LR.predict(scaledModel, X), context.getResponse(), title, drawTicks=False, filename=title+" (labeled, no Ticks)")
+        Paper.generatePlot4(
+            LR.predict(scaledModel, X), context, scaledModel, combinations, 
+            combiScoreHistory, bestCombiScoreItem, drawTicks=False, useLabels=True,
+            filename="Plot4{}_Iter{}_Label".format("_Rob" if context.hasOptimum() else "", len(history))
+        )
+        Paper.generatePlot4(
+            LR.predict(scaledModel, X), context, scaledModel, combinations, 
+            combiScoreHistory, bestCombiScoreItem, drawTicks=False,  useLabels=False,
+            filename="Plot4{}_Iter{}".format("_Rob" if context.hasOptimum() else "", len(history))
+        )
+        Paper.generatePlot4(
+            LR.predict(scaledModel, X), context, scaledModel, combinations, 
+            combiScoreHistory, bestCombiScoreItem, drawTicks=True,  useLabels=False,
+            filename="Plot4{}_Iter{}_Ticks".format("_Rob" if context.hasOptimum() else "", len(history))
+        )
+        Paper.generatePlot4(
+            LR.predict(scaledModel, X), context, scaledModel, combinations, 
+            combiScoreHistory, bestCombiScoreItem, useSubtitles=True, useLabels=False,
+            filename="Plot4{}_Iter{}_Titels".format("_Rob" if context.hasOptimum() else "", len(history))
+        )
 
         Logger.logEntireRun(
             history, context.factorSet, context.excludedFactors, context.getExperimentValues(), context.Y, 
