@@ -160,7 +160,7 @@ def logStateInfo(stateInfo, predicate=logging.info):
     genericLog(predicate, "\t-", stateInfo)
 
 
-def logEntireRun(history, factorSet, excludedFactors, experiments, responses, modelCoeffs, scaledModel, transformer, r2, q2):
+def logEntireRun(history, factorSet, excludedFactors, experiments, responses, modelCoeffs, scaledModel, transformer, r2, q2, reproducibility, CV):
 
     runNumber = len(history)
 
@@ -209,8 +209,8 @@ def logEntireRun(history, factorSet, excludedFactors, experiments, responses, mo
 
         fileWriter.writerow(["Scores"]) 
         insertNewLine()
-        fileWriter.writerow(["R2", "Q2"]) 
-        fileWriter.writerow([r2, q2]) 
+        fileWriter.writerow(["R2", "Q2", "RepScore", "CV"]) 
+        fileWriter.writerow([r2, q2, reproducibility, CV]) 
 
         
         insertNewLine(2)

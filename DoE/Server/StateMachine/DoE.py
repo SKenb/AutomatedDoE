@@ -229,6 +229,8 @@ class EvaluateExperiments(State):
                 saveFigure=True, title=f"{len(history)}", showPlot=False
             )
 
+            Statistics.plotContour(scaledModel, context.factorSet, context.excludedFactors, combinations, "Plot_C_Iter{}.png".format(len(history)))
+
         # Paper
         Paper.generatePlot4(
             LR.predict(scaledModel, X), context, scaledModel, combinations, 
@@ -255,7 +257,9 @@ class EvaluateExperiments(State):
             history, context.factorSet, context.excludedFactors, context.getExperimentValues(), context.Y, 
             model.params, scaledModel, context.transformer,
             max(combiScoreHistory.choose(lambda i: i.r2)),
-            max(combiScoreHistory.choose(lambda i: i.q2))
+            max(combiScoreHistory.choose(lambda i: i.q2)), 
+            max(history.choose(lambda item: item.bestCombiScoreItem.scoreCombis["repScore"])), 
+            max(history.choose(lambda item: item.bestCombiScoreItem.scoreCombis["CV"])) 
         )
 
         return HandleOutliers()

@@ -127,7 +127,7 @@ def plotScoreHistory(scoreHistoryDict : Dict, selectedIndex=None, figure=False):
         figure=figure
     )
 
-def plotContour(model : sm.OLS, factorSet : FactorSet, excludedFactors, combinations):
+def plotContour(model : sm.OLS, factorSet : FactorSet, excludedFactors, combinations, filename=None):
     delta = 0.025
 
     indexX, indexY, indexZ = 0, 1, 2
@@ -182,7 +182,7 @@ def plotContour(model : sm.OLS, factorSet : FactorSet, excludedFactors, combinat
         subplot_(0, titlesRed), subplot_(1, titles), subplot_(2, titlesRed),
         subplot_(3, titlesRed, ylabel=ylabel), subplot_(4, titlesRed), subplot_(5, titlesRed),
         subplot_(6, titlesRed), subplot_(7, titlesRed, xlabel=xlabel), subplot_(8, titlesRed),
-        title="Contour", saveFigure=True
+        title="Contour", saveFigure=True, setFilename=filename
     )
 
 def generateScaler(X):
