@@ -24,6 +24,8 @@ class ContextDoE():
             
         if optimum is not None:
             self.factorSet = Factor.getFactorSetAroundOptimum(self.factorSet, optimum, optimumRange)
+
+        self.optimum = optimum
         
         self.newExperimentValues = np.array([])
         self._experimentValues = np.array([])
@@ -50,6 +52,8 @@ class ContextDoE():
         if self.transformer is None: return Y
         return self.transformer.transform(Y)
 
+    def hasOptimum(self):
+        return self.optimum is not None
 
     def addNewExperiments(self, newExperimentValues, Y):
         gAppend = lambda x_, n_: n_ if len(x_) <= 0 else np.append(x_, n_, axis=0)

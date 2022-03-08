@@ -6,6 +6,7 @@ from Common import Common
 from Common import Logger
 from Common import Statistics
 from Common import History
+from Common import Paper
 from Common import CombinationFactory
 from Common import LinearRegression as LR
 
@@ -13,6 +14,7 @@ from scipy.stats import skewtest, boxcox, yeojohnson
 from sklearn.preprocessing import quantile_transform
 
 import numpy as np
+from pathlib import Path
 
 context = None
 history = None
@@ -227,7 +229,38 @@ class EvaluateExperiments(State):
                 saveFigure=True, title=f"{len(history)}", showPlot=False
             )
 
-        Logger.logEntireRun(history, context.factorSet, context.excludedFactors, context.getExperimentValues(), context.Y, model.params, scaledModel, context.transformer)
+            Statistics.plotContour(scaledModel, context.factorSet, context.excludedFactors, combinations, "Plot_C_Iter{}.png".format(len(history)))
+
+        # Paper
+        Paper.generatePlot4(
+            LR.predict(scaledModel, X), context, scaledModel, combinations, 
+            combiScoreHistory, bestCombiScoreItem, drawTicks=False, useLabels=True,
+            filename="Plot4{}_Iter{}_Label".format("_Rob" if context.hasOptimum() else "", len(history))
+        )
+        Paper.generatePlot4(
+            LR.predict(scaledModel, X), context, scaledModel, combinations, 
+            combiScoreHistory, bestCombiScoreItem, drawTicks=False,  useLabels=False,
+            filename="Plot4{}_Iter{}".format("_Rob" if context.hasOptimum() else "", len(history))
+        )
+        Paper.generatePlot4(
+            LR.predict(scaledModel, X), context, scaledModel, combinations, 
+            combiScoreHistory, bestCombiScoreItem, drawTicks=True,  useLabels=False,
+            filename="Plot4{}_Iter{}_Ticks".format("_Rob" if context.hasOptimum() else "", len(history))
+        )
+        Paper.generatePlot4(
+            LR.predict(scaledModel, X), context, scaledModel, combinations, 
+            combiScoreHistory, bestCombiScoreItem, useSubtitles=True, useLabels=False,
+            filename="Plot4{}_Iter{}_Titels".format("_Rob" if context.hasOptimum() else "", len(history))
+        )
+
+        Logger.logEntireRun(
+            history, context.factorSet, context.excludedFactors, context.getExperimentValues(), context.Y, 
+            model.params, scaledModel, context.transformer,
+            max(combiScoreHistory.choose(lambda i: i.r2)),
+            max(combiScoreHistory.choose(lambda i: i.q2)), 
+            max(history.choose(lambda item: item.bestCombiScoreItem.scoreCombis["repScore"])), 
+            max(history.choose(lambda item: item.bestCombiScoreItem.scoreCombis["CV"])) 
+        )
 
         return HandleOutliers()
 
@@ -346,8 +379,21 @@ class StopDoE(State):
             lambda fig: plot3DHist(fig, predQ2, q2ScoreHistory, "Q2 Hsitory"),
             is3D=True, saveFigure=True
         )
-        
 
+        # Paper
+        title = "Titel Rob" if context.hasOptimum() else "Titel"
+        X = Common.getXWithCombinations(context.getExperimentValues(), self.bestCombiScoreItemOverall.combinations, Statistics.orthogonalScaling)
+
+        Paper.generatePlot2(LR.predict(self.bestCombiScoreItemOverall.scaledModel, X), context.getResponse(), title, filename=title+" (labeled)")
+        Paper.generatePlot2(LR.predict(self.bestCombiScoreItemOverall.scaledModel, X), context.getResponse(), title, useLabels=False)
+        Paper.generatePlot2(LR.predict(self.bestCombiScoreItemOverall.scaledModel, X), context.getResponse(), title, drawOrigin=False, filename=title+" (labeled, no Origin)")
+        Paper.generatePlot2(LR.predict(self.bestCombiScoreItemOverall.scaledModel, X), context.getResponse(), title, drawTicks=False, filename=title+" (labeled, no Ticks)")
+        
+        if not context.hasOptimum():
+            fn = "ExpHist_Rob"
+            Paper.generatePlot1(Statistics.orthogonalScaling(context._experimentValues), context.factorSet, filename=fn+"_label.png", useLabels=False)
+            Paper.generatePlot1(Statistics.orthogonalScaling(context._experimentValues), context.factorSet, filename=fn+"_fac.png", useABC=False)
+            Paper.generatePlot1(Statistics.orthogonalScaling(context._experimentValues), context.factorSet, filename=fn+".png")
 
 class HandleOutliers(State):
     def __init__(self): super().__init__("Handle outliers")
