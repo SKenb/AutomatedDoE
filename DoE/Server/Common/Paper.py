@@ -15,8 +15,6 @@ def cm2Inch(cm):
     return cm/2.54
 
 def generatePlot2(prediction, observation, titleStr, useLabels=True, filename=None, drawOrigin=True, drawTicks=True, figure=None):
-
-    return
      
     savePath=Path("./Paper/Plots/Plot2_ObsVsPred/")
 
@@ -34,18 +32,21 @@ def generatePlot2(prediction, observation, titleStr, useLabels=True, filename=No
         lambda plt: drawOrigin and plt.plot([minVal, minVal], [minVal, maxVal], 'k', linewidth=lineWidth),
         lambda plt: plt.plot([minVal, maxVal], [minVal, maxVal], 'k--', linewidth=lineWidth),
         lambda plt: plt.scatter(prediction, observation, scatterSize, zorder=200),
-        lambda plt: plt.grid(), 
-        lambda plt: plt.axis('equal'),
-        lambda plt: plt.rcParams.update({'font.size': fontSize}),
-        lambda plt: drawTicks or plt.yticks([]),
-        lambda plt: drawTicks or plt.xticks([]),
-        xLabel="Predicted" if useLabels else "", 
-        yLabel="Observed" if useLabels else "", 
-        title=titleStr, 
+        #lambda plt: plt.grid(), 
+        lambda plt: plt.gca().set_aspect('equal', adjustable='box'),
+        lambda plt: plt.rcParams.update({'font.size': fontSize, 'figure.autolayout': True}),
+        #lambda plt: drawTicks or plt.yticks([]),
+        #lambda plt: drawTicks or plt.xticks([]),
+        lambda plt: plt.yticks([1.5, 2]) if filename is not None and "Rob" in filename else plt.yticks([0, .5, 1, 1.5]),
+        lambda plt: plt.xticks([1.5, 2]) if filename is not None and "Rob" in filename else plt.xticks([0, .5, 1, 1.5]),
+        xLabel=r"Predicted STY ($kg\;L^{-1}\;h^{-1}$)" if useLabels else "", 
+        yLabel=r"Observed STY ($kg\;L^{-1}\;h^{-1}$)" if useLabels else "", 
+        title="", 
         saveFigure=savePath is not None and figure is None,
         setFilename=filename,
         savePath=savePath,
-        figure=figure
+        figure=figure,
+        skip=False
     )
 
 def plotScoreHistory(scoreHistoryDict : Dict, selectedIndex=None, drawTicks=True, useLabels=True, titleStr="R2 and Q2", figure=False):
