@@ -384,11 +384,16 @@ class StopDoE(State):
         title = "Titel Rob" if context.hasOptimum() else "Titel"
         X = Common.getXWithCombinations(context.getExperimentValues(), self.bestCombiScoreItemOverall.combinations, Statistics.orthogonalScaling)
 
-        Paper.generatePlot2(LR.predict(self.bestCombiScoreItemOverall.scaledModel, X), context.getResponse(), title, filename=title+" (labeled)")
-        Paper.generatePlot2(LR.predict(self.bestCombiScoreItemOverall.scaledModel, X), context.getResponse(), title, useLabels=False)
-        Paper.generatePlot2(LR.predict(self.bestCombiScoreItemOverall.scaledModel, X), context.getResponse(), title, drawOrigin=False, filename=title+" (labeled, no Origin)")
-        Paper.generatePlot2(LR.predict(self.bestCombiScoreItemOverall.scaledModel, X), context.getResponse(), title, drawTicks=False, filename=title+" (labeled, no Ticks)")
-        
+        Paper.generatePlot2(
+                LR.predict(self.bestCombiScoreItemOverall.scaledModel, X), 
+                context.getResponse(), 
+                title, 
+                useLabels=True,
+                drawOrigin=False,
+                drawTicks=True,
+                filename=title
+            )
+
         if not context.hasOptimum():
             fn = "ExpHist_Rob"
             Paper.generatePlot1(Statistics.orthogonalScaling(context._experimentValues), context.factorSet, filename=fn+"_label.png", useLabels=False)
