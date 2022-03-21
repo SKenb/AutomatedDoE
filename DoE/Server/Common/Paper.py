@@ -1,4 +1,5 @@
 from typing import Dict
+from unittest import skip
 from Common import Statistics
 from Common import LinearRegression as LR
 from Common import Common
@@ -35,10 +36,10 @@ def generatePlot2(prediction, observation, titleStr, useLabels=True, filename=No
         #lambda plt: plt.grid(), 
         lambda plt: plt.gca().set_aspect('equal', adjustable='box'),
         lambda plt: plt.rcParams.update({'font.size': fontSize, 'figure.autolayout': True}),
-        #lambda plt: drawTicks or plt.yticks([]),
-        #lambda plt: drawTicks or plt.xticks([]),
-        lambda plt: plt.yticks([1.5, 2]) if filename is not None and "Rob" in filename else plt.yticks([0, .5, 1, 1.5]),
-        lambda plt: plt.xticks([1.5, 2]) if filename is not None and "Rob" in filename else plt.xticks([0, .5, 1, 1.5]),
+        lambda plt: drawTicks or plt.yticks([]),
+        lambda plt: drawTicks or plt.xticks([]),
+        lambda plt: drawTicks and (plt.yticks([1.5, 2]) if filename is not None and "Rob" in filename else plt.yticks([0, .5, 1, 1.5])),
+        lambda plt: drawTicks and (plt.xticks([1.5, 2]) if filename is not None and "Rob" in filename else plt.xticks([0, .5, 1, 1.5])),
         xLabel=r"Predicted STY ($kg\;L^{-1}\;h^{-1}$)" if useLabels else "", 
         yLabel=r"Observed STY ($kg\;L^{-1}\;h^{-1}$)" if useLabels else "", 
         title="", 
@@ -49,28 +50,33 @@ def generatePlot2(prediction, observation, titleStr, useLabels=True, filename=No
         skip=False
     )
 
-def plotScoreHistory(scoreHistoryDict : Dict, selectedIndex=None, drawTicks=True, useLabels=True, titleStr="R2 and Q2", figure=False):
+def plotScoreHistory(scoreHistoryDict : Dict, selectedIndex=None, drawTicks=True, useLabels=True, titleStr="", figure=False):
 
     def plotAllScores(p):
-        for _, (score, scoreHistory) in enumerate(scoreHistoryDict.items()):
-            p.plot(scoreHistory, label=score, lineWidth=3)
+        color= ['blue', 'orange']
+
+        for index, (score, scoreHistory) in enumerate(scoreHistoryDict.items()):
+
+            p.plot(scoreHistory, label="${}$".format(score.replace("2", "^2")), lineWidth=3)
             
             if selectedIndex is not None:
-                p.scatter(selectedIndex, scoreHistory[selectedIndex], 60, color='r', zorder=200),
+                p.scatter(selectedIndex, scoreHistory[selectedIndex], 60, edgecolors='k', c=color[index], zorder=200),
  
     Common.plot(
+        lambda plt: plt.rcParams.update({'text.usetex': True}),
         plotAllScores,
         lambda plt: drawTicks or plt.yticks([]),
         lambda plt: drawTicks or plt.xticks([]),
         showLegend= len(scoreHistoryDict) > 1,
-        xLabel="Iteration" if useLabels else "", 
-        yLabel="Score" if useLabels else "", 
+        xLabel=r"Coefficients removed" if useLabels else "", 
+        yLabel=r"Score" if useLabels else "", 
         #title=("" if len(scoreHistoryDict) > 1 else scoreHistoryDict[0].keys()[0]) + "Score",
         title=titleStr,
-        figure=figure
+        figure=figure,
+        skip=False
     )
 
-def plotCoefficients(coefficientValues, context:ContextDoE=None, confidenceInterval=None, titleStr = "Coefficients plot", drawTicks=True, useLabels=True, figure=None, combinations:dict=None):
+def plotCoefficients(coefficientValues, context:ContextDoE=None, confidenceInterval=None, titleStr = "", drawTicks=True, useLabels=True, figure=None, combinations:dict=None):
     l = len(coefficientValues)
     
     if confidenceInterval is None: 
@@ -87,9 +93,9 @@ def plotCoefficients(coefficientValues, context:ContextDoE=None, confidenceInter
 
         #labels = ["Constant"]
         #labels.extend(["{} ({})".format(context.factorSet[index], char(index)) for index in range(len(context.factorSet)) if not context.isFactorExcluded(index)])
-        labels = ["0"]
-        labels.extend(["{}".format(char(index)) for index in range(len(context.factorSet)) if not context.isFactorExcluded(index)])
-        labels.extend(combinations.keys())
+        labels = [r"$0$"]
+        labels.extend([r"${}$".format(char(index)) for index in range(len(context.factorSet)) if not context.isFactorExcluded(index)])
+        labels.extend([r"${}$".format(l) for l in combinations.keys()])
 
 
     def _plotBars(plt):
@@ -98,15 +104,16 @@ def plotCoefficients(coefficientValues, context:ContextDoE=None, confidenceInter
             if not isSig: bars[index].set_color('r')
 
     Common.plot(
+        lambda plt: plt.rcParams.update({'text.usetex': True}),
         lambda plt: _plotBars(plt),
         lambda plt: plt.errorbar(range(l), coefficientValues, confidenceInterval, fmt=' ', color='b'),
         lambda plt: True if labels is None else plt.xticks(range(l), labels, rotation=90),
-        lambda plt: drawTicks or plt.yticks([]),
-        lambda plt: drawTicks or plt.xticks([]),
-        xLabel="Coefficient" if useLabels else "", 
-        yLabel="Value" if useLabels else "", 
+        lambda plt: plt.yticks([]),
+        xLabel="", 
+        yLabel=r"Magnitude", 
         title=titleStr,
-        figure=figure
+        figure=figure,
+        skip=False
     )
 
 
@@ -115,21 +122,21 @@ def generatePlot4(prediction, context, scaledModel, combinations, combiScoreHist
     sizeInCm = 10
 
     Common.subplot(
-        lambda fig: generatePlot2(
-            prediction, context.getResponse(), titleStr="Titel1" if useSubtitles else "", 
-            useLabels=useLabels, drawOrigin=drawOrigin, drawTicks=drawTicks, figure=fig
-        ),
-        lambda fig: plotCoefficients(
-            scaledModel.params, context, scaledModel.conf_int(), combinations=combinations, 
-            titleStr="Coefficients" if useSubtitles else "",
-            drawTicks=drawTicks, useLabels=useLabels, figure=fig
-        ),
         lambda fig: plotScoreHistory(
             {
                 "R2": combiScoreHistory.choose(lambda i: i.r2), 
                 "Q2": combiScoreHistory.choose(lambda i: i.q2)
             }, bestCombiScoreItem.index, drawTicks=drawTicks, useLabels=useLabels,
             titleStr="Score history" if useSubtitles else "", figure=fig
+        ),
+        lambda fig: plotCoefficients(
+            scaledModel.params, context, scaledModel.conf_int(), combinations=combinations, 
+            titleStr="Coefficients" if useSubtitles else "",
+            drawTicks=drawTicks, useLabels=useLabels, figure=fig
+        ),
+        lambda fig: generatePlot2(
+            prediction, context.getResponse(), titleStr="Titel1" if useSubtitles else "", 
+            useLabels=useLabels, drawOrigin=False, drawTicks=False, figure=fig
         ),
         figHandler=lambda fig: fig.set_size_inches(cm2Inch(sizeInCm), cm2Inch(3*sizeInCm)),
         rows=3,
