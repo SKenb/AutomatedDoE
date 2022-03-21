@@ -235,7 +235,7 @@ class EvaluateExperiments(State):
         Paper.generatePlot4(
             LR.predict(scaledModel, X), context, scaledModel, combinations, 
             combiScoreHistory, bestCombiScoreItem, drawTicks=False, useLabels=True,
-            filename="Plot4_{}_{}.png".format("_Rob" if context.hasOptimum() else "", len(history))
+            filename="Plot4_{}_{}_{}Exp.png".format("_Rob" if context.hasOptimum() else "", len(history), len(context._experimentValues))
         )
 
         Logger.logEntireRun(

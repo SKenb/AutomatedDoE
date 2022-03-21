@@ -95,7 +95,7 @@ def plotCoefficients(coefficientValues, context:ContextDoE=None, confidenceInter
         #labels.extend(["{} ({})".format(context.factorSet[index], char(index)) for index in range(len(context.factorSet)) if not context.isFactorExcluded(index)])
         labels = [r"$0$"]
         labels.extend([r"${}$".format(char(index)) for index in range(len(context.factorSet)) if not context.isFactorExcluded(index)])
-        labels.extend([r"${}$".format(l) for l in combinations.keys()])
+        labels.extend([r"${}$".format(l.replace("*", r" \cdot ")) for l in combinations.keys()])
 
 
     def _plotBars(plt):
