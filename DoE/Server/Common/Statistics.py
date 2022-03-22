@@ -15,7 +15,7 @@ import statsmodels.api as sm
 from StateMachine.Context import ContextDoE
 
 def plotObservedVsPredicted(prediction, observation, titleSuffix=None, X=None, figure=None, suppressR2=False, savePath=None):
-
+    return
     titleStr = "Observed vs. Predicted"
     if titleSuffix is not None: titleStr += " - " + titleSuffix
 
@@ -41,6 +41,7 @@ def plotObservedVsPredicted(prediction, observation, titleSuffix=None, X=None, f
 
 
 def plotResiduals(residuals, bound=4, figure=None):
+    return
     rng = range(len(residuals))
     outlierIdx = abs(residuals) > bound
 
@@ -61,6 +62,7 @@ def plotResiduals(residuals, bound=4, figure=None):
 
 
 def plotCoefficients(coefficientValues, context:ContextDoE=None, confidenceInterval=None, titleSuffix=None, figure=None, combinations:dict=None, ):
+    return
     titleStr = "Coefficients plot"
     if titleSuffix is not None: titleStr += " - " + titleSuffix
     l = len(coefficientValues)
@@ -99,7 +101,7 @@ def plotCoefficients(coefficientValues, context:ContextDoE=None, confidenceInter
 
 
 def plotResponseHistogram(Y, titleSuffix=None, figure=None):
-
+    return
     titleStr = "Histogram"
     if titleSuffix is not None: titleStr += " - " + titleSuffix
 
@@ -111,7 +113,7 @@ def plotResponseHistogram(Y, titleSuffix=None, figure=None):
 
 
 def plotScoreHistory(scoreHistoryDict : Dict, selectedIndex=None, figure=False):
-
+    return
     def plotAllScores(p):
         for _, (score, scoreHistory) in enumerate(scoreHistoryDict.items()):
             p.plot(scoreHistory, label="${}$".format(score.replace("2", "^2")))
@@ -129,6 +131,7 @@ def plotScoreHistory(scoreHistoryDict : Dict, selectedIndex=None, figure=False):
     )
 
 def plotContour(model : sm.OLS, factorSet : FactorSet, excludedFactors, combinations, filename=None):
+    return
     delta = 0.025
 
     indexX, indexY, indexZ = 0, 1, 2

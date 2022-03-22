@@ -16,7 +16,7 @@ def cm2Inch(cm):
     return cm/2.54
 
 def generatePlot2(prediction, observation, titleStr, useLabels=True, filename=None, drawOrigin=True, drawTicks=True, figure=None):
-     
+    return
     savePath=Path("./Paper/Plots/Plot2_ObsVsPred/")
 
     red = lambda func: func(func(prediction), func(observation))
@@ -47,11 +47,11 @@ def generatePlot2(prediction, observation, titleStr, useLabels=True, filename=No
         setFilename=filename,
         savePath=savePath,
         figure=figure,
-        skip=False
+        skip=True
     )
 
 def plotScoreHistory(scoreHistoryDict : Dict, selectedIndex=None, drawTicks=True, useLabels=True, titleStr="", figure=False):
-
+    return
     def plotAllScores(p):
         color= ['blue', 'orange']
 
@@ -73,10 +73,11 @@ def plotScoreHistory(scoreHistoryDict : Dict, selectedIndex=None, drawTicks=True
         #title=("" if len(scoreHistoryDict) > 1 else scoreHistoryDict[0].keys()[0]) + "Score",
         title=titleStr,
         figure=figure,
-        skip=False
+        skip=True
     )
 
 def plotCoefficients(coefficientValues, context:ContextDoE=None, confidenceInterval=None, titleStr = "", drawTicks=True, useLabels=True, figure=None, combinations:dict=None):
+    return
     l = len(coefficientValues)
     
     if confidenceInterval is None: 
@@ -113,11 +114,12 @@ def plotCoefficients(coefficientValues, context:ContextDoE=None, confidenceInter
         yLabel=r"Magnitude", 
         title=titleStr,
         figure=figure,
-        skip=False
+        skip=True
     )
 
 
 def generatePlot4(prediction, context, scaledModel, combinations, combiScoreHistory, bestCombiScoreItem, useSubtitles=False, useLabels=True, filename=None, drawOrigin=True, drawTicks=True):
+    return
     savePath=Path("./Paper/Plots/Plot4_Iter/")
     sizeInCm = 10
 
@@ -144,7 +146,7 @@ def generatePlot4(prediction, context, scaledModel, combinations, combiScoreHist
     )
 
 def generatePlot4C(prediction, observation, titleStr, useLabels=True, filename=None, drawOrigin=True, drawTicks=True):
-    
+    return
     savePath=Path("./Paper/Plots/Plot4_Iter/")
     
     N = 3
@@ -170,8 +172,32 @@ def generatePlot4C(prediction, observation, titleStr, useLabels=True, filename=N
 
     exit()
 
-def generatePlot1(experiments, factorSet, filename="ExpHist.png", useABC=True, useLabels=True, drawTicks=True):
+def generatePlot1Bottom(r2ScoreHistory, q2ScoreHistory):
+    sizeInCm = 8
+    savePath=Path("./Paper/Plots/Plot1_Hist/")
 
+    fig = plt.figure()
+    ax = plt.gca()
+
+    sizeInCm = 8
+    fig.set_size_inches(cm2Inch(4*sizeInCm), cm2Inch(1.5*sizeInCm))
+
+    plt.scatter(range(len(r2ScoreHistory)), r2ScoreHistory, 60, c="tab:blue", zorder=200, label=r"$R^2$")
+    plt.scatter(range(len(q2ScoreHistory)), q2ScoreHistory, 60, c="tab:orange", zorder=200, label=r"$Q^2$")
+
+    plt.plot(r2ScoreHistory, "--", color="tab:blue")
+    plt.plot(q2ScoreHistory, "--", color="tab:orange")
+    
+    plt.xlabel("Experiment iteration")
+    plt.ylabel("Score")
+
+    plt.legend()
+
+    plt.savefig(savePath / Path("Plot1Bottom.png"))
+
+
+def generatePlot1(experiments, factorSet, filename="ExpHist.png", useABC=True, useLabels=True, drawTicks=True):
+    return
     savePath=Path("./Paper/Plots/Plot1_Hist/")
 
     expLabels = [f.name for f in factorSet.factors]
@@ -184,8 +210,9 @@ def generatePlot1(experiments, factorSet, filename="ExpHist.png", useABC=True, u
     norm = colors.BoundaryNorm(bounds, cmap.N)
 
     fig = plt.figure()
+    ax = plt.gca()
 
-    sizeInCm = 5
+    sizeInCm = 8
     fig.set_size_inches(cm2Inch(4*sizeInCm), cm2Inch(sizeInCm))
 
     plt.imshow(experiments.T, cmap=cmap, origin='lower', norm=norm, interpolation='nearest')
@@ -195,7 +222,7 @@ def generatePlot1(experiments, factorSet, filename="ExpHist.png", useABC=True, u
     plt.yticks(np.arange(len(expLabels)), labels=expLabels)
 
     if useLabels:
-        plt.xlabel("Experiments")
+        #plt.xlabel("Experiments")
         plt.ylabel("Factor")
 
     # Rotate the tick labels and set their alignment.
@@ -210,9 +237,15 @@ def generatePlot1(experiments, factorSet, filename="ExpHist.png", useABC=True, u
     # Loop over data dimensions and create text annotations.
     for i in range(len(expLabels)):
         for j in range(experiments.shape[0]):
-            ax.text(j, i, valueToString(experiments[j, i]), ha="center", va="center", color="w")
+            text = valueToString(experiments[j, i])
 
-    ax.set_title("Titel 2")
+            if "0" in text:
+                ax.text(j, i, text, ha="center", va="center", color="w", fontsize=12)
+            else:
+                ax.text(j, i, text, ha="center", va="center", color="w")
+
+    ax.xaxis.tick_top()
+    ax.set_title("")
     fig.tight_layout()
 
     plt.savefig(savePath / Path(filename))

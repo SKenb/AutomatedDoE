@@ -333,6 +333,8 @@ class StopDoE(State):
         predQ2 = lambda item: item.q2
         gP = lambda plt, idx, pred: plt.plot(range(len(z(pred)[idx])), idx*np.ones(len(z(pred)[idx])), z(pred)[idx])
 
+
+
         Common.subplot(
             lambda fig: Common.plot(
                             lambda plt: plt.plot(r2ScoreHistory, label="R2"),
@@ -379,11 +381,8 @@ class StopDoE(State):
                 filename=title
             )
 
-        if not context.hasOptimum():
-            fn = "ExpHist_Rob"
-            Paper.generatePlot1(Statistics.orthogonalScaling(context._experimentValues), context.factorSet, filename=fn+"_label.png", useLabels=False)
-            Paper.generatePlot1(Statistics.orthogonalScaling(context._experimentValues), context.factorSet, filename=fn+"_fac.png", useABC=False)
-            Paper.generatePlot1(Statistics.orthogonalScaling(context._experimentValues), context.factorSet, filename=fn+".png")
+        Paper.generatePlot1Bottom(r2ScoreHistory, q2ScoreHistory)
+        Paper.generatePlot1(Statistics.orthogonalScaling(context._experimentValues), context.factorSet, filename="ExpHist.png")
 
 class HandleOutliers(State):
     def __init__(self): super().__init__("Handle outliers")
