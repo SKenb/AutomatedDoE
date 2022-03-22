@@ -75,15 +75,16 @@ rel_time_in_hours = np.array(rel_time_in_hours, dtype=np.float32)
 
 
 fig, axs = plt.subplots(4, sharex=True)
+plt.rcParams['text.usetex'] = True
 
 # color scheme
-color_SM = "#Af4808"
-color_reagent = "#3400ff"
-color_solvent = "#867cb5"
-color_prod = "#9e9a06"
-color_temperature = "#E20a0a"
-color_sty = "#000000"
-color_yield = "#08af63"
+color_SM = "tab:blue"
+color_reagent = "tab:orange"
+color_solvent = "tab:green"
+color_prod = "tab:red"
+color_temperature = "tab:green"
+color_sty = "tab:blue"
+color_yield = "tab:orange"
 
 plt.xlabel("Time (h)")
 
@@ -91,14 +92,14 @@ axs[0].plot(rel_time_in_hours, q_R1_act, color=color_reagent)
 axs[0].plot(rel_time_in_hours, q_SM1_act, color=color_SM)
 axs[0].plot(rel_time_in_hours, q_solvent1_act, color=color_solvent)
 axs[0].legend(["Reagent", "Starting Material", "Solvent"], bbox_to_anchor=(1.0, 0.8), loc="upper left")
-axs[0].set(ylabel="Flowrate (ml/min)")
+axs[0].set(ylabel=r"Flowrate ($ml\;min^{-1}$)")
 axs[0].spines["right"].set_visible(False)
 axs[0].spines["top"].set_visible(False)
 axs[0].spines["bottom"].set_visible(False)
 
 axs[1].plot(rel_time_in_hours, T_thermostat_act, color=color_temperature)
 axs[1].legend(["Thermostat Actual"], bbox_to_anchor=(1.0, 0.8), loc="upper left")
-axs[1].set(ylabel="Temperature (°C)")
+axs[1].set(ylabel=r"Temperature (°C)")
 axs[1].spines["right"].set_visible(False)
 axs[1].spines["top"].set_visible(False)
 axs[1].spines["bottom"].set_visible(False)
@@ -106,20 +107,20 @@ axs[1].set_ylim([0, 200])
 
 axs[2].plot(rel_time_in_hours, conc_SM_NMR, color=color_SM)
 axs[2].plot(rel_time_in_hours, conc_prod_NMR, color=color_prod)
-axs[2].legend(["Starting Material (NMR)", "Product (NMR)"], bbox_to_anchor=(1.0, 0.8), loc="upper left")
-axs[2].set(ylabel="Concentration (mol/L)")
+axs[2].legend([r"Starting Material (NMR)", "Product (NMR)"], bbox_to_anchor=(1.0, 0.8), loc="upper left")
+axs[2].set(ylabel=r"Concentration ($mol\;L^{-1}$)")
 axs[2].spines["right"].set_visible(False)
 axs[2].spines["top"].set_visible(False)
 axs[2].spines["bottom"].set_visible(False)
 
 axs[3].plot(rel_time_in_hours, sty, color=color_sty)
 axs[3].legend(["STY"], bbox_to_anchor=(1.0, 1.5), loc="upper left")
-axs[3].set(ylabel="STY (kg/L/h)")
+axs[3].set(ylabel=r"STY ($kg\;L^{-1}\;h^{-1}$)")
 axs[3].spines["top"].set_visible(False)
 
 axs3_x2 = axs[3].twinx()
 axs3_x2.plot(rel_time_in_hours, product_yield * 100, color=color_yield)
-axs3_x2.set(ylabel="Yield (%)")
+axs3_x2.set(ylabel=r"Yield ($\%$)")
 axs3_x2.legend(["Yield"], bbox_to_anchor=(1.0, 1.30), loc="upper left")
 axs3_x2.spines["top"].set_visible(False)
 
