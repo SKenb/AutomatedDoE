@@ -16,7 +16,6 @@ def cm2Inch(cm):
     return cm/2.54
 
 def generatePlot2(prediction, observation, titleStr, useLabels=True, filename=None, drawOrigin=True, drawTicks=True, figure=None):
-    return
     savePath=Path("./Paper/Plots/Plot2_ObsVsPred/")
 
     red = lambda func: func(func(prediction), func(observation))
@@ -32,14 +31,14 @@ def generatePlot2(prediction, observation, titleStr, useLabels=True, filename=No
         lambda plt: drawOrigin and plt.plot([minVal, maxVal], [minVal, minVal], 'k', linewidth=lineWidth) ,
         lambda plt: drawOrigin and plt.plot([minVal, minVal], [minVal, maxVal], 'k', linewidth=lineWidth),
         lambda plt: plt.plot([minVal, maxVal], [minVal, maxVal], 'k--', linewidth=lineWidth),
-        lambda plt: plt.scatter(prediction, observation, scatterSize, zorder=200),
+        lambda plt: plt.scatter(prediction, observation, scatterSize, zorder=200, edgecolor='k'),
         #lambda plt: plt.grid(), 
         lambda plt: plt.gca().set_aspect('equal', adjustable='box'),
         lambda plt: plt.rcParams.update({'font.size': fontSize, 'figure.autolayout': True}),
         lambda plt: drawTicks or plt.yticks([]),
         lambda plt: drawTicks or plt.xticks([]),
-        lambda plt: drawTicks and (plt.yticks([1.5, 2]) if filename is not None and "Rob" in filename else plt.yticks([0, .5, 1, 1.5])),
-        lambda plt: drawTicks and (plt.xticks([1.5, 2]) if filename is not None and "Rob" in filename else plt.xticks([0, .5, 1, 1.5])),
+        lambda plt: drawTicks and (plt.yticks([1.4, 1.6, 1.8, 2]) if filename is not None and "Rob" in filename else plt.yticks([0, .5, 1, 1.5])),
+        lambda plt: drawTicks and (plt.xticks([1.4, 1.6, 1.8, 2]) if filename is not None and "Rob" in filename else plt.xticks([0, .5, 1, 1.5])),
         xLabel=r"Predicted STY ($kg\;L^{-1}\;h^{-1}$)" if useLabels else "", 
         yLabel=r"Observed STY ($kg\;L^{-1}\;h^{-1}$)" if useLabels else "", 
         title="", 
@@ -47,7 +46,7 @@ def generatePlot2(prediction, observation, titleStr, useLabels=True, filename=No
         setFilename=filename,
         savePath=savePath,
         figure=figure,
-        skip=True
+        skip=False
     )
 
 def plotScoreHistory(scoreHistoryDict : Dict, selectedIndex=None, drawTicks=True, useLabels=True, titleStr="", figure=False):
@@ -173,6 +172,7 @@ def generatePlot4C(prediction, observation, titleStr, useLabels=True, filename=N
     exit()
 
 def generatePlot1Bottom(r2ScoreHistory, q2ScoreHistory):
+    return
     sizeInCm = 8
     savePath=Path("./Paper/Plots/Plot1_Hist/")
 
