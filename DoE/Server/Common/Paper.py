@@ -16,6 +16,7 @@ def cm2Inch(cm):
     return cm/2.54
 
 def generatePlot2(prediction, observation, titleStr, useLabels=True, filename=None, drawOrigin=True, drawTicks=True, figure=None):
+
     savePath=Path("./Paper/Plots/Plot2_ObsVsPred/")
 
     red = lambda func: func(func(prediction), func(observation))
@@ -37,8 +38,10 @@ def generatePlot2(prediction, observation, titleStr, useLabels=True, filename=No
         lambda plt: plt.rcParams.update({'font.size': fontSize, 'figure.autolayout': True}),
         lambda plt: drawTicks or plt.yticks([]),
         lambda plt: drawTicks or plt.xticks([]),
-        lambda plt: drawTicks and (plt.yticks([1.4, 1.6, 1.8, 2]) if filename is not None and "Rob" in filename else plt.yticks([0, .5, 1, 1.5])),
-        lambda plt: drawTicks and (plt.xticks([1.4, 1.6, 1.8, 2]) if filename is not None and "Rob" in filename else plt.xticks([0, .5, 1, 1.5])),
+        lambda plt: drawTicks and plt.yticks([0, 2, 4]),
+        lambda plt: drawTicks and plt.yticks([0, 2, 4]),
+        #lambda plt: drawTicks and (plt.yticks([1.4, 1.6, 1.8, 2]) if filename is not None and "Rob" in filename else plt.yticks([0, .5, 1, 1.5])),
+        #lambda plt: drawTicks and (plt.xticks([1.4, 1.6, 1.8, 2]) if filename is not None and "Rob" in filename else plt.xticks([0, .5, 1, 1.5])),
         xLabel=r"Predicted STY ($kg\;L^{-1}\;h^{-1}$)" if useLabels else "", 
         yLabel=r"Observed STY ($kg\;L^{-1}\;h^{-1}$)" if useLabels else "", 
         title="", 
@@ -50,7 +53,6 @@ def generatePlot2(prediction, observation, titleStr, useLabels=True, filename=No
     )
 
 def plotScoreHistory(scoreHistoryDict : Dict, selectedIndex=None, drawTicks=True, useLabels=True, titleStr="", figure=False):
-    return
     def plotAllScores(p):
         color= ['blue', 'orange']
 
@@ -62,9 +64,9 @@ def plotScoreHistory(scoreHistoryDict : Dict, selectedIndex=None, drawTicks=True
                 p.scatter(selectedIndex, scoreHistory[selectedIndex], 60, edgecolors='k', c=color[index], zorder=200),
  
     Common.plot(
-        lambda plt: plt.rcParams.update({'text.usetex': True}),
         plotAllScores,
-        lambda plt: drawTicks or plt.yticks([]),
+        lambda plt: plt.ylim((-0.1, 1.1)),
+        lambda plt: plt.yticks([0, 0.5, 1]),
         lambda plt: drawTicks or plt.xticks([]),
         showLegend= len(scoreHistoryDict) > 1,
         xLabel=r"Coefficients removed" if useLabels else "", 
@@ -72,11 +74,10 @@ def plotScoreHistory(scoreHistoryDict : Dict, selectedIndex=None, drawTicks=True
         #title=("" if len(scoreHistoryDict) > 1 else scoreHistoryDict[0].keys()[0]) + "Score",
         title=titleStr,
         figure=figure,
-        skip=True
+        skip=False
     )
 
 def plotCoefficients(coefficientValues, context:ContextDoE=None, confidenceInterval=None, titleStr = "", drawTicks=True, useLabels=True, figure=None, combinations:dict=None):
-    return
     l = len(coefficientValues)
     
     if confidenceInterval is None: 
@@ -108,19 +109,24 @@ def plotCoefficients(coefficientValues, context:ContextDoE=None, confidenceInter
         lambda plt: _plotBars(plt),
         lambda plt: plt.errorbar(range(l), coefficientValues, confidenceInterval, fmt=' ', color='b'),
         lambda plt: True if labels is None else plt.xticks(range(l), labels, rotation=90),
-        lambda plt: plt.yticks([]),
+        #lambda plt: plt.yticks([]),
         xLabel="", 
         yLabel=r"Magnitude", 
         title=titleStr,
         figure=figure,
-        skip=True
+        skip=False
     )
 
 
 def generatePlot4(prediction, context, scaledModel, combinations, combiScoreHistory, bestCombiScoreItem, useSubtitles=False, useLabels=True, filename=None, drawOrigin=True, drawTicks=True):
-    return
     savePath=Path("./Paper/Plots/Plot4_Iter/")
     sizeInCm = 10
+
+    plt.rcParams.update({
+        'text.usetex': True,
+        'font.size': '18',
+        'font.weight': 'bold'
+    })
 
     Common.subplot(
         lambda fig: plotScoreHistory(
@@ -137,7 +143,7 @@ def generatePlot4(prediction, context, scaledModel, combinations, combiScoreHist
         ),
         lambda fig: generatePlot2(
             prediction, context.getResponse(), titleStr="Titel1" if useSubtitles else "", 
-            useLabels=useLabels, drawOrigin=False, drawTicks=False, figure=fig
+            useLabels=useLabels, drawOrigin=False, drawTicks=True, figure=fig
         ),
         figHandler=lambda fig: fig.set_size_inches(cm2Inch(sizeInCm), cm2Inch(3*sizeInCm)),
         rows=3,
