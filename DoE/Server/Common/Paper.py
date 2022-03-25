@@ -1,3 +1,4 @@
+from cmath import inf
 from typing import Dict
 from unittest import skip
 from Common import Statistics
@@ -16,7 +17,7 @@ def cm2Inch(cm):
     return cm/2.54
 
 def generatePlot2(prediction, observation, titleStr, useLabels=True, filename=None, drawOrigin=True, drawTicks=True, figure=None):
-
+    return
     savePath=Path("./Paper/Plots/Plot2_ObsVsPred/")
 
     red = lambda func: func(func(prediction), func(observation))
@@ -119,6 +120,7 @@ def plotCoefficients(coefficientValues, context:ContextDoE=None, confidenceInter
 
 
 def generatePlot4(prediction, context, scaledModel, combinations, combiScoreHistory, bestCombiScoreItem, useSubtitles=False, useLabels=True, filename=None, drawOrigin=True, drawTicks=True):
+    return
     savePath=Path("./Paper/Plots/Plot4_Iter/")
     sizeInCm = 10
 
@@ -177,24 +179,41 @@ def generatePlot4C(prediction, observation, titleStr, useLabels=True, filename=N
 
     exit()
 
-def generatePlot1Bottom(r2ScoreHistory, q2ScoreHistory):
-    return
+def generatePlot1Bottom(numberOfExperiments, r2ScoreHistory, q2ScoreHistory):
+
     sizeInCm = 8
     savePath=Path("./Paper/Plots/Plot1_Hist/")
+
+    plt.rcParams.update({
+        'text.usetex': True,
+        'font.size': '18',
+        'font.weight': 'bold'
+    })
 
     fig = plt.figure()
     ax = plt.gca()
 
     sizeInCm = 8
-    fig.set_size_inches(cm2Inch(4*sizeInCm), cm2Inch(1.5*sizeInCm))
+    fig.set_size_inches(cm2Inch(4*sizeInCm), cm2Inch(2*sizeInCm))
 
-    plt.scatter(range(len(r2ScoreHistory)), r2ScoreHistory, 60, c="tab:blue", zorder=200, label=r"$R^2$")
-    plt.scatter(range(len(q2ScoreHistory)), q2ScoreHistory, 60, c="tab:orange", zorder=200, label=r"$Q^2$")
+    plt.scatter(numberOfExperiments, r2ScoreHistory, 60, c="tab:blue", zorder=200, label=r"$R^2$")
+    plt.scatter(numberOfExperiments, q2ScoreHistory, 60, c="tab:orange", zorder=200, label=r"$Q^2$")
 
-    plt.plot(r2ScoreHistory, "--", color="tab:blue")
-    plt.plot(q2ScoreHistory, "--", color="tab:orange")
+    plt.plot(numberOfExperiments, r2ScoreHistory, "--", color="tab:blue")
+    plt.plot(numberOfExperiments, q2ScoreHistory, "--", color="tab:orange")
+
+    plt.xlim((0, 1.1*max(numberOfExperiments)))
+    plt.ylim((0, 1))
+
+    plt.yticks([0, .5, 1])
+
+    xTicks = [0]
+    xTicks.extend(numberOfExperiments)
+    xLabels = [str(0)]
+    xLabels.extend([str(el+1) for el in range(len(numberOfExperiments))])
+    plt.xticks(xTicks, xLabels)
     
-    plt.xlabel("Experiment iteration")
+    plt.xlabel("Design iteration")
     plt.ylabel("Score")
 
     plt.legend()
@@ -203,7 +222,11 @@ def generatePlot1Bottom(r2ScoreHistory, q2ScoreHistory):
 
 
 def generatePlot1(experiments, factorSet, filename="ExpHist.png", useABC=True, useLabels=True, drawTicks=True):
-    return
+    
+    print(experiments)
+
+    exit()
+    
     savePath=Path("./Paper/Plots/Plot1_Hist/")
 
     expLabels = [f.name for f in factorSet.factors]

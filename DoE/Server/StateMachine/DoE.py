@@ -208,7 +208,7 @@ class EvaluateExperiments(State):
 
         scaledModel, model = self.createModels(combinations)
         
-        history.add(History.DoEHistoryItem(-1, combiScoreHistory, bestCombiScoreItem))
+        history.add(History.DoEHistoryItem(-1, combiScoreHistory, bestCombiScoreItem, len(context._experimentValues)))
         
         if len(history) >= 40: return StopDoE("Exp. Iteration reached maximum")
 
@@ -317,6 +317,7 @@ class StopDoE(State):
 
 
         ## Stats
+        numberOfExperiments = history.choose(lambda item: item.numberOfExperiments)
         r2ScoreHistory = history.choose(lambda item: item.bestCombiScoreItem.r2)
         q2ScoreHistory = history.choose(lambda item: item.bestCombiScoreItem.q2)
         repScoreHistory = history.choose(lambda item: item.bestCombiScoreItem.scoreCombis["repScore"])
@@ -381,7 +382,7 @@ class StopDoE(State):
                 filename=title
             )
 
-        Paper.generatePlot1Bottom(r2ScoreHistory, q2ScoreHistory)
+        Paper.generatePlot1Bottom(numberOfExperiments, r2ScoreHistory, q2ScoreHistory)
         Paper.generatePlot1(Statistics.orthogonalScaling(context._experimentValues), context.factorSet, filename="ExpHist.png")
 
 class HandleOutliers(State):

@@ -1,7 +1,12 @@
+from audioop import minmax
+from re import X
+from turtle import xcor
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 import datetime
+
+from matplotlib import colors
 
 
 def convert_time(time_date_value):
@@ -14,6 +19,24 @@ def convert_time(time_date_value):
     time_rel = time_converted - datetime.datetime(2000, 1, 1)
     time_seconds = time_rel.total_seconds()
     return time_seconds
+
+
+## DoE Data
+numberOfExperiments = [10, 19, 21, 23, 25, 27]
+r2ScoreHistory = [0.90933, 0.77719, 0.90332, 0.90535, 0.90806, 0.79789]
+q2ScoreHistory = [0.53475, 0.66086, 0.74849, 0.77956, 0.78982, 0.71578]
+
+experiments = np.array([ 
+    np.array([-1, -1, -1, -1]), np.array([-1,  1, -1, -1]), np.array([-1,  1,  1,  1]),
+    np.array([-1, -1,  1,  1]), np.array([ 0, -0,  0,  0]), np.array([ 0, 0, 0 , 0]),
+    np.array([ 1, -1, -1, -1]), np.array([ 1,  1, -1, -1]), np.array([ 1,  1,  1,  1]),
+    np.array([ 1, -1,  1,  1]), np.array([ 1, -1, -1,  1]), np.array([ 1,  1, -1,  1]),
+    np.array([ 1,  1,  1, -1]), np.array([ 1, -1,  1, -1]), np.array([ 0, -0,  0, 0]),
+    np.array([-1, -1, -1,  1]), np.array([-1,  1, -1,  1]), np.array([-1,  1,  1, -1]),
+    np.array([-1, -1,  1, -1]), np.array([-1, -0,  0,  0]), np.array([ 1, -0,  0,  0]),
+    np.array([ 0, -1,  0,  0]), np.array([ 0,  1,  0,  0]), np.array([ 0, -0,  1,  0]),
+    np.array([ 0, -0, -1,  0]), np.array([ 0, -0,  0, -1]), np.array([ 0, -0,  0, 1])
+])
 
 
 # importing
@@ -73,8 +96,13 @@ rel_time_in_hours = np.array(rel_time_in_hours, dtype=np.float32)
 
 # plotting
 
+plt.rcParams.update({
+    'text.usetex': True,
+    'font.size': '10',
+    'font.weight': 'bold'
+})
 
-fig, axs = plt.subplots(4, sharex=True)
+fig, axs = plt.subplots(6)
 plt.rcParams['text.usetex'] = True
 
 # color scheme
@@ -88,42 +116,114 @@ color_yield = "tab:orange"
 
 plt.xlabel("Time (h)")
 
-axs[0].plot(rel_time_in_hours, q_R1_act, color=color_reagent)
-axs[0].plot(rel_time_in_hours, q_SM1_act, color=color_SM)
-axs[0].plot(rel_time_in_hours, q_solvent1_act, color=color_solvent)
-axs[0].legend(["Reagent", "Starting Material", "Solvent"], bbox_to_anchor=(1.0, 0.8), loc="upper left")
-axs[0].set(ylabel=r"Flowrate ($ml\;min^{-1}$)")
-axs[0].spines["right"].set_visible(False)
-axs[0].spines["top"].set_visible(False)
-axs[0].spines["bottom"].set_visible(False)
+minMax = lambda array: (min(array)-.15, 1.02*max(array))
 
-axs[1].plot(rel_time_in_hours, T_thermostat_act, color=color_temperature)
-axs[1].legend(["Thermostat Actual"], bbox_to_anchor=(1.0, 0.8), loc="upper left")
-axs[1].set(ylabel=r"Temperature (°C)")
-axs[1].spines["right"].set_visible(False)
-axs[1].spines["top"].set_visible(False)
-axs[1].spines["bottom"].set_visible(False)
-axs[1].set_ylim([0, 200])
+#### Exp History
+expLabels = [chr(65+(index % 26))for index in range(4)]
 
-axs[2].plot(rel_time_in_hours, conc_SM_NMR, color=color_SM)
-axs[2].plot(rel_time_in_hours, conc_prod_NMR, color=color_prod)
-axs[2].legend([r"Starting Material (NMR)", "Product (NMR)"], bbox_to_anchor=(1.0, 0.8), loc="upper left")
-axs[2].set(ylabel=r"Concentration ($mol\;L^{-1}$)")
-axs[2].spines["right"].set_visible(False)
-axs[2].spines["top"].set_visible(False)
-axs[2].spines["bottom"].set_visible(False)
+assert len(expLabels) == experiments.shape[1], "UPS 0.o - we have a different amount of labels compared to experiment variables..."
 
-axs[3].plot(rel_time_in_hours, sty, color=color_sty)
-axs[3].legend(["STY"], bbox_to_anchor=(1.0, 1.5), loc="upper left")
-axs[3].set(ylabel=r"STY ($kg\;L^{-1}\;h^{-1}$)")
-axs[3].spines["top"].set_visible(False)
+cmap = colors.ListedColormap(['royalblue', 'lightsteelblue', 'cornflowerblue'])
+bounds=[-1.5,-.5, .5, 1.5]
+norm = colors.BoundaryNorm(bounds, cmap.N)
 
-axs3_x2 = axs[3].twinx()
-axs3_x2.plot(rel_time_in_hours, product_yield * 100, color=color_yield)
-axs3_x2.set(ylabel=r"Yield ($\%$)")
-axs3_x2.legend(["Yield"], bbox_to_anchor=(1.0, 1.30), loc="upper left")
-axs3_x2.spines["top"].set_visible(False)
+axs[0].imshow(experiments.T, cmap=cmap, origin='lower', norm=norm, interpolation='nearest', aspect="auto")
 
+# Show all ticks and label them with the respective list entries
+axs[0].set_xticks([])
+axs[0].set_yticks(np.arange(len(expLabels)))
+axs[0].set_yticklabels(expLabels)
+
+axs[0].set_ylabel("Factor")
+
+# Rotate the tick labels and set their alignment.
+#axs[0].setp(axs[0].get_xticklabels(), rotation=45, ha="right",
+#        rotation_mode="anchor")
+
+def valueToString(val, tol=1e-3):
+    if val < -tol: return "-" 
+    if val > tol: return "+" 
+    return "0"
+
+# Loop over data dimensions and create text annotations.
+for i in range(len(expLabels)):
+    for j in range(experiments.shape[0]):
+        text = valueToString(experiments[j, i])
+
+        if "0" in text:
+            axs[0].text(j, i, text, ha="center", va="center", color="w", fontsize=12)
+        else:
+            axs[0].text(j, i, text, ha="center", va="center", color="w")
+
+axs[0].xaxis.tick_top()
+axs[0].set_title("")
+
+
+#### Clemens stuff
+axs[1].plot(rel_time_in_hours, q_R1_act, color=color_reagent)
+axs[1].plot(rel_time_in_hours, q_SM1_act, color=color_SM)
+axs[1].plot(rel_time_in_hours, q_solvent1_act, color=color_solvent)
+axs[1].legend(["Reagent", "Starting Material", "Solvent"], loc="upper left")
+axs[1].set(ylabel=r"Flowrate ($ml\;min^{-1}$)")
+#axs[1].spines["right"].set_visible(False)
+#axs[1].spines["top"].set_visible(False)
+#axs[1].spines["bottom"].set_visible(False)
+axs[1].set_xlim(minMax(rel_time_in_hours))
+
+
+axs[2].plot(rel_time_in_hours, T_thermostat_act, color=color_temperature)
+axs[2].legend(["Thermostat Actual"], loc="upper left")
+axs[2].set(ylabel=r"Temperature (°C)")
+#axs[2].spines["right"].set_visible(False)
+#axs[2].spines["top"].set_visible(False)
+#axs[2].spines["bottom"].set_visible(False)
+axs[2].set_ylim([0, 200])
+axs[2].set_xlim(minMax(rel_time_in_hours))
+
+axs[3].plot(rel_time_in_hours, conc_SM_NMR, color=color_SM)
+axs[3].plot(rel_time_in_hours, conc_prod_NMR, color=color_prod)
+axs[3].legend([r"Starting Material (NMR)", "Product (NMR)"], loc="upper left")
+axs[3].set(ylabel=r"Concentration ($mol\;L^{-1}$)")
+#axs[3].spines["right"].set_visible(False)
+#axs[3].spines["top"].set_visible(False)
+#axs[3].spines["bottom"].set_visible(False)
+axs[3].set_xlim(minMax(rel_time_in_hours))
+
+axs[4].plot(rel_time_in_hours, sty, color=color_sty)
+axs[4].legend(["STY"], bbox_to_anchor=(.001, 1), loc="upper left")
+axs[4].set(ylabel=r"STY ($kg\;L^{-1}\;h^{-1}$)")
+#axs[4].spines["top"].set_visible(False)
+axs[4].set_xlim(minMax(rel_time_in_hours))
+
+axs4_x2 = axs[4].twinx()
+axs4_x2.plot(rel_time_in_hours, product_yield * 100, color=color_yield)
+axs4_x2.set(ylabel=r"Yield ($\%$)")
+axs4_x2.legend(["Yield"], bbox_to_anchor=(.001, 0.75), loc="upper left")
+#axs4_x2.spines["top"].set_visible(False)
+
+
+#### Design iteration
+x = [a*max(rel_time_in_hours)/max(numberOfExperiments) for a in numberOfExperiments]
+axs[5].scatter(x, r2ScoreHistory, 60, c="tab:blue", zorder=200, label=r"$R^2$")
+axs[5].scatter(x, q2ScoreHistory, 60, c="tab:orange", zorder=200, label=r"$Q^2$")
+axs[5].plot(x, r2ScoreHistory, "--", color="tab:blue")
+axs[5].plot(x, q2ScoreHistory, "--", color="tab:orange")
+axs[5].set_ylim((0, 1))
+axs[5].set_yticks([0, .5, 1])
+
+xTicks = [0]
+xTicks.extend(x)
+xLabels = [str(0)]
+xLabels.extend([str(el+1) for el in range(len(x))])
+axs[5].set_xlim(minMax(xTicks))
+axs[5].set_xticks(xTicks)
+axs[5].set_xticklabels(xLabels)
+
+axs[5].set_xlabel("Design iteration")
+axs[5].set_ylabel("Score")
+
+axs[5].legend()
+#
 
 fig.set_size_inches(10, 10)
 plt.savefig("./SNAr_DoE_1Run/CC_DAT_DoE_SNAr_CEJ-46_Run-1_211110_V01.png", dpi=500, bbox_inches="tight")
