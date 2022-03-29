@@ -8,6 +8,8 @@ import datetime
 
 from matplotlib import colors
 
+DRAW_LABELS = False
+
 
 def convert_time(time_date_value):
     """
@@ -134,7 +136,7 @@ axs[0].set_xticks([])
 axs[0].set_yticks(np.arange(len(expLabels)))
 axs[0].set_yticklabels(expLabels)
 
-axs[0].set_ylabel("Factor")
+if DRAW_LABELS: axs[0].set_ylabel("Factor")
 
 # Rotate the tick labels and set their alignment.
 #axs[0].setp(axs[0].get_xticklabels(), rotation=45, ha="right",
@@ -163,8 +165,8 @@ axs[0].set_title("")
 axs[1].plot(rel_time_in_hours, q_R1_act, color=color_reagent)
 axs[1].plot(rel_time_in_hours, q_SM1_act, color=color_SM)
 axs[1].plot(rel_time_in_hours, q_solvent1_act, color=color_solvent)
-axs[1].legend(["Reagent", "Starting Material", "Solvent"], loc="upper left")
-axs[1].set(ylabel=r"Flowrate ($ml\;min^{-1}$)")
+if DRAW_LABELS: axs[1].legend(["Reagent", "Starting Material", "Solvent"], loc="upper right", ncol = 3)
+if DRAW_LABELS: axs[1].set(ylabel=r"Flow rate ($ml\;min^{-1}$)")
 #axs[1].spines["right"].set_visible(False)
 #axs[1].spines["top"].set_visible(False)
 #axs[1].spines["bottom"].set_visible(False)
@@ -172,8 +174,8 @@ axs[1].set_xlim(minMax(rel_time_in_hours))
 
 
 axs[2].plot(rel_time_in_hours, T_thermostat_act, color=color_temperature)
-axs[2].legend(["Thermostat Actual"], loc="upper left")
-axs[2].set(ylabel=r"Temperature (°C)")
+if DRAW_LABELS: axs[2].legend(["Thermostat Actual"], loc="lower left")
+if DRAW_LABELS: axs[2].set(ylabel=r"Temperature ($^\circ C$)")
 #axs[2].spines["right"].set_visible(False)
 #axs[2].spines["top"].set_visible(False)
 #axs[2].spines["bottom"].set_visible(False)
@@ -182,23 +184,26 @@ axs[2].set_xlim(minMax(rel_time_in_hours))
 
 axs[3].plot(rel_time_in_hours, conc_SM_NMR, color=color_SM)
 axs[3].plot(rel_time_in_hours, conc_prod_NMR, color=color_prod)
-axs[3].legend([r"Starting Material (NMR)", "Product (NMR)"], loc="upper left")
-axs[3].set(ylabel=r"Concentration ($mol\;L^{-1}$)")
+if DRAW_LABELS: axs[3].legend([r"Starting Material ($NMR$)", "Product (NMR)"], loc="upper left")
+if DRAW_LABELS: axs[3].set(ylabel=r"Concentration ($mol\;L^{-1}$)")
 #axs[3].spines["right"].set_visible(False)
 #axs[3].spines["top"].set_visible(False)
 #axs[3].spines["bottom"].set_visible(False)
 axs[3].set_xlim(minMax(rel_time_in_hours))
+axs[3].set_yticks([.0, .15, .3])
 
 axs[4].plot(rel_time_in_hours, sty, color=color_sty)
-axs[4].legend(["STY"], bbox_to_anchor=(.001, 1), loc="upper left")
-axs[4].set(ylabel=r"STY ($kg\;L^{-1}\;h^{-1}$)")
+if DRAW_LABELS: axs[4].legend(["STY"], bbox_to_anchor=(.001, 1), loc="upper left")
+if DRAW_LABELS: axs[4].set(ylabel=r"STY ($kg\;L^{-1}\;h^{-1}$)")
 #axs[4].spines["top"].set_visible(False)
 axs[4].set_xlim(minMax(rel_time_in_hours))
+axs[4].set_yticks([0, .6, 1.2])
 
 axs4_x2 = axs[4].twinx()
 axs4_x2.plot(rel_time_in_hours, product_yield * 100, color=color_yield)
-axs4_x2.set(ylabel=r"Yield ($\%$)")
-axs4_x2.legend(["Yield"], bbox_to_anchor=(.001, 0.75), loc="upper left")
+if DRAW_LABELS: axs4_x2.set(ylabel=r"Yield ($\%$)")
+if DRAW_LABELS: axs4_x2.legend(["Yield"], bbox_to_anchor=(.001, 0.75), loc="upper left")
+axs4_x2.set_yticks([0, 35, 70])
 #axs4_x2.spines["top"].set_visible(False)
 
 
@@ -219,10 +224,10 @@ axs[5].set_xlim(minMax(xTicks))
 axs[5].set_xticks(xTicks)
 axs[5].set_xticklabels(xLabels)
 
-axs[5].set_xlabel("Design iteration")
-axs[5].set_ylabel("Score")
+if DRAW_LABELS: axs[5].set_xlabel("Design iteration")
+if DRAW_LABELS: axs[5].set_ylabel("Score")
 
-axs[5].legend()
+if DRAW_LABELS: axs[5].legend()
 #
 
 fig.set_size_inches(10, 10)
