@@ -116,8 +116,6 @@ color_temperature = "tab:green"
 color_sty = "tab:blue"
 color_yield = "tab:orange"
 
-plt.xlabel("Time (h)")
-
 minMax = lambda array: (min(array)-.15, 1.02*max(array))
 
 #### Exp History
@@ -198,12 +196,14 @@ if DRAW_LABELS: axs[4].set(ylabel=r"STY ($kg\;L^{-1}\;h^{-1}$)")
 #axs[4].spines["top"].set_visible(False)
 axs[4].set_xlim(minMax(rel_time_in_hours))
 axs[4].set_yticks([0, .6, 1.2])
+axs[4].set(xlabel=("Time (h)" if DRAW_LABELS else ""))
 
 axs4_x2 = axs[4].twinx()
 axs4_x2.plot(rel_time_in_hours, product_yield * 100, color=color_yield)
 if DRAW_LABELS: axs4_x2.set(ylabel=r"Yield ($\%$)")
 if DRAW_LABELS: axs4_x2.legend(["Yield"], bbox_to_anchor=(.001, 0.75), loc="upper left")
 axs4_x2.set_yticks([0, 35, 70])
+#axs4_x2.set_xlabel("Time (h)" if DRAW_LABELS else "")
 #axs4_x2.spines["top"].set_visible(False)
 
 
@@ -223,8 +223,8 @@ xLabels.extend([str(el+1) for el in range(len(x))])
 axs[5].set_xlim(minMax(xTicks))
 axs[5].set_xticks(xTicks)
 axs[5].set_xticklabels(xLabels)
+#axs[5].set_xlabel("Design iteration" if DRAW_LABELS else "")
 
-if DRAW_LABELS: axs[5].set_xlabel("Design iteration")
 if DRAW_LABELS: axs[5].set_ylabel("Score")
 
 if DRAW_LABELS: axs[5].legend()

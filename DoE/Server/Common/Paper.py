@@ -17,7 +17,6 @@ def cm2Inch(cm):
     return cm/2.54
 
 def generatePlot2(prediction, observation, titleStr, useLabels=True, filename=None, drawOrigin=True, drawTicks=True, figure=None):
-    return
     savePath=Path("./Paper/Plots/Plot2_ObsVsPred/")
 
     red = lambda func: func(func(prediction), func(observation))
@@ -45,6 +44,42 @@ def generatePlot2(prediction, observation, titleStr, useLabels=True, filename=No
         #lambda plt: drawTicks and (plt.xticks([1.4, 1.6, 1.8, 2]) if filename is not None and "Rob" in filename else plt.xticks([0, .5, 1, 1.5])),
         xLabel=r"Predicted STY ($kg\;L^{-1}\;h^{-1}$)" if useLabels else "", 
         yLabel=r"Observed STY ($kg\;L^{-1}\;h^{-1}$)" if useLabels else "", 
+        title="", 
+        saveFigure=savePath is not None and figure is None,
+        setFilename=filename,
+        savePath=savePath,
+        figure=figure,
+        skip=False
+    )
+
+def generatePlot24R(prediction, observation, titleStr, useLabels=True, filename=None, drawOrigin=True, drawTicks=True, figure=None):
+    savePath=Path("./Paper/Plots/Plot2_ObsVsPred/")
+
+    red = lambda func: func(func(prediction), func(observation))
+
+    minVal = red(min)
+    maxVal = red(max)
+
+    lineWidth = 3
+    fontSize = 16
+    scatterSize = 160
+
+    Common.plot(
+        lambda plt: drawOrigin and plt.plot([minVal, maxVal], [minVal, minVal], 'k', linewidth=lineWidth) ,
+        lambda plt: drawOrigin and plt.plot([minVal, minVal], [minVal, maxVal], 'k', linewidth=lineWidth),
+        lambda plt: plt.plot([minVal, maxVal], [minVal, maxVal], 'k--', linewidth=lineWidth),
+        lambda plt: plt.scatter(prediction, observation, scatterSize, zorder=200, edgecolor='k'),
+        #lambda plt: plt.grid(), 
+        lambda plt: plt.gca().set_aspect('equal', adjustable='box'),
+        lambda plt: plt.rcParams.update({'font.size': fontSize, 'figure.autolayout': True}),
+        lambda plt: drawTicks or plt.yticks([]),
+        lambda plt: drawTicks or plt.xticks([]),
+        #lambda plt: drawTicks and plt.yticks([0, 2, 4]),
+        #lambda plt: drawTicks and plt.yticks([0, 2, 4]),
+        #lambda plt: drawTicks and (plt.yticks([1.4, 1.6, 1.8, 2]) if filename is not None and "Rob" in filename else plt.yticks([0, .5, 1, 1.5])),
+        #lambda plt: drawTicks and (plt.xticks([1.4, 1.6, 1.8, 2]) if filename is not None and "Rob" in filename else plt.xticks([0, .5, 1, 1.5])),
+        xLabel=r"Predicted conversion" if useLabels else "", 
+        yLabel=r"Observed conversion" if useLabels else "", 
         title="", 
         saveFigure=savePath is not None and figure is None,
         setFilename=filename,
@@ -120,8 +155,8 @@ def plotCoefficients(coefficientValues, context:ContextDoE=None, confidenceInter
 
 
 def generatePlot4(prediction, context, scaledModel, combinations, combiScoreHistory, bestCombiScoreItem, useSubtitles=False, useLabels=True, filename=None, drawOrigin=True, drawTicks=True):
-    return
-    savePath=Path("./Paper/Plots/Plot4_Iter/")
+    
+    savePath=Path("./Paper/Plots/Plot4_Iter/R4/")
     sizeInCm = 10
 
     plt.rcParams.update({
@@ -143,7 +178,7 @@ def generatePlot4(prediction, context, scaledModel, combinations, combiScoreHist
             titleStr="Coefficients" if useSubtitles else "",
             drawTicks=drawTicks, useLabels=useLabels, figure=fig
         ),
-        lambda fig: generatePlot2(
+        lambda fig: generatePlot24R(
             prediction, context.getResponse(), titleStr="Titel1" if useSubtitles else "", 
             useLabels=useLabels, drawOrigin=False, drawTicks=True, figure=fig
         ),
