@@ -42,9 +42,10 @@ class CombiScoreHistoryItem(HistoryItem):
         self.context = copy.deepcopy(context)
 
 class DoEHistoryItem(HistoryItem):
-    def __init__(self, index, combiScoreHistory, bestCombiScoreItem) -> None:
+    def __init__(self, index, combiScoreHistory, bestCombiScoreItem, numberOfExperiments, ) -> None:
         super().__init__()
 
         self.index = index
+        self.numberOfExperiments = numberOfExperiments 
         self.combiScoreHistory = combiScoreHistory
         self.bestCombiScoreItem = bestCombiScoreItem

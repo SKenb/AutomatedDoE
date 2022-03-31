@@ -15,7 +15,7 @@ import statsmodels.api as sm
 from StateMachine.Context import ContextDoE
 
 def plotObservedVsPredicted(prediction, observation, titleSuffix=None, X=None, figure=None, suppressR2=False, savePath=None):
-
+    return
     titleStr = "Observed vs. Predicted"
     if titleSuffix is not None: titleStr += " - " + titleSuffix
 
@@ -25,6 +25,7 @@ def plotObservedVsPredicted(prediction, observation, titleSuffix=None, X=None, f
     maxVal = red(max)
 
     Common.plot(
+        lambda plt: plt.rcParams.update({'text.usetex': True}),
         lambda plt: plt.scatter(prediction, observation),
         lambda plt: plt.plot([minVal, maxVal], [minVal, minVal], 'k', linewidth=1),
         lambda plt: plt.plot([minVal, minVal], [minVal, maxVal], 'k', linewidth=1),
@@ -32,7 +33,7 @@ def plotObservedVsPredicted(prediction, observation, titleSuffix=None, X=None, f
         lambda plt: plt.grid(), 
         #lambda plt: True if suppressR2 else plt.text(.05*(maxVal - minVal), -.15*(maxVal - minVal), "R2: {}".format(round(R2(observation, prediction), 2))),
         #lambda plt: X is not None and plt.text(.4*(maxVal - minVal), -.15*(maxVal - minVal), "Q2: {}".format(round(Q2(X, observation), 2))),
-        xLabel="Predicted", yLabel="Observed", title=titleStr, 
+        xLabel=r"Predicted STY ($kg\;L^{-1}\;h^{-1}$)", yLabel=r"Observed STY ($kg\;L^{-1}\;h^{-1}$)", title=titleStr, 
         saveFigure=savePath is not None,
         savePath=savePath,
         figure=figure
@@ -40,6 +41,7 @@ def plotObservedVsPredicted(prediction, observation, titleSuffix=None, X=None, f
 
 
 def plotResiduals(residuals, bound=4, figure=None):
+    return
     rng = range(len(residuals))
     outlierIdx = abs(residuals) > bound
 
@@ -60,6 +62,7 @@ def plotResiduals(residuals, bound=4, figure=None):
 
 
 def plotCoefficients(coefficientValues, context:ContextDoE=None, confidenceInterval=None, titleSuffix=None, figure=None, combinations:dict=None, ):
+    return
     titleStr = "Coefficients plot"
     if titleSuffix is not None: titleStr += " - " + titleSuffix
     l = len(coefficientValues)
@@ -92,13 +95,13 @@ def plotCoefficients(coefficientValues, context:ContextDoE=None, confidenceInter
         lambda plt: _plotBars(plt),
         lambda plt: plt.errorbar(range(l), coefficientValues, confidenceInterval, fmt=' ', color='b'),
         lambda plt: True if labels is None else plt.xticks(range(l), labels, rotation=90),
-        xLabel="Coefficient", yLabel="Value", title=titleStr,
+        xLabel="Coefficient", yLabel="Magnitude", title=titleStr,
         figure=figure
     )
 
 
 def plotResponseHistogram(Y, titleSuffix=None, figure=None):
-
+    return
     titleStr = "Histogram"
     if titleSuffix is not None: titleStr += " - " + titleSuffix
 
@@ -110,10 +113,10 @@ def plotResponseHistogram(Y, titleSuffix=None, figure=None):
 
 
 def plotScoreHistory(scoreHistoryDict : Dict, selectedIndex=None, figure=False):
-
+    return
     def plotAllScores(p):
         for _, (score, scoreHistory) in enumerate(scoreHistoryDict.items()):
-            p.plot(scoreHistory, label=score)
+            p.plot(scoreHistory, label="${}$".format(score.replace("2", "^2")))
             
             if selectedIndex is not None:
                 p.scatter(selectedIndex, scoreHistory[selectedIndex], color='r'),
@@ -123,11 +126,12 @@ def plotScoreHistory(scoreHistoryDict : Dict, selectedIndex=None, figure=False):
         showLegend= len(scoreHistoryDict) > 1,
         xLabel="Iteration", yLabel="Score", 
         #title=("" if len(scoreHistoryDict) > 1 else scoreHistoryDict[0].keys()[0]) + "Score",
-        title="R2 and Q2",
+        title=r"$R^2$ and $Q^2$",
         figure=figure
     )
 
 def plotContour(model : sm.OLS, factorSet : FactorSet, excludedFactors, combinations, filename=None):
+    return
     delta = 0.025
 
     indexX, indexY, indexZ = 0, 1, 2
