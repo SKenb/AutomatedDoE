@@ -15,7 +15,6 @@ import statsmodels.api as sm
 from StateMachine.Context import ContextDoE
 
 def plotObservedVsPredicted(prediction, observation, titleSuffix=None, X=None, figure=None, suppressR2=False, savePath=None):
-    return
     titleStr = "Observed vs. Predicted"
     if titleSuffix is not None: titleStr += " - " + titleSuffix
 
@@ -25,7 +24,6 @@ def plotObservedVsPredicted(prediction, observation, titleSuffix=None, X=None, f
     maxVal = red(max)
 
     Common.plot(
-        lambda plt: plt.rcParams.update({'text.usetex': True}),
         lambda plt: plt.scatter(prediction, observation),
         lambda plt: plt.plot([minVal, maxVal], [minVal, minVal], 'k', linewidth=1),
         lambda plt: plt.plot([minVal, minVal], [minVal, maxVal], 'k', linewidth=1),
@@ -41,7 +39,6 @@ def plotObservedVsPredicted(prediction, observation, titleSuffix=None, X=None, f
 
 
 def plotResiduals(residuals, bound=4, figure=None):
-    return
     rng = range(len(residuals))
     outlierIdx = abs(residuals) > bound
 
@@ -61,8 +58,7 @@ def plotResiduals(residuals, bound=4, figure=None):
     )
 
 
-def plotCoefficients(coefficientValues, context:ContextDoE=None, confidenceInterval=None, titleSuffix=None, figure=None, combinations:dict=None, ):
-    return
+def plotCoefficients(coefficientValues, context:ContextDoE=None, confidenceInterval=None, titleSuffix=None, figure=None, combinations:dict=None):
     titleStr = "Coefficients plot"
     if titleSuffix is not None: titleStr += " - " + titleSuffix
     l = len(coefficientValues)
@@ -83,7 +79,7 @@ def plotCoefficients(coefficientValues, context:ContextDoE=None, confidenceInter
         #labels.extend(["{} ({})".format(context.factorSet[index], char(index)) for index in range(len(context.factorSet)) if not context.isFactorExcluded(index)])
         labels = ["0"]
         labels.extend(["{}".format(char(index)) for index in range(len(context.factorSet)) if not context.isFactorExcluded(index)])
-        labels.extend(combinations.keys())
+        labels.extend(["${}$".format(key.replace("*", " \cdot ")) for key in combinations.keys()])
 
 
     def _plotBars(plt):
@@ -101,7 +97,6 @@ def plotCoefficients(coefficientValues, context:ContextDoE=None, confidenceInter
 
 
 def plotResponseHistogram(Y, titleSuffix=None, figure=None):
-    return
     titleStr = "Histogram"
     if titleSuffix is not None: titleStr += " - " + titleSuffix
 
@@ -113,7 +108,7 @@ def plotResponseHistogram(Y, titleSuffix=None, figure=None):
 
 
 def plotScoreHistory(scoreHistoryDict : Dict, selectedIndex=None, figure=False):
-    return
+
     def plotAllScores(p):
         for _, (score, scoreHistory) in enumerate(scoreHistoryDict.items()):
             p.plot(scoreHistory, label="${}$".format(score.replace("2", "^2")))
@@ -131,10 +126,9 @@ def plotScoreHistory(scoreHistoryDict : Dict, selectedIndex=None, figure=False):
     )
 
 def plotContour(model : sm.OLS, factorSet : FactorSet, excludedFactors, combinations, filename=None):
-    return
     delta = 0.025
 
-    indexX, indexY, indexZ = 0, 1, 2
+    indexX, indexY, indexZ = 0, 3, 4
 
     x = np.arange(factorSet.factors[indexX].min, factorSet.factors[indexX].max, delta)
     y = np.arange(factorSet.factors[indexY].min, factorSet.factors[indexY].max, delta)

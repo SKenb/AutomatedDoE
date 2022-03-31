@@ -16,8 +16,7 @@ import matplotlib
 MATPLOTLIB_SAVE_PLOT_ONLY = True
 
 
-def plot(*plotters, is3D=False, xLabel="x", yLabel="y", title="Plot", showLegend=False, figure=None, saveFigure=False, savePath=None, setFilename=None, skip=True):
-    if skip: return
+def plot(*plotters, is3D=False, xLabel="x", yLabel="y", title="Plot", showLegend=False, figure=None, saveFigure=False, savePath=None, setFilename=None):
 
     if figure is None: 
         figure = plt.figure()

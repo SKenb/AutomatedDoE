@@ -9,6 +9,7 @@ import threading
 import time, os
 from xml.dom import xmlbuilder
 import numpy as np
+import matplotlib.pyplot as plt
 
 from Common import Logger
 from Common import ImportExport
@@ -320,6 +321,7 @@ def process():
     global processStopRequest, processPauseRequest, processState, processProgess
     global factorSet, xamControl
     
+    plt.rcParams.update({'text.usetex': True}),
 
     def endProcess():
         onDone()

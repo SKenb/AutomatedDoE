@@ -338,8 +338,8 @@ class StopDoE(State):
 
         Common.subplot(
             lambda fig: Common.plot(
-                            lambda plt: plt.plot(r2ScoreHistory, label="R2"),
-                            lambda plt: plt.plot(q2ScoreHistory, label="Q2"),
+                            lambda plt: plt.plot(r2ScoreHistory, label=r"$R^2$"),
+                            lambda plt: plt.plot(q2ScoreHistory, label=r"$Q^2$"),
                             lambda plt: plt.plot(repScoreHistory, label="Reproducibility"),
                             lambda plt: plt.plot(coefficientOfVariationHistory, label="CV"),
                             xLabel="Exp. Iteration", yLabel="Score", title="Score over Exp.It.",
@@ -363,8 +363,8 @@ class StopDoE(State):
         )
 
         Common.subplot(
-            lambda fig: plot3DHist(fig, predR2, r2ScoreHistory, "R2 History"),
-            lambda fig: plot3DHist(fig, predQ2, q2ScoreHistory, "Q2 Hsitory"),
+            lambda fig: plot3DHist(fig, predR2, r2ScoreHistory, "$R^2$ History"),
+            lambda fig: plot3DHist(fig, predQ2, q2ScoreHistory, "$Q^2$ Hsitory"),
             is3D=True, saveFigure=True
         )
 

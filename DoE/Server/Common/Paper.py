@@ -12,11 +12,14 @@ from matplotlib import colors
 import matplotlib.pyplot as plt
 import numpy as np
 
+SKIP_PAPER_PLOTS = True
 
 def cm2Inch(cm): 
     return cm/2.54
 
 def generatePlot2(prediction, observation, titleStr, useLabels=True, filename=None, drawOrigin=True, drawTicks=True, figure=None):
+    if SKIP_PAPER_PLOTS: return
+    
     savePath=Path("./Paper/Plots/Plot2_ObsVsPred/")
 
     red = lambda func: func(func(prediction), func(observation))
@@ -48,11 +51,12 @@ def generatePlot2(prediction, observation, titleStr, useLabels=True, filename=No
         saveFigure=savePath is not None and figure is None,
         setFilename=filename,
         savePath=savePath,
-        figure=figure,
-        skip=False
+        figure=figure
     )
 
 def generatePlot24R(prediction, observation, titleStr, useLabels=True, filename=None, drawOrigin=True, drawTicks=True, figure=None):
+    if SKIP_PAPER_PLOTS: return
+
     savePath=Path("./Paper/Plots/Plot2_ObsVsPred/")
 
     red = lambda func: func(func(prediction), func(observation))
@@ -84,11 +88,12 @@ def generatePlot24R(prediction, observation, titleStr, useLabels=True, filename=
         saveFigure=savePath is not None and figure is None,
         setFilename=filename,
         savePath=savePath,
-        figure=figure,
-        skip=False
+        figure=figure
     )
 
 def plotScoreHistory(scoreHistoryDict : Dict, selectedIndex=None, drawTicks=True, useLabels=True, titleStr="", figure=False):
+    if SKIP_PAPER_PLOTS: return
+
     def plotAllScores(p):
         color= ['blue', 'orange']
 
@@ -109,11 +114,12 @@ def plotScoreHistory(scoreHistoryDict : Dict, selectedIndex=None, drawTicks=True
         yLabel=r"Score" if useLabels else "", 
         #title=("" if len(scoreHistoryDict) > 1 else scoreHistoryDict[0].keys()[0]) + "Score",
         title=titleStr,
-        figure=figure,
-        skip=False
+        figure=figure
     )
 
 def plotCoefficients(coefficientValues, context:ContextDoE=None, confidenceInterval=None, titleStr = "", drawTicks=True, useLabels=True, figure=None, combinations:dict=None):
+    if SKIP_PAPER_PLOTS: return
+
     l = len(coefficientValues)
     
     if confidenceInterval is None: 
@@ -149,13 +155,13 @@ def plotCoefficients(coefficientValues, context:ContextDoE=None, confidenceInter
         xLabel="", 
         yLabel=r"Magnitude", 
         title=titleStr,
-        figure=figure,
-        skip=False
+        figure=figure
     )
 
 
 def generatePlot4(prediction, context, scaledModel, combinations, combiScoreHistory, bestCombiScoreItem, useSubtitles=False, useLabels=True, filename=None, drawOrigin=True, drawTicks=True):
-    
+    if SKIP_PAPER_PLOTS: return
+
     savePath=Path("./Paper/Plots/Plot4_Iter/R4/")
     sizeInCm = 10
 
@@ -188,7 +194,8 @@ def generatePlot4(prediction, context, scaledModel, combinations, combiScoreHist
     )
 
 def generatePlot4C(prediction, observation, titleStr, useLabels=True, filename=None, drawOrigin=True, drawTicks=True):
-    return
+    if SKIP_PAPER_PLOTS: return
+
     savePath=Path("./Paper/Plots/Plot4_Iter/")
     
     N = 3
@@ -215,6 +222,7 @@ def generatePlot4C(prediction, observation, titleStr, useLabels=True, filename=N
     exit()
 
 def generatePlot1Bottom(numberOfExperiments, r2ScoreHistory, q2ScoreHistory):
+    if SKIP_PAPER_PLOTS: return
 
     sizeInCm = 8
     savePath=Path("./Paper/Plots/Plot1_Hist/")
@@ -257,6 +265,7 @@ def generatePlot1Bottom(numberOfExperiments, r2ScoreHistory, q2ScoreHistory):
 
 
 def generatePlot1(experiments, factorSet, filename="ExpHist.png", useABC=True, useLabels=True, drawTicks=True):
+    if SKIP_PAPER_PLOTS: return
     
     print(experiments)
 
