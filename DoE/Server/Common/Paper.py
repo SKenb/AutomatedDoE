@@ -12,7 +12,7 @@ from matplotlib import colors
 import matplotlib.pyplot as plt
 import numpy as np
 
-SKIP_PAPER_PLOTS = True
+SKIP_PAPER_PLOTS = False
 
 def cm2Inch(cm): 
     return cm/2.54
@@ -162,7 +162,7 @@ def plotCoefficients(coefficientValues, context:ContextDoE=None, confidenceInter
 def generatePlot4(prediction, context, scaledModel, combinations, combiScoreHistory, bestCombiScoreItem, useSubtitles=False, useLabels=True, filename=None, drawOrigin=True, drawTicks=True):
     if SKIP_PAPER_PLOTS: return
 
-    savePath=Path("./Paper/Plots/Plot4_Iter/R4/")
+    savePath=Path("./Paper/Plots/Plot4_Iter/")
     sizeInCm = 10
 
     plt.rcParams.update({
@@ -188,8 +188,12 @@ def generatePlot4(prediction, context, scaledModel, combinations, combiScoreHist
             prediction, context.getResponse(), titleStr="Titel1" if useSubtitles else "", 
             useLabels=useLabels, drawOrigin=False, drawTicks=True, figure=fig
         ),
-        figHandler=lambda fig: fig.set_size_inches(cm2Inch(sizeInCm), cm2Inch(3*sizeInCm)),
-        rows=3,
+        lambda fig: Statistics.plotContour2(
+            scaledModel, context.factorSet, context.excludedFactors, combinations,
+            figure=fig
+        ),
+        figHandler=lambda fig: fig.set_size_inches(cm2Inch(sizeInCm), cm2Inch(4*sizeInCm)),
+        rows=4,
         saveFigure=True, savePath=savePath, setFilename=filename or "Plot4"
     )
 

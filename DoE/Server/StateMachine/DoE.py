@@ -229,7 +229,7 @@ class EvaluateExperiments(State):
                 saveFigure=True, title=f"{len(history)}", showPlot=False
             )
 
-            Statistics.plotContour(scaledModel, context.factorSet, context.excludedFactors, combinations, "Plot_C_Iter{}.png".format(len(history)))
+            Statistics.plotContour2(scaledModel, context.factorSet, context.excludedFactors, combinations, "Plot_C_Iter{}.png".format(len(history)))
 
         # Paper
         Paper.generatePlot4(

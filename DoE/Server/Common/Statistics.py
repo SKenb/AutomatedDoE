@@ -125,13 +125,53 @@ def plotScoreHistory(scoreHistoryDict : Dict, selectedIndex=None, figure=False):
         figure=figure
     )
 
+def plotContour2(model : sm.OLS, factorSet : FactorSet, excludedFactors, combinations, filename=None, figure=None):
+    delta = 0.025
+
+    indexX, indexY = 0, 3
+
+    x = np.arange(factorSet.factors[indexX].min, factorSet.factors[indexX].max+delta, delta)
+    y = np.arange(factorSet.factors[indexY].min, factorSet.factors[indexY].max+delta, delta)
+    X, Y = np.meshgrid(x, y)
+
+    x1, y1 = X.reshape(-1), Y.reshape(-1)
+
+    maxIndizes = [4]
+    responses = np.array([factor.center() if index not in maxIndizes else factor.max for index, factor in enumerate(factorSet.factors)])
+    responses = np.array([responses.T for i in range(len(x1))])
+
+    responses[:, indexX] = x1
+    responses[:, indexY] = y1
+
+    responses = np.delete(responses,  excludedFactors, axis=1) 
+
+    RX = [np.append(r, [f(r) for f in combinations.values()]) for r in responses]
+
+    Z = LR.predict(model, RX)
+
+    zMin = min(Z)
+    zMax = max(Z)
+
+    levels = np.linspace(zMin, zMax, 10)
+
+    Common.plot(
+        lambda fig: fig.contourf(X, Y, Z.reshape(X.shape), levels),
+        lambda fig: fig.xticks([factorSet.factors[indexX].min, factorSet.factors[indexX].center(), factorSet.factors[indexX].max]),
+        lambda fig: fig.yticks([factorSet.factors[indexY].min, factorSet.factors[indexY].center(), factorSet.factors[indexY].max]),
+        xLabel=factorSet[indexX], yLabel=factorSet[indexY], title="",
+        saveFigure=filename is not None, 
+        setFilename=filename, figure=figure
+    )
+
+
+
 def plotContour(model : sm.OLS, factorSet : FactorSet, excludedFactors, combinations, filename=None):
     delta = 0.025
 
     indexX, indexY, indexZ = 0, 3, 4
 
-    x = np.arange(factorSet.factors[indexX].min, factorSet.factors[indexX].max, delta)
-    y = np.arange(factorSet.factors[indexY].min, factorSet.factors[indexY].max, delta)
+    x = np.arange(factorSet.factors[indexX].min, factorSet.factors[indexX].max+delta, delta)
+    y = np.arange(factorSet.factors[indexY].min, factorSet.factors[indexY].max+delta, delta)
     X, Y = np.meshgrid(x, y)
 
     x1, y1 = X.reshape(-1), Y.reshape(-1)
