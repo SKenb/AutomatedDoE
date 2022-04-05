@@ -190,6 +190,13 @@ class EvaluateExperiments(State):
 
         filteredCombiScoreHistory = combiScoreHistory.filter(lambda item: valueOfInterest(item) >= bound)
 
+        # Filter for R2 within definealbe drop
+        if len(filteredCombiScoreHistory) == 1: return filteredCombiScoreHistory[0]
+
+        maxR2Score = max(filteredCombiScoreHistory, key=lambda item: item.r2).r2
+        boundR2 = maxR2Score-.1
+        filteredCombiScoreHistory = [item for item in filteredCombiScoreHistory if item.r2 >= boundR2]
+
         return min(filteredCombiScoreHistory, key=lambda item: len(item.combinations)-len(item.excludedFactors))
 
     def onCall(self):
@@ -229,11 +236,12 @@ class EvaluateExperiments(State):
                 saveFigure=True, title=f"{len(history)}", showPlot=False
             )
 
-            Statistics.plotContour(scaledModel, context.factorSet, context.excludedFactors, combinations, "Plot_C_Iter{}.png".format(len(history)))
+            contourFunction = Statistics.plotContour2 if len(context.factorSet) > 4 else Statistics.plotContour
+            contourFunction(model, context.factorSet, context.excludedFactors, combinations, "Plot_C_Iter{}.png".format(len(history)))
 
         # Paper
         Paper.generatePlot4(
-            LR.predict(scaledModel, X), context, scaledModel, combinations, 
+            LR.predict(scaledModel, X), context, scaledModel, model, combinations, 
             combiScoreHistory, bestCombiScoreItem, drawTicks=False, useLabels=True,
             filename="Plot4_{}_{}_{}Exp.png".format("_Rob" if context.hasOptimum() else "", len(history), len(context._experimentValues))
         )
@@ -338,8 +346,8 @@ class StopDoE(State):
 
         Common.subplot(
             lambda fig: Common.plot(
-                            lambda plt: plt.plot(r2ScoreHistory, label="R2"),
-                            lambda plt: plt.plot(q2ScoreHistory, label="Q2"),
+                            lambda plt: plt.plot(r2ScoreHistory, label=r"$R^2$"),
+                            lambda plt: plt.plot(q2ScoreHistory, label=r"$Q^2$"),
                             lambda plt: plt.plot(repScoreHistory, label="Reproducibility"),
                             lambda plt: plt.plot(coefficientOfVariationHistory, label="CV"),
                             xLabel="Exp. Iteration", yLabel="Score", title="Score over Exp.It.",
@@ -363,8 +371,8 @@ class StopDoE(State):
         )
 
         Common.subplot(
-            lambda fig: plot3DHist(fig, predR2, r2ScoreHistory, "R2 History"),
-            lambda fig: plot3DHist(fig, predQ2, q2ScoreHistory, "Q2 Hsitory"),
+            lambda fig: plot3DHist(fig, predR2, r2ScoreHistory, "$R^2$ History"),
+            lambda fig: plot3DHist(fig, predQ2, q2ScoreHistory, "$Q^2$ Hsitory"),
             is3D=True, saveFigure=True
         )
 

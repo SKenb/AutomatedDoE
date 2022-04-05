@@ -1,4 +1,5 @@
 from cmath import inf
+from pickle import TRUE
 from typing import Dict
 from unittest import skip
 from Common import Statistics
@@ -12,11 +13,14 @@ from matplotlib import colors
 import matplotlib.pyplot as plt
 import numpy as np
 
+SKIP_PAPER_PLOTS = False
 
 def cm2Inch(cm): 
     return cm/2.54
 
 def generatePlot2(prediction, observation, titleStr, useLabels=True, filename=None, drawOrigin=True, drawTicks=True, figure=None):
+    if SKIP_PAPER_PLOTS: return
+    
     savePath=Path("./Paper/Plots/Plot2_ObsVsPred/")
 
     red = lambda func: func(func(prediction), func(observation))
@@ -48,11 +52,12 @@ def generatePlot2(prediction, observation, titleStr, useLabels=True, filename=No
         saveFigure=savePath is not None and figure is None,
         setFilename=filename,
         savePath=savePath,
-        figure=figure,
-        skip=False
+        figure=figure
     )
 
 def generatePlot24R(prediction, observation, titleStr, useLabels=True, filename=None, drawOrigin=True, drawTicks=True, figure=None):
+    if SKIP_PAPER_PLOTS: return
+
     savePath=Path("./Paper/Plots/Plot2_ObsVsPred/")
 
     red = lambda func: func(func(prediction), func(observation))
@@ -84,11 +89,12 @@ def generatePlot24R(prediction, observation, titleStr, useLabels=True, filename=
         saveFigure=savePath is not None and figure is None,
         setFilename=filename,
         savePath=savePath,
-        figure=figure,
-        skip=False
+        figure=figure
     )
 
 def plotScoreHistory(scoreHistoryDict : Dict, selectedIndex=None, drawTicks=True, useLabels=True, titleStr="", figure=False):
+    if SKIP_PAPER_PLOTS: return
+
     def plotAllScores(p):
         color= ['blue', 'orange']
 
@@ -109,11 +115,12 @@ def plotScoreHistory(scoreHistoryDict : Dict, selectedIndex=None, drawTicks=True
         yLabel=r"Score" if useLabels else "", 
         #title=("" if len(scoreHistoryDict) > 1 else scoreHistoryDict[0].keys()[0]) + "Score",
         title=titleStr,
-        figure=figure,
-        skip=False
+        figure=figure
     )
 
 def plotCoefficients(coefficientValues, context:ContextDoE=None, confidenceInterval=None, titleStr = "", drawTicks=True, useLabels=True, figure=None, combinations:dict=None):
+    if SKIP_PAPER_PLOTS: return
+
     l = len(coefficientValues)
     
     if confidenceInterval is None: 
@@ -149,14 +156,14 @@ def plotCoefficients(coefficientValues, context:ContextDoE=None, confidenceInter
         xLabel="", 
         yLabel=r"Magnitude", 
         title=titleStr,
-        figure=figure,
-        skip=False
+        figure=figure
     )
 
 
-def generatePlot4(prediction, context, scaledModel, combinations, combiScoreHistory, bestCombiScoreItem, useSubtitles=False, useLabels=True, filename=None, drawOrigin=True, drawTicks=True):
-    
-    savePath=Path("./Paper/Plots/Plot4_Iter/R4/")
+def generatePlot4(prediction, context, scaledModel, model, combinations, combiScoreHistory, bestCombiScoreItem, useSubtitles=False, useLabels=True, filename=None, drawOrigin=True, drawTicks=True):
+    if SKIP_PAPER_PLOTS: return
+
+    savePath=Path("./Paper/Plots/Plot4_Iter/")
     sizeInCm = 10
 
     plt.rcParams.update({
@@ -164,6 +171,8 @@ def generatePlot4(prediction, context, scaledModel, combinations, combiScoreHist
         'font.size': '18',
         'font.weight': 'bold'
     })
+
+    contourFunction = Statistics.plotContour2 if len(context.factorSet) > 4 else Statistics.plotContour
 
     Common.subplot(
         lambda fig: plotScoreHistory(
@@ -178,17 +187,22 @@ def generatePlot4(prediction, context, scaledModel, combinations, combiScoreHist
             titleStr="Coefficients" if useSubtitles else "",
             drawTicks=drawTicks, useLabels=useLabels, figure=fig
         ),
-        lambda fig: generatePlot24R(
+        lambda fig: generatePlot2(
             prediction, context.getResponse(), titleStr="Titel1" if useSubtitles else "", 
             useLabels=useLabels, drawOrigin=False, drawTicks=True, figure=fig
         ),
-        figHandler=lambda fig: fig.set_size_inches(cm2Inch(sizeInCm), cm2Inch(3*sizeInCm)),
-        rows=3,
+        lambda fig: contourFunction(
+            model, context.factorSet, context.excludedFactors, combinations,
+            figure=fig
+        ),
+        figHandler=lambda fig: fig.set_size_inches(cm2Inch(sizeInCm), cm2Inch(4*sizeInCm)),
+        rows=4,
         saveFigure=True, savePath=savePath, setFilename=filename or "Plot4"
     )
 
 def generatePlot4C(prediction, observation, titleStr, useLabels=True, filename=None, drawOrigin=True, drawTicks=True):
-    return
+    if SKIP_PAPER_PLOTS: return
+
     savePath=Path("./Paper/Plots/Plot4_Iter/")
     
     N = 3
@@ -215,6 +229,7 @@ def generatePlot4C(prediction, observation, titleStr, useLabels=True, filename=N
     exit()
 
 def generatePlot1Bottom(numberOfExperiments, r2ScoreHistory, q2ScoreHistory):
+    if SKIP_PAPER_PLOTS: return
 
     sizeInCm = 8
     savePath=Path("./Paper/Plots/Plot1_Hist/")
@@ -257,6 +272,7 @@ def generatePlot1Bottom(numberOfExperiments, r2ScoreHistory, q2ScoreHistory):
 
 
 def generatePlot1(experiments, factorSet, filename="ExpHist.png", useABC=True, useLabels=True, drawTicks=True):
+    if SKIP_PAPER_PLOTS: return
     
     print(experiments)
 
