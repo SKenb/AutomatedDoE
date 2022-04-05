@@ -372,12 +372,13 @@ def process():
         optimum = optimization(state.result())
         Logger.logInfo("Optimum @: {}".format(optimum))
 
-        Statistics.plotContour(
-            state.result().scaledModel, 
-            factorSet, 
-            state.result().excludedFactors, 
-            state.result().combinations
-        )
+        #contourFunction = Statistics.plotContour2 if len(state.result().factorSet) > 4 else Statistics.plotContour
+        #contourFunction(
+        #    state.result().model, 
+        #    factorSet, 
+        #    state.result().excludedFactors, 
+        #    state.result().combinations
+        #)
         
         log("Start DoE around optimum")
         possibillityToPause()

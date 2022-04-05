@@ -8,9 +8,12 @@ from sklearn import preprocessing
 from sklearn.model_selection import cross_val_score
 from sklearn.base import BaseEstimator, RegressorMixin
 from Common import LinearRegression as LR
+from matplotlib import cm
+
 
 import numpy as np
 import statsmodels.api as sm
+import matplotlib.pyplot as plt
 
 from StateMachine.Context import ContextDoE
 
@@ -126,7 +129,14 @@ def plotScoreHistory(scoreHistoryDict : Dict, selectedIndex=None, figure=False):
     )
 
 def plotContour2(model : sm.OLS, factorSet : FactorSet, excludedFactors, combinations, filename=None, figure=None):
-    delta = 0.025
+
+    plt.rcParams.update({
+        'text.usetex': True,
+        'font.size': '18',
+        'font.weight': 'bold'
+    })
+
+    delta = 0.005
 
     indexX, indexY = 0, 3
 
@@ -136,7 +146,7 @@ def plotContour2(model : sm.OLS, factorSet : FactorSet, excludedFactors, combina
 
     x1, y1 = X.reshape(-1), Y.reshape(-1)
 
-    maxIndizes = [4]
+    maxIndizes = [2, 4]
     responses = np.array([factor.center() if index not in maxIndizes else factor.max for index, factor in enumerate(factorSet.factors)])
     responses = np.array([responses.T for i in range(len(x1))])
 
@@ -155,7 +165,7 @@ def plotContour2(model : sm.OLS, factorSet : FactorSet, excludedFactors, combina
     levels = np.linspace(zMin, zMax, 10)
 
     Common.plot(
-        lambda fig: fig.contourf(X, Y, Z.reshape(X.shape), levels),
+        lambda fig: fig.contourf(X, Y, Z.reshape(X.shape), levels, cmap=cm.RdYlGn),
         lambda fig: fig.xticks([factorSet.factors[indexX].min, factorSet.factors[indexX].center(), factorSet.factors[indexX].max]),
         lambda fig: fig.yticks([factorSet.factors[indexY].min, factorSet.factors[indexY].center(), factorSet.factors[indexY].max]),
         xLabel=factorSet[indexX], yLabel=factorSet[indexY], title="",

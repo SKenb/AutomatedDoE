@@ -1,4 +1,5 @@
 from cmath import inf
+from pickle import TRUE
 from typing import Dict
 from unittest import skip
 from Common import Statistics
@@ -159,7 +160,7 @@ def plotCoefficients(coefficientValues, context:ContextDoE=None, confidenceInter
     )
 
 
-def generatePlot4(prediction, context, scaledModel, combinations, combiScoreHistory, bestCombiScoreItem, useSubtitles=False, useLabels=True, filename=None, drawOrigin=True, drawTicks=True):
+def generatePlot4(prediction, context, scaledModel, model, combinations, combiScoreHistory, bestCombiScoreItem, useSubtitles=False, useLabels=True, filename=None, drawOrigin=True, drawTicks=True):
     if SKIP_PAPER_PLOTS: return
 
     savePath=Path("./Paper/Plots/Plot4_Iter/")
@@ -170,6 +171,8 @@ def generatePlot4(prediction, context, scaledModel, combinations, combiScoreHist
         'font.size': '18',
         'font.weight': 'bold'
     })
+
+    contourFunction = Statistics.plotContour2 if len(context.factorSet) > 4 else Statistics.plotContour
 
     Common.subplot(
         lambda fig: plotScoreHistory(
@@ -184,12 +187,12 @@ def generatePlot4(prediction, context, scaledModel, combinations, combiScoreHist
             titleStr="Coefficients" if useSubtitles else "",
             drawTicks=drawTicks, useLabels=useLabels, figure=fig
         ),
-        lambda fig: generatePlot24R(
+        lambda fig: generatePlot2(
             prediction, context.getResponse(), titleStr="Titel1" if useSubtitles else "", 
             useLabels=useLabels, drawOrigin=False, drawTicks=True, figure=fig
         ),
-        lambda fig: Statistics.plotContour2(
-            scaledModel, context.factorSet, context.excludedFactors, combinations,
+        lambda fig: contourFunction(
+            model, context.factorSet, context.excludedFactors, combinations,
             figure=fig
         ),
         figHandler=lambda fig: fig.set_size_inches(cm2Inch(sizeInCm), cm2Inch(4*sizeInCm)),

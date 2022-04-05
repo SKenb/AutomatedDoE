@@ -190,6 +190,13 @@ class EvaluateExperiments(State):
 
         filteredCombiScoreHistory = combiScoreHistory.filter(lambda item: valueOfInterest(item) >= bound)
 
+        # Filter for R2 within definealbe drop
+        if len(filteredCombiScoreHistory) == 1: return filteredCombiScoreHistory[0]
+
+        maxR2Score = max(filteredCombiScoreHistory, key=lambda item: item.r2).r2
+        boundR2 = maxR2Score-.1
+        filteredCombiScoreHistory = [item for item in filteredCombiScoreHistory if item.r2 >= boundR2]
+
         return min(filteredCombiScoreHistory, key=lambda item: len(item.combinations)-len(item.excludedFactors))
 
     def onCall(self):
@@ -229,11 +236,12 @@ class EvaluateExperiments(State):
                 saveFigure=True, title=f"{len(history)}", showPlot=False
             )
 
-            Statistics.plotContour2(scaledModel, context.factorSet, context.excludedFactors, combinations, "Plot_C_Iter{}.png".format(len(history)))
+            contourFunction = Statistics.plotContour2 if len(context.factorSet) > 4 else Statistics.plotContour
+            contourFunction(model, context.factorSet, context.excludedFactors, combinations, "Plot_C_Iter{}.png".format(len(history)))
 
         # Paper
         Paper.generatePlot4(
-            LR.predict(scaledModel, X), context, scaledModel, combinations, 
+            LR.predict(scaledModel, X), context, scaledModel, model, combinations, 
             combiScoreHistory, bestCombiScoreItem, drawTicks=False, useLabels=True,
             filename="Plot4_{}_{}_{}Exp.png".format("_Rob" if context.hasOptimum() else "", len(history), len(context._experimentValues))
         )
