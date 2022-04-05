@@ -1,4 +1,7 @@
+from cmath import inf
+from pickle import TRUE
 from typing import Dict
+from unittest import skip
 from Common import Statistics
 from Common import LinearRegression as LR
 from Common import Common
@@ -10,11 +13,50 @@ from matplotlib import colors
 import matplotlib.pyplot as plt
 import numpy as np
 
+SKIP_PAPER_PLOTS = False
 
 def cm2Inch(cm): 
     return cm/2.54
 
 def generatePlot2(prediction, observation, titleStr, useLabels=True, filename=None, drawOrigin=True, drawTicks=True, figure=None):
+    if SKIP_PAPER_PLOTS: return
+    
+    savePath=Path("./Paper/Plots/Plot2_ObsVsPred/")
+
+    red = lambda func: func(func(prediction), func(observation))
+
+    minVal = red(min)
+    maxVal = red(max)
+
+    lineWidth = 3
+    fontSize = 16
+    scatterSize = 160
+
+    Common.plot(
+        lambda plt: drawOrigin and plt.plot([minVal, maxVal], [minVal, minVal], 'k', linewidth=lineWidth) ,
+        lambda plt: drawOrigin and plt.plot([minVal, minVal], [minVal, maxVal], 'k', linewidth=lineWidth),
+        lambda plt: plt.plot([minVal, maxVal], [minVal, maxVal], 'k--', linewidth=lineWidth),
+        lambda plt: plt.scatter(prediction, observation, scatterSize, zorder=200, edgecolor='k'),
+        #lambda plt: plt.grid(), 
+        lambda plt: plt.gca().set_aspect('equal', adjustable='box'),
+        lambda plt: plt.rcParams.update({'font.size': fontSize, 'figure.autolayout': True}),
+        lambda plt: drawTicks or plt.yticks([]),
+        lambda plt: drawTicks or plt.xticks([]),
+        lambda plt: drawTicks and plt.yticks([0, 2, 4]),
+        lambda plt: drawTicks and plt.yticks([0, 2, 4]),
+        #lambda plt: drawTicks and (plt.yticks([1.4, 1.6, 1.8, 2]) if filename is not None and "Rob" in filename else plt.yticks([0, .5, 1, 1.5])),
+        #lambda plt: drawTicks and (plt.xticks([1.4, 1.6, 1.8, 2]) if filename is not None and "Rob" in filename else plt.xticks([0, .5, 1, 1.5])),
+        xLabel=r"Predicted STY ($kg\;L^{-1}\;h^{-1}$)" if useLabels else "", 
+        yLabel=r"Observed STY ($kg\;L^{-1}\;h^{-1}$)" if useLabels else "", 
+        title="", 
+        saveFigure=savePath is not None and figure is None,
+        setFilename=filename,
+        savePath=savePath,
+        figure=figure
+    )
+
+def generatePlot24R(prediction, observation, titleStr, useLabels=True, filename=None, drawOrigin=True, drawTicks=True, figure=None):
+    if SKIP_PAPER_PLOTS: return
 
     savePath=Path("./Paper/Plots/Plot2_ObsVsPred/")
 
@@ -31,43 +73,54 @@ def generatePlot2(prediction, observation, titleStr, useLabels=True, filename=No
         lambda plt: drawOrigin and plt.plot([minVal, maxVal], [minVal, minVal], 'k', linewidth=lineWidth) ,
         lambda plt: drawOrigin and plt.plot([minVal, minVal], [minVal, maxVal], 'k', linewidth=lineWidth),
         lambda plt: plt.plot([minVal, maxVal], [minVal, maxVal], 'k--', linewidth=lineWidth),
-        lambda plt: plt.scatter(prediction, observation, scatterSize, zorder=200),
-        lambda plt: plt.grid(), 
-        lambda plt: plt.axis('equal'),
-        lambda plt: plt.rcParams.update({'font.size': fontSize}),
+        lambda plt: plt.scatter(prediction, observation, scatterSize, zorder=200, edgecolor='k'),
+        #lambda plt: plt.grid(), 
+        lambda plt: plt.gca().set_aspect('equal', adjustable='box'),
+        lambda plt: plt.rcParams.update({'font.size': fontSize, 'figure.autolayout': True}),
         lambda plt: drawTicks or plt.yticks([]),
         lambda plt: drawTicks or plt.xticks([]),
-        xLabel="Predicted" if useLabels else "", 
-        yLabel="Observed" if useLabels else "", 
-        title=titleStr, 
+        #lambda plt: drawTicks and plt.yticks([0, 2, 4]),
+        #lambda plt: drawTicks and plt.yticks([0, 2, 4]),
+        #lambda plt: drawTicks and (plt.yticks([1.4, 1.6, 1.8, 2]) if filename is not None and "Rob" in filename else plt.yticks([0, .5, 1, 1.5])),
+        #lambda plt: drawTicks and (plt.xticks([1.4, 1.6, 1.8, 2]) if filename is not None and "Rob" in filename else plt.xticks([0, .5, 1, 1.5])),
+        xLabel=r"Predicted conversion" if useLabels else "", 
+        yLabel=r"Observed conversion" if useLabels else "", 
+        title="", 
         saveFigure=savePath is not None and figure is None,
         setFilename=filename,
         savePath=savePath,
         figure=figure
     )
 
-def plotScoreHistory(scoreHistoryDict : Dict, selectedIndex=None, drawTicks=True, useLabels=True, titleStr="R2 and Q2", figure=False):
+def plotScoreHistory(scoreHistoryDict : Dict, selectedIndex=None, drawTicks=True, useLabels=True, titleStr="", figure=False):
+    if SKIP_PAPER_PLOTS: return
 
     def plotAllScores(p):
-        for _, (score, scoreHistory) in enumerate(scoreHistoryDict.items()):
-            p.plot(scoreHistory, label=score, lineWidth=3)
+        color= ['blue', 'orange']
+
+        for index, (score, scoreHistory) in enumerate(scoreHistoryDict.items()):
+
+            p.plot(scoreHistory, label="${}$".format(score.replace("2", "^2")), lineWidth=3)
             
             if selectedIndex is not None:
-                p.scatter(selectedIndex, scoreHistory[selectedIndex], 60, color='r', zorder=200),
+                p.scatter(selectedIndex, scoreHistory[selectedIndex], 60, edgecolors='k', c=color[index], zorder=200),
  
     Common.plot(
         plotAllScores,
-        lambda plt: drawTicks or plt.yticks([]),
+        lambda plt: plt.ylim((-0.1, 1.1)),
+        lambda plt: plt.yticks([0, 0.5, 1]),
         lambda plt: drawTicks or plt.xticks([]),
         showLegend= len(scoreHistoryDict) > 1,
-        xLabel="Iteration" if useLabels else "", 
-        yLabel="Score" if useLabels else "", 
+        xLabel=r"Coefficients removed" if useLabels else "", 
+        yLabel=r"Score" if useLabels else "", 
         #title=("" if len(scoreHistoryDict) > 1 else scoreHistoryDict[0].keys()[0]) + "Score",
         title=titleStr,
         figure=figure
     )
 
-def plotCoefficients(coefficientValues, context:ContextDoE=None, confidenceInterval=None, titleStr = "Coefficients plot", drawTicks=True, useLabels=True, figure=None, combinations:dict=None):
+def plotCoefficients(coefficientValues, context:ContextDoE=None, confidenceInterval=None, titleStr = "", drawTicks=True, useLabels=True, figure=None, combinations:dict=None):
+    if SKIP_PAPER_PLOTS: return
+
     l = len(coefficientValues)
     
     if confidenceInterval is None: 
@@ -84,9 +137,9 @@ def plotCoefficients(coefficientValues, context:ContextDoE=None, confidenceInter
 
         #labels = ["Constant"]
         #labels.extend(["{} ({})".format(context.factorSet[index], char(index)) for index in range(len(context.factorSet)) if not context.isFactorExcluded(index)])
-        labels = ["0"]
-        labels.extend(["{}".format(char(index)) for index in range(len(context.factorSet)) if not context.isFactorExcluded(index)])
-        labels.extend(combinations.keys())
+        labels = [r"$0$"]
+        labels.extend([r"${}$".format(char(index)) for index in range(len(context.factorSet)) if not context.isFactorExcluded(index)])
+        labels.extend([r"${}$".format(l.replace("*", r" \cdot ")) for l in combinations.keys()])
 
 
     def _plotBars(plt):
@@ -95,32 +148,33 @@ def plotCoefficients(coefficientValues, context:ContextDoE=None, confidenceInter
             if not isSig: bars[index].set_color('r')
 
     Common.plot(
+        lambda plt: plt.rcParams.update({'text.usetex': True}),
         lambda plt: _plotBars(plt),
         lambda plt: plt.errorbar(range(l), coefficientValues, confidenceInterval, fmt=' ', color='b'),
         lambda plt: True if labels is None else plt.xticks(range(l), labels, rotation=90),
-        lambda plt: drawTicks or plt.yticks([]),
-        lambda plt: drawTicks or plt.xticks([]),
-        xLabel="Coefficient" if useLabels else "", 
-        yLabel="Value" if useLabels else "", 
+        #lambda plt: plt.yticks([]),
+        xLabel="", 
+        yLabel=r"Magnitude", 
         title=titleStr,
         figure=figure
     )
 
 
-def generatePlot4(prediction, context, scaledModel, combinations, combiScoreHistory, bestCombiScoreItem, useSubtitles=False, useLabels=True, filename=None, drawOrigin=True, drawTicks=True):
+def generatePlot4(prediction, context, scaledModel, model, combinations, combiScoreHistory, bestCombiScoreItem, useSubtitles=False, useLabels=True, filename=None, drawOrigin=True, drawTicks=True):
+    if SKIP_PAPER_PLOTS: return
+
     savePath=Path("./Paper/Plots/Plot4_Iter/")
     sizeInCm = 10
 
+    plt.rcParams.update({
+        'text.usetex': True,
+        'font.size': '18',
+        'font.weight': 'bold'
+    })
+
+    contourFunction = Statistics.plotContour2 if len(context.factorSet) > 4 else Statistics.plotContour
+
     Common.subplot(
-        lambda fig: generatePlot2(
-            prediction, context.getResponse(), titleStr="Titel1" if useSubtitles else "", 
-            useLabels=useLabels, drawOrigin=drawOrigin, drawTicks=drawTicks, figure=fig
-        ),
-        lambda fig: plotCoefficients(
-            scaledModel.params, context, scaledModel.conf_int(), combinations=combinations, 
-            titleStr="Coefficients" if useSubtitles else "",
-            drawTicks=drawTicks, useLabels=useLabels, figure=fig
-        ),
         lambda fig: plotScoreHistory(
             {
                 "R2": combiScoreHistory.choose(lambda i: i.r2), 
@@ -128,13 +182,27 @@ def generatePlot4(prediction, context, scaledModel, combinations, combiScoreHist
             }, bestCombiScoreItem.index, drawTicks=drawTicks, useLabels=useLabels,
             titleStr="Score history" if useSubtitles else "", figure=fig
         ),
-        figHandler=lambda fig: fig.set_size_inches(cm2Inch(sizeInCm), cm2Inch(3*sizeInCm)),
-        rows=3,
+        lambda fig: plotCoefficients(
+            scaledModel.params, context, scaledModel.conf_int(), combinations=combinations, 
+            titleStr="Coefficients" if useSubtitles else "",
+            drawTicks=drawTicks, useLabels=useLabels, figure=fig
+        ),
+        lambda fig: generatePlot2(
+            prediction, context.getResponse(), titleStr="Titel1" if useSubtitles else "", 
+            useLabels=useLabels, drawOrigin=False, drawTicks=True, figure=fig
+        ),
+        lambda fig: contourFunction(
+            model, context.factorSet, context.excludedFactors, combinations,
+            figure=fig
+        ),
+        figHandler=lambda fig: fig.set_size_inches(cm2Inch(sizeInCm), cm2Inch(4*sizeInCm)),
+        rows=4,
         saveFigure=True, savePath=savePath, setFilename=filename or "Plot4"
     )
 
 def generatePlot4C(prediction, observation, titleStr, useLabels=True, filename=None, drawOrigin=True, drawTicks=True):
-    
+    if SKIP_PAPER_PLOTS: return
+
     savePath=Path("./Paper/Plots/Plot4_Iter/")
     
     N = 3
@@ -160,8 +228,56 @@ def generatePlot4C(prediction, observation, titleStr, useLabels=True, filename=N
 
     exit()
 
-def generatePlot1(experiments, factorSet, filename="ExpHist.png", useABC=True, useLabels=True, drawTicks=True):
+def generatePlot1Bottom(numberOfExperiments, r2ScoreHistory, q2ScoreHistory):
+    if SKIP_PAPER_PLOTS: return
 
+    sizeInCm = 8
+    savePath=Path("./Paper/Plots/Plot1_Hist/")
+
+    plt.rcParams.update({
+        'text.usetex': True,
+        'font.size': '18',
+        'font.weight': 'bold'
+    })
+
+    fig = plt.figure()
+    ax = plt.gca()
+
+    sizeInCm = 8
+    fig.set_size_inches(cm2Inch(4*sizeInCm), cm2Inch(2*sizeInCm))
+
+    plt.scatter(numberOfExperiments, r2ScoreHistory, 60, c="tab:blue", zorder=200, label=r"$R^2$")
+    plt.scatter(numberOfExperiments, q2ScoreHistory, 60, c="tab:orange", zorder=200, label=r"$Q^2$")
+
+    plt.plot(numberOfExperiments, r2ScoreHistory, "--", color="tab:blue")
+    plt.plot(numberOfExperiments, q2ScoreHistory, "--", color="tab:orange")
+
+    plt.xlim((0, 1.1*max(numberOfExperiments)))
+    plt.ylim((0, 1))
+
+    plt.yticks([0, .5, 1])
+
+    xTicks = [0]
+    xTicks.extend(numberOfExperiments)
+    xLabels = [str(0)]
+    xLabels.extend([str(el+1) for el in range(len(numberOfExperiments))])
+    plt.xticks(xTicks, xLabels)
+    
+    plt.xlabel("Design iteration")
+    plt.ylabel("Score")
+
+    plt.legend()
+
+    plt.savefig(savePath / Path("Plot1Bottom.png"))
+
+
+def generatePlot1(experiments, factorSet, filename="ExpHist.png", useABC=True, useLabels=True, drawTicks=True):
+    if SKIP_PAPER_PLOTS: return
+    
+    print(experiments)
+
+    exit()
+    
     savePath=Path("./Paper/Plots/Plot1_Hist/")
 
     expLabels = [f.name for f in factorSet.factors]
@@ -174,8 +290,9 @@ def generatePlot1(experiments, factorSet, filename="ExpHist.png", useABC=True, u
     norm = colors.BoundaryNorm(bounds, cmap.N)
 
     fig = plt.figure()
+    ax = plt.gca()
 
-    sizeInCm = 5
+    sizeInCm = 8
     fig.set_size_inches(cm2Inch(4*sizeInCm), cm2Inch(sizeInCm))
 
     plt.imshow(experiments.T, cmap=cmap, origin='lower', norm=norm, interpolation='nearest')
@@ -185,7 +302,7 @@ def generatePlot1(experiments, factorSet, filename="ExpHist.png", useABC=True, u
     plt.yticks(np.arange(len(expLabels)), labels=expLabels)
 
     if useLabels:
-        plt.xlabel("Experiments")
+        #plt.xlabel("Experiments")
         plt.ylabel("Factor")
 
     # Rotate the tick labels and set their alignment.
@@ -200,9 +317,15 @@ def generatePlot1(experiments, factorSet, filename="ExpHist.png", useABC=True, u
     # Loop over data dimensions and create text annotations.
     for i in range(len(expLabels)):
         for j in range(experiments.shape[0]):
-            ax.text(j, i, valueToString(experiments[j, i]), ha="center", va="center", color="w")
+            text = valueToString(experiments[j, i])
 
-    ax.set_title("Titel 2")
+            if "0" in text:
+                ax.text(j, i, text, ha="center", va="center", color="w", fontsize=12)
+            else:
+                ax.text(j, i, text, ha="center", va="center", color="w")
+
+    ax.xaxis.tick_top()
+    ax.set_title("")
     fig.tight_layout()
 
     plt.savefig(savePath / Path(filename))

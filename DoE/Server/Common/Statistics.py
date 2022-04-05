@@ -8,14 +8,16 @@ from sklearn import preprocessing
 from sklearn.model_selection import cross_val_score
 from sklearn.base import BaseEstimator, RegressorMixin
 from Common import LinearRegression as LR
+from matplotlib import cm
+
 
 import numpy as np
 import statsmodels.api as sm
+import matplotlib.pyplot as plt
 
 from StateMachine.Context import ContextDoE
 
 def plotObservedVsPredicted(prediction, observation, titleSuffix=None, X=None, figure=None, suppressR2=False, savePath=None):
-
     titleStr = "Observed vs. Predicted"
     if titleSuffix is not None: titleStr += " - " + titleSuffix
 
@@ -32,7 +34,7 @@ def plotObservedVsPredicted(prediction, observation, titleSuffix=None, X=None, f
         lambda plt: plt.grid(), 
         #lambda plt: True if suppressR2 else plt.text(.05*(maxVal - minVal), -.15*(maxVal - minVal), "R2: {}".format(round(R2(observation, prediction), 2))),
         #lambda plt: X is not None and plt.text(.4*(maxVal - minVal), -.15*(maxVal - minVal), "Q2: {}".format(round(Q2(X, observation), 2))),
-        xLabel="Predicted", yLabel="Observed", title=titleStr, 
+        xLabel=r"Predicted STY ($kg\;L^{-1}\;h^{-1}$)", yLabel=r"Observed STY ($kg\;L^{-1}\;h^{-1}$)", title=titleStr, 
         saveFigure=savePath is not None,
         savePath=savePath,
         figure=figure
@@ -59,7 +61,7 @@ def plotResiduals(residuals, bound=4, figure=None):
     )
 
 
-def plotCoefficients(coefficientValues, context:ContextDoE=None, confidenceInterval=None, titleSuffix=None, figure=None, combinations:dict=None, ):
+def plotCoefficients(coefficientValues, context:ContextDoE=None, confidenceInterval=None, titleSuffix=None, figure=None, combinations:dict=None):
     titleStr = "Coefficients plot"
     if titleSuffix is not None: titleStr += " - " + titleSuffix
     l = len(coefficientValues)
@@ -80,7 +82,7 @@ def plotCoefficients(coefficientValues, context:ContextDoE=None, confidenceInter
         #labels.extend(["{} ({})".format(context.factorSet[index], char(index)) for index in range(len(context.factorSet)) if not context.isFactorExcluded(index)])
         labels = ["0"]
         labels.extend(["{}".format(char(index)) for index in range(len(context.factorSet)) if not context.isFactorExcluded(index)])
-        labels.extend(combinations.keys())
+        labels.extend(["${}$".format(key.replace("*", " \cdot ")) for key in combinations.keys()])
 
 
     def _plotBars(plt):
@@ -92,13 +94,12 @@ def plotCoefficients(coefficientValues, context:ContextDoE=None, confidenceInter
         lambda plt: _plotBars(plt),
         lambda plt: plt.errorbar(range(l), coefficientValues, confidenceInterval, fmt=' ', color='b'),
         lambda plt: True if labels is None else plt.xticks(range(l), labels, rotation=90),
-        xLabel="Coefficient", yLabel="Value", title=titleStr,
+        xLabel="Coefficient", yLabel="Magnitude", title=titleStr,
         figure=figure
     )
 
 
 def plotResponseHistogram(Y, titleSuffix=None, figure=None):
-
     titleStr = "Histogram"
     if titleSuffix is not None: titleStr += " - " + titleSuffix
 
@@ -113,7 +114,7 @@ def plotScoreHistory(scoreHistoryDict : Dict, selectedIndex=None, figure=False):
 
     def plotAllScores(p):
         for _, (score, scoreHistory) in enumerate(scoreHistoryDict.items()):
-            p.plot(scoreHistory, label=score)
+            p.plot(scoreHistory, label="${}$".format(score.replace("2", "^2")))
             
             if selectedIndex is not None:
                 p.scatter(selectedIndex, scoreHistory[selectedIndex], color='r'),
@@ -123,17 +124,64 @@ def plotScoreHistory(scoreHistoryDict : Dict, selectedIndex=None, figure=False):
         showLegend= len(scoreHistoryDict) > 1,
         xLabel="Iteration", yLabel="Score", 
         #title=("" if len(scoreHistoryDict) > 1 else scoreHistoryDict[0].keys()[0]) + "Score",
-        title="R2 and Q2",
+        title=r"$R^2$ and $Q^2$",
         figure=figure
     )
+
+def plotContour2(model : sm.OLS, factorSet : FactorSet, excludedFactors, combinations, filename=None, figure=None):
+
+    plt.rcParams.update({
+        'text.usetex': True,
+        'font.size': '18',
+        'font.weight': 'bold'
+    })
+
+    delta = 0.005
+
+    indexX, indexY = 0, 3
+
+    x = np.arange(factorSet.factors[indexX].min, factorSet.factors[indexX].max+delta, delta)
+    y = np.arange(factorSet.factors[indexY].min, factorSet.factors[indexY].max+delta, delta)
+    X, Y = np.meshgrid(x, y)
+
+    x1, y1 = X.reshape(-1), Y.reshape(-1)
+
+    maxIndizes = [2, 4]
+    responses = np.array([factor.center() if index not in maxIndizes else factor.max for index, factor in enumerate(factorSet.factors)])
+    responses = np.array([responses.T for i in range(len(x1))])
+
+    responses[:, indexX] = x1
+    responses[:, indexY] = y1
+
+    responses = np.delete(responses,  excludedFactors, axis=1) 
+
+    RX = [np.append(r, [f(r) for f in combinations.values()]) for r in responses]
+
+    Z = LR.predict(model, RX)
+
+    zMin = min(Z)
+    zMax = max(Z)
+
+    levels = np.linspace(zMin, zMax, 10)
+
+    Common.plot(
+        lambda fig: fig.contourf(X, Y, Z.reshape(X.shape), levels, cmap=cm.RdYlGn),
+        lambda fig: fig.xticks([factorSet.factors[indexX].min, factorSet.factors[indexX].center(), factorSet.factors[indexX].max]),
+        lambda fig: fig.yticks([factorSet.factors[indexY].min, factorSet.factors[indexY].center(), factorSet.factors[indexY].max]),
+        xLabel=factorSet[indexX], yLabel=factorSet[indexY], title="",
+        saveFigure=filename is not None, 
+        setFilename=filename, figure=figure
+    )
+
+
 
 def plotContour(model : sm.OLS, factorSet : FactorSet, excludedFactors, combinations, filename=None):
     delta = 0.025
 
-    indexX, indexY, indexZ = 0, 1, 2
+    indexX, indexY, indexZ = 0, 3, 4
 
-    x = np.arange(factorSet.factors[indexX].min, factorSet.factors[indexX].max, delta)
-    y = np.arange(factorSet.factors[indexY].min, factorSet.factors[indexY].max, delta)
+    x = np.arange(factorSet.factors[indexX].min, factorSet.factors[indexX].max+delta, delta)
+    y = np.arange(factorSet.factors[indexY].min, factorSet.factors[indexY].max+delta, delta)
     X, Y = np.meshgrid(x, y)
 
     x1, y1 = X.reshape(-1), Y.reshape(-1)

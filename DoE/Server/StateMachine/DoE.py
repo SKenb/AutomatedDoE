@@ -190,6 +190,13 @@ class EvaluateExperiments(State):
 
         filteredCombiScoreHistory = combiScoreHistory.filter(lambda item: valueOfInterest(item) >= bound)
 
+        # Filter for R2 within definealbe drop
+        if len(filteredCombiScoreHistory) == 1: return filteredCombiScoreHistory[0]
+
+        maxR2Score = max(filteredCombiScoreHistory, key=lambda item: item.r2).r2
+        boundR2 = maxR2Score-.1
+        filteredCombiScoreHistory = [item for item in filteredCombiScoreHistory if item.r2 >= boundR2]
+
         return min(filteredCombiScoreHistory, key=lambda item: len(item.combinations)-len(item.excludedFactors))
 
     def onCall(self):
@@ -208,7 +215,7 @@ class EvaluateExperiments(State):
 
         scaledModel, model = self.createModels(combinations)
         
-        history.add(History.DoEHistoryItem(-1, combiScoreHistory, bestCombiScoreItem))
+        history.add(History.DoEHistoryItem(-1, combiScoreHistory, bestCombiScoreItem, len(context._experimentValues)))
         
         if len(history) >= 40: return StopDoE("Exp. Iteration reached maximum")
 
@@ -229,28 +236,14 @@ class EvaluateExperiments(State):
                 saveFigure=True, title=f"{len(history)}", showPlot=False
             )
 
-            Statistics.plotContour(scaledModel, context.factorSet, context.excludedFactors, combinations, "Plot_C_Iter{}.png".format(len(history)))
+            contourFunction = Statistics.plotContour2 if len(context.factorSet) > 4 else Statistics.plotContour
+            contourFunction(model, context.factorSet, context.excludedFactors, combinations, "Plot_C_Iter{}.png".format(len(history)))
 
         # Paper
         Paper.generatePlot4(
-            LR.predict(scaledModel, X), context, scaledModel, combinations, 
+            LR.predict(scaledModel, X), context, scaledModel, model, combinations, 
             combiScoreHistory, bestCombiScoreItem, drawTicks=False, useLabels=True,
-            filename="Plot4{}_Iter{}_Label".format("_Rob" if context.hasOptimum() else "", len(history))
-        )
-        Paper.generatePlot4(
-            LR.predict(scaledModel, X), context, scaledModel, combinations, 
-            combiScoreHistory, bestCombiScoreItem, drawTicks=False,  useLabels=False,
-            filename="Plot4{}_Iter{}".format("_Rob" if context.hasOptimum() else "", len(history))
-        )
-        Paper.generatePlot4(
-            LR.predict(scaledModel, X), context, scaledModel, combinations, 
-            combiScoreHistory, bestCombiScoreItem, drawTicks=True,  useLabels=False,
-            filename="Plot4{}_Iter{}_Ticks".format("_Rob" if context.hasOptimum() else "", len(history))
-        )
-        Paper.generatePlot4(
-            LR.predict(scaledModel, X), context, scaledModel, combinations, 
-            combiScoreHistory, bestCombiScoreItem, useSubtitles=True, useLabels=False,
-            filename="Plot4{}_Iter{}_Titels".format("_Rob" if context.hasOptimum() else "", len(history))
+            filename="Plot4_{}_{}_{}Exp.png".format("_Rob" if context.hasOptimum() else "", len(history), len(context._experimentValues))
         )
 
         Logger.logEntireRun(
@@ -332,6 +325,7 @@ class StopDoE(State):
 
 
         ## Stats
+        numberOfExperiments = history.choose(lambda item: item.numberOfExperiments)
         r2ScoreHistory = history.choose(lambda item: item.bestCombiScoreItem.r2)
         q2ScoreHistory = history.choose(lambda item: item.bestCombiScoreItem.q2)
         repScoreHistory = history.choose(lambda item: item.bestCombiScoreItem.scoreCombis["repScore"])
@@ -348,10 +342,12 @@ class StopDoE(State):
         predQ2 = lambda item: item.q2
         gP = lambda plt, idx, pred: plt.plot(range(len(z(pred)[idx])), idx*np.ones(len(z(pred)[idx])), z(pred)[idx])
 
+
+
         Common.subplot(
             lambda fig: Common.plot(
-                            lambda plt: plt.plot(r2ScoreHistory, label="R2"),
-                            lambda plt: plt.plot(q2ScoreHistory, label="Q2"),
+                            lambda plt: plt.plot(r2ScoreHistory, label=r"$R^2$"),
+                            lambda plt: plt.plot(q2ScoreHistory, label=r"$Q^2$"),
                             lambda plt: plt.plot(repScoreHistory, label="Reproducibility"),
                             lambda plt: plt.plot(coefficientOfVariationHistory, label="CV"),
                             xLabel="Exp. Iteration", yLabel="Score", title="Score over Exp.It.",
@@ -375,8 +371,8 @@ class StopDoE(State):
         )
 
         Common.subplot(
-            lambda fig: plot3DHist(fig, predR2, r2ScoreHistory, "R2 History"),
-            lambda fig: plot3DHist(fig, predQ2, q2ScoreHistory, "Q2 Hsitory"),
+            lambda fig: plot3DHist(fig, predR2, r2ScoreHistory, "$R^2$ History"),
+            lambda fig: plot3DHist(fig, predQ2, q2ScoreHistory, "$Q^2$ Hsitory"),
             is3D=True, saveFigure=True
         )
 
@@ -384,16 +380,18 @@ class StopDoE(State):
         title = "Titel Rob" if context.hasOptimum() else "Titel"
         X = Common.getXWithCombinations(context.getExperimentValues(), self.bestCombiScoreItemOverall.combinations, Statistics.orthogonalScaling)
 
-        Paper.generatePlot2(LR.predict(self.bestCombiScoreItemOverall.scaledModel, X), context.getResponse(), title, filename=title+" (labeled)")
-        Paper.generatePlot2(LR.predict(self.bestCombiScoreItemOverall.scaledModel, X), context.getResponse(), title, useLabels=False)
-        Paper.generatePlot2(LR.predict(self.bestCombiScoreItemOverall.scaledModel, X), context.getResponse(), title, drawOrigin=False, filename=title+" (labeled, no Origin)")
-        Paper.generatePlot2(LR.predict(self.bestCombiScoreItemOverall.scaledModel, X), context.getResponse(), title, drawTicks=False, filename=title+" (labeled, no Ticks)")
-        
-        if not context.hasOptimum():
-            fn = "ExpHist_Rob"
-            Paper.generatePlot1(Statistics.orthogonalScaling(context._experimentValues), context.factorSet, filename=fn+"_label.png", useLabels=False)
-            Paper.generatePlot1(Statistics.orthogonalScaling(context._experimentValues), context.factorSet, filename=fn+"_fac.png", useABC=False)
-            Paper.generatePlot1(Statistics.orthogonalScaling(context._experimentValues), context.factorSet, filename=fn+".png")
+        Paper.generatePlot2(
+                LR.predict(self.bestCombiScoreItemOverall.scaledModel, X), 
+                context.getResponse(), 
+                title, 
+                useLabels=True,
+                drawOrigin=False,
+                drawTicks=True,
+                filename=title
+            )
+
+        Paper.generatePlot1Bottom(numberOfExperiments, r2ScoreHistory, q2ScoreHistory)
+        Paper.generatePlot1(Statistics.orthogonalScaling(context._experimentValues), context.factorSet, filename="ExpHist.png")
 
 class HandleOutliers(State):
     def __init__(self): super().__init__("Handle outliers")
