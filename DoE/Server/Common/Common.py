@@ -48,7 +48,7 @@ def plot(*plotters, is3D=False, xLabel="x", yLabel="y", title="Plot", showLegend
     return figure
 
 
-def subplot(*plotFunctions, figHandler=None, is3D=False, saveFigure=False, title="", showPlot=True, rows=None, cols=None, rowColPlotIndexList=None, savePath=None, setFilename=None):
+def subplot(*plotFunctions, figHandler=None, is3D=False, saveFigure=False, title="", showPlot=True, rows=None, cols=None, rowColPlotIndexList=None, savePath=None, setFilename=None, useFigTightLayout=False):
 
     if rows is None and cols is None:
         cols = np.ceil((np.sqrt(len(plotFunctions))))
@@ -61,7 +61,7 @@ def subplot(*plotFunctions, figHandler=None, is3D=False, saveFigure=False, title
 
     fig = plt.figure(constrained_layout=True)
     if figHandler is not None: figHandler(fig)
-    #fig.tight_layout()
+    if useFigTightLayout: fig.tight_layout()
 
     for index, plot_ in enumerate(plotFunctions): 
         if is3D is False:
@@ -76,7 +76,7 @@ def subplot(*plotFunctions, figHandler=None, is3D=False, saveFigure=False, title
             plt.subplot(plotRow, plotCol, plotIndex)
             plot_(plt)
         else:
-            plot_(fig.add_subplot(int(rows), int(cols), int(index+1), projection='3d'))
+            plot_(fig.add_subplot(int(rows), int(cols), int(index+1), projection='3d', alpha=.5))
 
     if saveFigure: 
         filename = Path("Plot_{}.png".format(title))

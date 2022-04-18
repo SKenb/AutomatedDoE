@@ -236,15 +236,15 @@ class EvaluateExperiments(State):
                 saveFigure=True, title=f"{len(history)}", showPlot=False
             )
 
-            contourFunction = Statistics.plotContour2 if len(context.factorSet) > 4 else Statistics.plotContour
-            contourFunction(model, context.factorSet, context.excludedFactors, combinations, "Plot_C_Iter{}.png".format(len(history)))
+            #contourFunction = Statistics.plotContour2 if len(context.factorSet) > 4 else Statistics.plotContour
+            #contourFunction(model, context.factorSet, context.excludedFactors, combinations, "Plot_C_Iter{}.png".format(len(history)))
 
         # Paper
-        Paper.generatePlot4(
-            LR.predict(scaledModel, X), context, scaledModel, model, combinations, 
-            combiScoreHistory, bestCombiScoreItem, drawTicks=False, useLabels=True,
-            filename="Plot4_{}_{}_{}Exp.png".format("_Rob" if context.hasOptimum() else "", len(history), len(context._experimentValues))
-        )
+        #Paper.generatePlot4(
+        #    LR.predict(scaledModel, X), context, scaledModel, model, combinations, 
+        #    combiScoreHistory, bestCombiScoreItem, drawTicks=False, useLabels=True,
+        #    filename="Plot4_{}_{}_{}Exp.png".format("_Rob" if context.hasOptimum() else "", len(history), len(context._experimentValues))
+        #)
 
         Logger.logEntireRun(
             history, context.factorSet, context.excludedFactors, context.getExperimentValues(), context.Y, 
@@ -350,7 +350,7 @@ class StopDoE(State):
                             lambda plt: plt.plot(q2ScoreHistory, label=r"$Q^2$"),
                             lambda plt: plt.plot(repScoreHistory, label="Reproducibility"),
                             lambda plt: plt.plot(coefficientOfVariationHistory, label="CV"),
-                            xLabel="Exp. Iteration", yLabel="Score", title="Score over Exp.It.",
+                            xLabel="Design iteration", yLabel="Score", title="Score over Exp.It.",
                             showLegend=True, figure=fig
                         ),
             lambda fig: Statistics.plotCoefficients(
@@ -367,13 +367,18 @@ class StopDoE(State):
             lambda plt: plt.plot(selctedIndex, range(len(history)), scoreHistory, 'ro'),
             lambda plt: gP(plt, 0, pred), lambda plt: gP(plt, 1, pred), lambda plt: gP(plt, 2, pred),
             lambda plt: gP(plt, 3, pred), lambda plt: gP(plt, 4, pred), lambda plt: gP(plt, 5, pred),
-            is3D=False, title=title, figure=fig
+            xLabel="Model iteration", yLabel="Design iteration",
+            is3D=(fig is None), title=title, figure=fig,
+            saveFigure=(fig is None), setFilename=title.replace("$", "").replace("^", "").replace(" ", "")
         )
+
+        plot3DHist(None, predR2, r2ScoreHistory, "$R^2$ History")
+        plot3DHist(None, predQ2, q2ScoreHistory, "$Q^2$ History")
 
         Common.subplot(
             lambda fig: plot3DHist(fig, predR2, r2ScoreHistory, "$R^2$ History"),
-            lambda fig: plot3DHist(fig, predQ2, q2ScoreHistory, "$Q^2$ Hsitory"),
-            is3D=True, saveFigure=True
+            lambda fig: plot3DHist(fig, predQ2, q2ScoreHistory, "$Q^2$ History"),
+            is3D=True, saveFigure=True, useFigTightLayout=True
         )
 
         # Paper
