@@ -7,6 +7,7 @@ from Common.Factor import FactorSet, getDefaultFactorSet
 from XamControl import XamControl
 from StateMachine import StateMachine
 from StateMachine import DoE
+import Common.LinearRegression as LR
 import statsmodels.api as sm
 
 import numpy as np
@@ -47,17 +48,17 @@ def optimization(result:History.CombiScoreHistoryItem):
     model = result.model
     factorSet = result.context.factorSet
     excludedFactors = result.excludedFactors
+    combinations = result.combinations
 
     # do this in loop
-    result.context.factorSet.setExperimentValueCombinations(result.combinations)
+    result.context.factorSet.setExperimentValueCombinations(combinations)
     
-    bounds = factorSet.getBounds(excludedFactors)
+    bounds = factorSet.getBounds(excludedFactors)[0:len(factorSet)-len(excludedFactors)]
 
-    optimum = Optimization.optimizeModel(model, bounds)
-    optimum = optimum[0:len(optimum)-len(factorSet.experimentValueCombinations)]
+    optimum, optimalPrediction = Optimization.optimizeModel(model, bounds, combinations)
 
     reverseOpt = list(optimum[::-1])
-    return [factor.min if index in excludedFactors else reverseOpt.pop() for index, factor in enumerate(factorSet.factors)]
+    return [factor.min if index in excludedFactors else reverseOpt.pop() for index, factor in enumerate(factorSet.factors)], optimalPrediction
 
 
   

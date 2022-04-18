@@ -13,7 +13,7 @@ from matplotlib import colors
 import matplotlib.pyplot as plt
 import numpy as np
 
-SKIP_PAPER_PLOTS = False
+SKIP_PAPER_PLOTS = True
 
 def cm2Inch(cm): 
     return cm/2.54

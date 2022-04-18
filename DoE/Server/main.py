@@ -369,8 +369,8 @@ def process():
         possibillityToPause()
         if processStopRequest: return endProcess()
         
-        optimum = optimization(state.result())
-        Logger.logInfo("Optimum @: {}".format(optimum))
+        optimum, optimalPrediction = optimization(state.result())
+        Logger.logInfo("Optimum @: {} --> Response: {}".format(optimum, optimalPrediction))
 
         #contourFunction = Statistics.plotContour2 if len(state.result().factorSet) > 4 else Statistics.plotContour
         #contourFunction(
