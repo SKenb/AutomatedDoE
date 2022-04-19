@@ -372,6 +372,7 @@ def process():
         optimum, optimalPrediction = optimization(state.result())
         Logger.logInfo("Optimum @: {} --> Response: {}".format(optimum, optimalPrediction))
 
+
         #contourFunction = Statistics.plotContour2 if len(state.result().factorSet) > 4 else Statistics.plotContour
         #contourFunction(
         #    state.result().model, 

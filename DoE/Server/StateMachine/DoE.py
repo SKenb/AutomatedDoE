@@ -334,6 +334,9 @@ class StopDoE(State):
 
         bestScoreOverall = len(q2ScoreHistory) - np.argmax(q2ScoreHistory[::-1]) - 1 #Reverse
         self.bestCombiScoreItemOverall = history.choose(lambda item: item.bestCombiScoreItem)[bestScoreOverall]
+        
+        # REMOVE !!!!
+        #self.bestCombiScoreItemOverall = history.choose(lambda item: item.bestCombiScoreItem)[-1]
 
 
         z = lambda pred: np.array(history.choose(lambda item: item.combiScoreHistory.choose(pred)))
@@ -385,15 +388,15 @@ class StopDoE(State):
         title = "Titel Rob" if context.hasOptimum() else "Titel"
         X = Common.getXWithCombinations(context.getExperimentValues(), self.bestCombiScoreItemOverall.combinations, Statistics.orthogonalScaling)
 
-        Paper.generatePlot2(
-                LR.predict(self.bestCombiScoreItemOverall.scaledModel, X), 
-                context.getResponse(), 
-                title, 
-                useLabels=True,
-                drawOrigin=False,
-                drawTicks=True,
-                filename=title
-            )
+        #Paper.generatePlot2(
+        #        LR.predict(self.bestCombiScoreItemOverall.scaledModel, X), 
+        #        context.getResponse(), 
+        #        title, 
+        #        useLabels=True,
+        #        drawOrigin=False,
+        #        drawTicks=True,
+        #        filename=title
+        #    )
 
         Paper.generatePlot1Bottom(numberOfExperiments, r2ScoreHistory, q2ScoreHistory)
         Paper.generatePlot1(Statistics.orthogonalScaling(context._experimentValues), context.factorSet, filename="ExpHist.png")
