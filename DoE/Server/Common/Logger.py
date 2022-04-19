@@ -103,10 +103,13 @@ def getSubfoldersInLogFolder():
         if "\\" in folder: return None
         if "Logs" in folder: return None
 
-        parts = folder.split("_")
-        date = parts[1]
-        date = "{}.{}.{}".format(date[0:2], date[2:4], date[4:])
-        time = parts[2].replace(".", ":")
+        try:
+            parts = folder.split("_")
+            date = parts[1]
+            date = "{}.{}.{}".format(date[0:2], date[2:4], date[4:])
+            time = parts[2].replace(".", ":")
+        except Exception as e:
+            return None
 
         return "Exp - {} - {}".format(date, time)
         

@@ -3,19 +3,14 @@ from pickle import TRUE
 import socketserver
 import json
 import html
-from tkinter.tix import Tree
 from urllib.parse import urlparse
 import threading
-import time, os
-from xml.dom import xmlbuilder
+import time
 import numpy as np
 import matplotlib.pyplot as plt
 
 from Common import Logger
 from Common import ImportExport
-from Common import History
-from Common import Statistics
-from Common import Optimization
 from XamControl import XamControl
 from StateMachine import StateMachine
 from StateMachine import DoE
@@ -24,7 +19,7 @@ from mainDoE import optimization
 
 from Common.Factor import FactorSet, Factor, getDefaultFactorSet
 
-writePath = readPath = "//TMP/TODO"
+writePath = readPath = "//XAMControl/IO/"
 factorSet = getDefaultFactorSet()
 processRunningFlag = processStopRequest = processPauseRequest = processIsPausingFlag = False
 processThread = None
@@ -132,7 +127,7 @@ class Server(http.server.SimpleHTTPRequestHandler):
 
     def getJSONInfo(self):
         return { 
-                "name": "TODO",
+                "name": "Optipus",
                 "version": "1.0.0.0",
                 "notes": "main/stable"
             }
