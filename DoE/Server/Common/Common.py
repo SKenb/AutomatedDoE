@@ -4,9 +4,7 @@ import Common.LinearRegression as LR
 import numpy as np
 import Common.Statistics as Statistics
 import Common.Logger as Logger
-import random   
 
-from datetime import datetime
 from pathlib import Path
 
 from Common.Factor import FactorSet
@@ -17,7 +15,7 @@ MATPLOTLIB_SAVE_PLOT_ONLY = True
 
 
 def plot(*plotters, is3D=False, xLabel="x", yLabel="y", title="Plot", showLegend=False, figure=None, saveFigure=False, savePath=None, setFilename=None):
-
+ 
     if figure is None: 
         figure = plt.figure()
         showPlot = True
@@ -49,7 +47,7 @@ def plot(*plotters, is3D=False, xLabel="x", yLabel="y", title="Plot", showLegend
 
 
 def subplot(*plotFunctions, figHandler=None, is3D=False, saveFigure=False, title="", showPlot=True, rows=None, cols=None, rowColPlotIndexList=None, savePath=None, setFilename=None, useFigTightLayout=False):
-
+ 
     if rows is None and cols is None:
         cols = np.ceil((np.sqrt(len(plotFunctions))))
         rows = np.ceil(len(plotFunctions) / cols)

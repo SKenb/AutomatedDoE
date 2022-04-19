@@ -1,0 +1,73 @@
+Experiment-Iteration: 1 on the 02.04.2022 15:04:28
+
+
+Factor Set
+
+0;Contant;;;;
+A;Temperature;100.0;160.0;C;T_1
+B;Concentration;0.2;0.4;M;C_SM_1
+C;Reagent ratio;0.9;3.0;;R
+D;Residence time;2.5;6.0;min;RT_1
+
+
+Excluded factors
+
+-
+
+
+Combinations
+
+C*D
+
+
+Scores
+
+R2;Q2;RepScore;CV
+0.99109;0.53475;0.999990284598136;0.0021367515702354063
+
+
+Model Coeffs
+0;A;B;C;D;C*D
+-0.9843610872793862;0.003685601929166626;1.6208285462499998;0.5290740047015878;-0.10257107944340199;-0.028409139115645923
+
+Scaled Model Coeffs
+0;A;B;C;D;C*D
+0.34134220849999997;0.11056805787500004;0.162082854625;0.07615317268750003;0.07615317268749996;-0.052201793124999896
+
+
+Transformation
+NO TRANSFORMATION
+
+
+Scaled Model - Summary
+|                            OLS Regression Results                            
+==============================================================================
+Dep. Variable:                      y   R-squared:                       0.909
+Model:                            OLS   Adj. R-squared:                  0.837
+Method:                 Least Squares   F-statistic:                     12.54
+Date:                Sat, 02 Apr 2022   Prob (F-statistic):            0.00810
+Time:                        15:04:28   Log-Likelihood:                 12.338
+No. Observations:                  10   AIC:                            -14.68
+Df Residuals:                       5   BIC:                            -13.16
+Df Model:                           4                                         
+Covariance Type:            nonrobust                                         
+==============================================================================
+                 coef    std err          t      P>||t||      [0.025      0.975]
+------------------------------------------------------------------------------
+const          0.3413      0.070      4.844      0.005       0.160       0.522
+x1             0.1106      0.035      3.138      0.026       0.020       0.201
+x2             0.1621      0.035      4.601      0.006       0.072       0.253
+x3             0.0762      0.018      4.323      0.008       0.031       0.121
+x4             0.0762      0.018      4.323      0.008       0.031       0.121
+x5            -0.0522      0.079     -0.663      0.537      -0.255       0.150
+==============================================================================
+Omnibus:                        0.457   Durbin-Watson:                   2.635
+Prob(Omnibus):                  0.796   Jarque-Bera (JB):                0.162
+Skew:                           0.264   Prob(JB):                        0.922
+Kurtosis:                       2.669   Cond. No.                     1.24e+16
+==============================================================================
+
+Notes:
+[1] Standard Errors assume that the covariance matrix of the errors is correctly specified.
+[2] The smallest eigenvalue is 1.1e-31. This might indicate that there are
+strong multicollinearity problems or that the design matrix is singular.|
