@@ -40,6 +40,7 @@ class CombiScoreHistoryItem(HistoryItem):
         self.scoreCombis = scoreCombis
         self.excludedFactors = excludedFactors.copy()
         self.context = copy.deepcopy(context)
+        self.infoContainer = None
 
 class DoEHistoryItem(HistoryItem):
     def __init__(self, index, combiScoreHistory, bestCombiScoreItem, numberOfExperiments, ) -> None:

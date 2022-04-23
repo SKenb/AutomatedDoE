@@ -14,6 +14,7 @@ from Common import ImportExport
 from XamControl import XamControl
 from StateMachine import StateMachine
 from StateMachine import DoE
+from Notification import Notify
 
 from mainDoE import optimization
 
@@ -375,6 +376,15 @@ def process():
         #    state.result().excludedFactors, 
         #    state.result().combinations
         #)
+
+        r = state.result()
+        filt = lambda pred: sum(map(lambda x : pred in x, list(r.combinations.keys())))
+        Notify.notify(r.infoContainer["numberOfExperiments"], 
+                      r.r2, r.q2, r.scoreCombis['repScore'], 
+            	      "STY", factorSet, optimum, 
+                      len(r.context.factorSet)-len(r.context.excludedFactors), 
+                      filt("*"), filt("^2"),
+                      sendSMS=False)
         
         log("Start DoE around optimum")
         possibillityToPause()
