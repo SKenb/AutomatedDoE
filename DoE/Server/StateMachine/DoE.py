@@ -240,11 +240,11 @@ class EvaluateExperiments(State):
             #contourFunction(model, context.factorSet, context.excludedFactors, combinations, "Plot_C_Iter{}.png".format(len(history)))
 
         # Paper
-        #Paper.generatePlot4(
-        #    LR.predict(scaledModel, X), context, scaledModel, model, combinations, 
-        #    combiScoreHistory, bestCombiScoreItem, drawTicks=False, useLabels=True,
-        #    filename="Plot4_{}_{}_{}Exp.png".format("_Rob" if context.hasOptimum() else "", len(history), len(context._experimentValues))
-        #)
+        Paper.generatePlot4(
+            LR.predict(scaledModel, X), context, scaledModel, model, combinations, 
+            combiScoreHistory, bestCombiScoreItem, drawTicks=False, useLabels=True,
+            filename="Plot4_{}_{}_{}Exp.png".format("_Rob" if context.hasOptimum() else "", len(history), len(context._experimentValues))
+        )
 
         Logger.logEntireRun(
             history, context.factorSet, context.excludedFactors, context.getExperimentValues(), context.Y, 
@@ -334,10 +334,7 @@ class StopDoE(State):
 
         bestScoreOverall = len(q2ScoreHistory) - np.argmax(q2ScoreHistory[::-1]) - 1 #Reverse
         self.bestCombiScoreItemOverall = history.choose(lambda item: item.bestCombiScoreItem)[bestScoreOverall]
-        
-        # REMOVE !!!!
-        #self.bestCombiScoreItemOverall = history.choose(lambda item: item.bestCombiScoreItem)[-1]
-
+        self.bestCombiScoreItemOverall.infoContainer = {"numberOfExperiments": len(history)}
 
         z = lambda pred: np.array(history.choose(lambda item: item.combiScoreHistory.choose(pred)))
 

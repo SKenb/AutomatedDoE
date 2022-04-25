@@ -165,6 +165,11 @@ class FactorSet:
         self.realizeExperiments(normedExperiments)
         return [(rExp[0], rExp[1]) for index, rExp in enumerate(self.getExperimentValuesAndCombinations().T) if index not in excludedFactors]
 
+    def serialize(self):
+        return [
+            {"name": f.name, "min": f.min, "max": f.max, "unit": f.unit, "sym": f.symbol}
+            for f in self.factors
+        ]
 
 def getDefaultFactorSet():
 
