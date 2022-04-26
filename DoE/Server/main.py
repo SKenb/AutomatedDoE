@@ -9,6 +9,8 @@ import time
 import numpy as np
 import matplotlib.pyplot as plt
 
+from Common import LinearRegression as LR
+
 from Common import Logger
 from Common import ImportExport
 from XamControl import XamControl

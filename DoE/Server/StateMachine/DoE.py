@@ -334,6 +334,10 @@ class StopDoE(State):
 
         bestScoreOverall = len(q2ScoreHistory) - np.argmax(q2ScoreHistory[::-1]) - 1 #Reverse
         self.bestCombiScoreItemOverall = history.choose(lambda item: item.bestCombiScoreItem)[bestScoreOverall]
+
+        # REMOVE !!!!
+        self.bestCombiScoreItemOverall = history.choose(lambda item: item.bestCombiScoreItem)[-1]
+
         self.bestCombiScoreItemOverall.infoContainer = {"numberOfExperiments": len(history)}
 
         z = lambda pred: np.array(history.choose(lambda item: item.combiScoreHistory.choose(pred)))
