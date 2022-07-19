@@ -425,7 +425,7 @@ def onDone():
     
 
 if __name__ == "__main__":
-    hostname, port = 'localhost', 8080
+    hostname, port = 'localhost', 9000
     server = socketserver.TCPServer((hostname, port), Server)
     
     print("Start DoE-Server @{}:{}".format(hostname, server))

@@ -4,7 +4,7 @@ echo ---- DoE Launcher ----
 
 
 echo Starting Frontend
-start "" http://localhost:8080
+start "" http://localhost:9000
 
 echo Starting Server
 cd DoE/Server/
