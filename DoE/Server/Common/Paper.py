@@ -161,7 +161,7 @@ def plotCoefficients(coefficientValues, context:ContextDoE=None, confidenceInter
 
 
 def generatePlot4(prediction, context, scaledModel, model, combinations, combiScoreHistory, bestCombiScoreItem, useSubtitles=False, useLabels=True, filename=None, drawOrigin=True, drawTicks=True):
-    #if SKIP_PAPER_PLOTS: return
+    if SKIP_PAPER_PLOTS: return
 
     savePath=Path("./Paper/Plots/Plot4_Iter/")
     sizeInCm = 10
